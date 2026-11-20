@@ -319,45 +319,23 @@ async function visibleSales(actor, campaignId, filter = {}) {
 }
 
 export async function list(actor, campaignId, filters) {
-  const { page, pageSize, from, to, sort, productId, hasUndelivered, ...where } = filters;
-  const rows = (
-    await visibleSales(actor, campaignId, {
-      ...where,
-      workDate: { gte: dateValue(from), lte: dateValue(to) },
-      items: productId ? { some: { productId } } : undefined,
-      giftEntitlements:
-        hasUndelivered === undefined
-          ? undefined
-          : { [hasUndelivered ? 'some' : 'none']: { status: 'undelivered' } },
-    })
-  ).map(saleView);
-  if (sort === 'soldAt') rows.reverse();
-  const recorded = rows.filter((row) => row.status === 'recorded');
-  const counts = {
-    sales: recorded.length,
-    units: recorded.reduce((sum, row) => sum + row.units, 0),
-    buyers: new Set(recorded.flatMap((row) => (row.customer ? [row.customer.id] : []))).size,
-    undelivered: recorded.flatMap((row) =>
-      row.entitlements.filter((item) => item.status === 'undelivered'),
-    ).length,
-  };
+  const scope = ScopeService.resolve(actor);
+  const result = await withTransaction((tx) => repo.salePage(tx, scope, campaignId, filters), {
+    isolationLevel: 'RepeatableRead',
+  });
+  if (!result.total) required(await repo.campaign(prisma, scope, campaignId));
+  const { page, pageSize } = filters;
   return {
-    data: rows.slice((page - 1) * pageSize, page * pageSize),
+    data: result.rows.map(saleView),
     meta: {
       page,
       pageSize,
-      total: rows.length,
-      counts,
-      filters: {
-        animateurs: [...new Map(rows.map(({ animateur }) => [animateur.id, animateur])).values()],
-        supervisors: [
-          ...new Map(rows.map(({ supervisor }) => [supervisor.id, supervisor])).values(),
-        ],
-      },
+      total: result.total,
+      counts: result.counts,
+      filters: result.filters,
     },
   };
 }
-
 export async function review(actor, campaignId) {
   const rows = await visibleSales(actor, campaignId, {
     status: 'voided',

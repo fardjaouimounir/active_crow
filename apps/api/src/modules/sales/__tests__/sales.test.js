@@ -88,6 +88,36 @@ async function restock(context, quantity) {
 }
 
 describe('Prompt 12 sales', () => {
+  it('paginates equal-time sales by descending ID and keeps whole-result counters', async () => {
+    const context = await setup({ entries: false, promotion: false });
+    const frozen = vi.spyOn(clock, 'now').mockReturnValue(new Date());
+    try {
+      const rows = [];
+      for (const quantity of [1, 2, 3]) rows.push(await sale(context, customer, quantity));
+      const path = `/campaigns/${context.id}/sales?pageSize=2&productId=${context.product.id}&status=recorded`;
+      const expectedIds = rows
+        .map(({ id }) => id)
+        .sort()
+        .reverse();
+      for (const page of [1, 2, 3]) {
+        const response = await world.call('supervisor', 'get', path + '&page=' + page);
+        expect(response.status, JSON.stringify(response.body)).toBe(200);
+        expect(response.body.data.map(({ id }) => id)).toEqual(
+          expectedIds.slice((page - 1) * 2, page * 2),
+        );
+        expect(response.body.meta).toMatchObject({
+          page,
+          pageSize: 2,
+          total: 3,
+          counts: { sales: 3, units: 6, buyers: 1, undelivered: 0 },
+        });
+      }
+      await world.refused(world.call('supervisorTwo', 'get', path), 404, 'NOT_FOUND');
+    } finally {
+      frozen.mockRestore();
+    }
+  });
+
   it('uses the highest tier, records movement and numbers, and replays the exact response', async () => {
     const context = await setup({ maxPerCustomer: 1 });
     await restock(context, 8);

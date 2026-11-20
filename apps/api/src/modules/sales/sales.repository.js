@@ -1,4 +1,5 @@
 import { assertScope, campaignWhere, scoped, userWhere } from '../../core/authz/scopeFilters.js';
+import { Prisma } from '../../db/client.js';
 
 export function agencyWhere(scope) {
   return assertScope(scope) ? {} : { agencyId: scope.agencyId };
@@ -75,6 +76,76 @@ export const sales = (db, scope, where) =>
     include: { ...saleInclude, tombolaEntries: false },
     orderBy: [{ soldAt: 'desc' }, { id: 'asc' }],
   });
+
+export async function salePage(db, scope, campaignId, filters) {
+  assertScope(scope);
+  const conditions = [
+    Prisma.sql`s.agency_id = ${scope.agencyId}::uuid`,
+    Prisma.sql`s.campaign_id = ${campaignId}::uuid`,
+    Prisma.sql`s.work_date BETWEEN ${filters.from}::date AND ${filters.to}::date`,
+  ];
+  if (scope.level === 'self') conditions.push(Prisma.sql`s.animateur_id = ${scope.userId}::uuid`);
+  if (scope.level === 'supervisor')
+    conditions.push(Prisma.sql`s.supervisor_id = ${scope.userId}::uuid`);
+  if (scope.level === 'client') conditions.push(Prisma.sql`false`);
+  if (scope.level === 'regional')
+    conditions.push(Prisma.sql`(
+    s.supervisor_id = ${scope.userId}::uuid OR EXISTS (
+      WITH RECURSIVE managers (user_id, depth) AS (
+        SELECT s.supervisor_id, 0
+        UNION ALL
+        SELECT r.manager_id, m.depth + 1 FROM managers m JOIN reporting_lines r ON r.user_id = m.user_id
+        WHERE m.depth < 3 AND r.agency_id = s.agency_id AND r.valid_from <= s.work_date
+          AND (r.valid_to IS NULL OR r.valid_to > s.work_date)
+      ) SELECT 1 FROM managers WHERE user_id = ${scope.userId}::uuid
+    ))`);
+  if (filters.animateurId)
+    conditions.push(Prisma.sql`s.animateur_id = ${filters.animateurId}::uuid`);
+  if (filters.supervisorId)
+    conditions.push(Prisma.sql`s.supervisor_id = ${filters.supervisorId}::uuid`);
+  if (filters.pointOfSaleId)
+    conditions.push(Prisma.sql`s.point_of_sale_id = ${filters.pointOfSaleId}::uuid`);
+  if (filters.status) conditions.push(Prisma.sql`s.status = ${filters.status}::sale_status`);
+  if (filters.productId)
+    conditions.push(Prisma.sql`EXISTS (
+    SELECT 1 FROM sale_items i WHERE i.sale_id = s.id AND i.product_id = ${filters.productId}::uuid)`);
+  if (filters.hasUndelivered !== undefined)
+    conditions.push(Prisma.sql`EXISTS (
+    SELECT 1 FROM gift_entitlements g WHERE g.sale_id = s.id AND g.status = 'undelivered'
+  ) = ${filters.hasUndelivered}`);
+  const where = Prisma.join(conditions, ' AND ');
+  const order =
+    filters.sort === 'soldAt'
+      ? Prisma.sql`s.sold_at ASC, s.id ASC`
+      : Prisma.sql`s.sold_at DESC, s.id DESC`;
+  const ids = (
+    await db.$queryRaw`SELECT s.id FROM sales s WHERE ${where} ORDER BY ${order}
+    LIMIT ${filters.pageSize} OFFSET ${(filters.page - 1) * filters.pageSize}`
+  ).map(({ id }) => id);
+  const [aggregate] = await db.$queryRaw`
+    WITH matched AS (SELECT s.* FROM sales s WHERE ${where}),
+    recorded AS (SELECT * FROM matched WHERE status = 'recorded')
+    SELECT (SELECT count(*) FROM matched) AS total,
+      (SELECT count(*) FROM recorded) AS sales,
+      (SELECT coalesce(sum(i.quantity), 0) FROM sale_items i JOIN recorded r ON r.id = i.sale_id) AS units,
+      (SELECT count(DISTINCT customer_id) FROM recorded) AS buyers,
+      (SELECT count(*) FROM gift_entitlements g JOIN recorded r ON r.id = g.sale_id
+        WHERE g.status = 'undelivered') AS undelivered,
+      (SELECT coalesce(jsonb_agg(jsonb_build_object('id', u.id, 'fullName',u.full_name)
+        ORDER BY u.full_name, u.id), '[]'::jsonb) FROM users u WHERE u.id IN
+        (SELECT DISTINCT animateur_id FROM matched)) AS animateurs,
+      (SELECT coalesce(jsonb_agg(jsonb_build_object('id', u.id, 'fullName',u.full_name)
+        ORDER BY u.full_name, u.id), '[]'::jsonb) FROM users u WHERE u.id IN
+        (SELECT DISTINCT supervisor_id FROM matched)) AS supervisors`;
+  const rows = new Map((await sales(db, scope, { id: { in: ids } })).map((row) => [row.id, row]));
+  const { total, animateurs, supervisors, ...counts } = aggregate;
+  return {
+    rows: ids.map((id) => rows.get(id)).filter(Boolean),
+    total: Number(total),
+    counts: Object.fromEntries(Object.entries(counts).map(([key, value]) => [key, Number(value)])),
+    filters: { animateurs, supervisors },
+  };
+}
 export async function lockSale(db, scope, id) {
   await db.$queryRaw`SELECT id FROM sales WHERE id = ${id}::uuid AND agency_id = ${scope.agencyId}::uuid FOR UPDATE`;
   return sale(db, scope, id);
