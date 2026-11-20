@@ -45,6 +45,62 @@ export const routes = [
             lazy: async () => ({ Component: (await import('./layouts/AppLayout.jsx')).AppLayout }),
             children: [
               {
+                path: 'users',
+                lazy: async () => ({
+                  Component: (await import('../features/organization/pages/UsersPage.jsx'))
+                    .UsersPage,
+                }),
+              },
+              {
+                path: 'users/new',
+                lazy: async () => ({
+                  Component: (await import('../features/organization/pages/NewUserPage.jsx'))
+                    .NewUserPage,
+                }),
+              },
+              {
+                path: 'users/:id',
+                lazy: async () => ({
+                  Component: (await import('../features/organization/pages/UserDetailPage.jsx'))
+                    .UserDetailPage,
+                }),
+              },
+              {
+                path: 'organization',
+                lazy: async () => ({
+                  Component: (await import('../features/organization/pages/OrganizationPage.jsx'))
+                    .OrganizationPage,
+                }),
+              },
+              {
+                path: 'regions',
+                lazy: async () => ({
+                  Component: (await import('../features/organization/pages/RegionsPage.jsx'))
+                    .RegionsPage,
+                }),
+              },
+              {
+                path: 'points-of-sale',
+                lazy: async () => ({
+                  Component: (await import('../features/points-of-sale/pages/PointsPage.jsx'))
+                    .PointsPage,
+                }),
+              },
+              {
+                path: 'points-of-sale/new',
+                lazy: async () => ({
+                  Component: (await import('../features/points-of-sale/pages/PointPage.jsx'))
+                    .PointPage,
+                }),
+              },
+              {
+                path: 'points-of-sale/:id',
+                lazy: async () => ({
+                  Component: (await import('../features/points-of-sale/pages/PointPage.jsx'))
+                    .PointPage,
+                }),
+              },
+              {
                 index: true,
                 lazy: async () => ({
                   Component: (await import('../features/system/pages/SystemStatusPage.jsx'))

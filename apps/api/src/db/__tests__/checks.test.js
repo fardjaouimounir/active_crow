@@ -86,7 +86,7 @@ describe('identity and geography', () => {
     );
     await expectPgError(
       prisma.reportingLine.create({
-        data: { ...base, managerId: ctx.supervisor.id, validTo: day('2026-01-01') },
+        data: { ...base, managerId: ctx.supervisor.id, validTo: day('2025-12-31') },
       }),
       { code: CHECK, constraint: 'reporting_lines_valid_range' },
     );

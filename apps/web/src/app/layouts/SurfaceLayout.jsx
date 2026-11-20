@@ -6,7 +6,7 @@ import { useAuth } from '../../shared/auth/hooks.js';
 import { LanguageSwitcher } from '../../shared/i18n/LanguageSwitcher.jsx';
 
 /** Signed-in user's name, translated role and the logout button. */
-function UserMenu() {
+export function UserMenu() {
   const { t } = useTranslation('common');
   const { user } = useAuth();
   // After logout the surface guard sends the user to /login.

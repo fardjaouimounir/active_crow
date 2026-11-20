@@ -423,6 +423,7 @@ model Region {
   agencyId  String    @map("agency_id") @db.Uuid
   name      String
   code      String
+  isDemo    Boolean   @default(false) @map("is_demo")
   deletedAt DateTime? @map("deleted_at") @db.Timestamptz(6)
   createdAt DateTime  @default(now()) @map("created_at") @db.Timestamptz(6)
   updatedAt DateTime  @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(6)
@@ -484,6 +485,7 @@ model PointOfSale {
   contactName  String?   @map("contact_name")
   contactPhone String?   @map("contact_phone")
   version      Int       @default(1)
+  isDemo       Boolean   @default(false) @map("is_demo")
   deletedAt    DateTime? @map("deleted_at") @db.Timestamptz(6)
   createdAt    DateTime  @default(now()) @map("created_at") @db.Timestamptz(6)
   updatedAt    DateTime  @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(6)

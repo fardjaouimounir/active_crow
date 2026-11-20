@@ -81,7 +81,7 @@ waits for it and then sees `drawn`.
 | `users_client_role`                        | users                | `(role = 'client') = (client_id IS NOT NULL)`                 | K › users_client_role                            |
 | `wilayas_id_range`                         | wilayas              | Official code 1–69 (Law 26-06)                                | K › wilayas_id_range                             |
 | `reporting_lines_not_self`                 | reporting_lines      | `manager_id <> user_id`                                       | K › reporting_lines_not_self and …               |
-| `reporting_lines_valid_range`              | reporting_lines      | `valid_to IS NULL OR valid_to > valid_from`                   | K › … reporting_lines_valid_range                |
+| `reporting_lines_valid_range`              | reporting_lines      | `valid_to IS NULL OR valid_to >= valid_from`                  | K › … reporting_lines_valid_range                |
 | `points_of_sale_coordinates`               | points_of_sale       | latitude and longitude both or neither                        | K › points_of_sale_coordinates                   |
 | `campaigns_date_range`                     | campaigns            | `end_date >= start_date`                                      | K › campaigns_date_range and …                   |
 | `campaigns_approver_role`                  | campaigns            | Q-09: approver ∈ director, general_manager, regional_manager  | K › … campaigns_approver_role                    |

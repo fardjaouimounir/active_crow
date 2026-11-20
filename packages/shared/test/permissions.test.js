@@ -22,6 +22,7 @@ const CATALOG = `
 | \`org.transfer\` | ✓ | ✓ | ✓ | | | |
 | \`org.structure.manage\` (regions, points of sale) | ✓ | | | | | |
 | \`org.pos.read\` | ✓ | ✓ | ✓ | ✓ | ✓ | |
+| \`reference.read\` | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ |
 | \`catalog.read\` | ✓ | ✓ | ✓ | ✓ | ✓ | |
 | \`catalog.manage\` | ✓ | | | | | |
 | \`assignment.read\` | ✓ | ✓ | ✓ | ✓ | ✓ | |
@@ -110,6 +111,7 @@ describe('permission catalog', () => {
     for (const role of USER_ROLES) expect(Object.isFrozen(ROLE_PERMISSIONS[role])).toBe(true);
     expect(permissionsFor('client')).toEqual([
       'campaign.read',
+      'reference.read',
       'tombola.read',
       'tombola.draw',
       'report.read',

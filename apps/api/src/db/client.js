@@ -1,6 +1,6 @@
 // The only module that imports @prisma/client (enforced by ESLint). Repositories use `prisma` from here.
 import { PrismaPg } from '@prisma/adapter-pg';
-import { PrismaClient } from '@prisma/client';
+import { Prisma, PrismaClient } from '@prisma/client';
 import { env } from '../config/env.js';
 import { logger } from '../config/logger.js';
 
@@ -64,3 +64,5 @@ export async function pingDatabase(client = prisma) {
 export async function disconnectDatabase(client = prisma) {
   await client.$disconnect();
 }
+
+export { Prisma };

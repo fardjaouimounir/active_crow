@@ -1,10 +1,12 @@
 // Reference data seed: one agency (from env), 69 wilayas, 1,541 communes. Idempotent (upserts).
-// Run with `npm run db:seed`. No users, campaigns or demo data here.
+// Run with `npm run db:seed`. Pass --demo to add demo organization data.
 import { readFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { z } from 'zod';
 import { disconnectDatabase, prisma } from '../../src/db/client.js';
 import { withTransaction } from '../../src/db/transaction.js';
+
+import { demoPassword, seedDemo } from './demo.js';
 
 export const EXPECTED_WILAYAS = 69;
 export const EXPECTED_COMMUNES = 1541;
@@ -102,6 +104,8 @@ export async function seedReferenceData({ agencyName, agencyCode }, client = pri
 }
 
 async function main() {
+  const demo = process.argv.includes('--demo');
+  if (demo) demoPassword(process.env);
   const env = seedEnvSchema.safeParse(process.env);
   if (!env.success) {
     throw new SeedError(
@@ -114,6 +118,7 @@ async function main() {
     agencyName: env.data.SEED_AGENCY_NAME,
     agencyCode: env.data.SEED_AGENCY_CODE,
   });
+  if (demo) await seedDemo({ agency: result.agency });
   process.stdout.write(
     `Seed complete: agency ${result.agency.code}, ${result.wilayas} wilayas, ${result.communes} communes.\n`,
   );

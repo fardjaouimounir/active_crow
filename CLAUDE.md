@@ -165,6 +165,7 @@ npm test                    # all tests (vitest projects: api, web, shared)
 npm run test:quick          # all tests, dot reporter, silent, stop at first failure
 npm run test:related -- <files>  # only tests affected by the given files
 npm run verify              # lint:quick + test:quick (end-of-task check)
+npm run --silent openapi:organization  # print the Organization OpenAPI 3.1 JSON
 npm run db:up               # start dev/test PostgreSQL (docker compose, waits until healthy)
 npm run db:down             # stop it (data kept in the named volume)
 npm run db:generate         # prisma generate (also runs automatically on npm install / npm ci)
@@ -172,6 +173,7 @@ npm run db:migrate          # prisma migrate dev (dev DB; must report no drift)
 npm run db:migrate:deploy   # prisma migrate deploy (CI / production)
 npm run db:reset            # drop, re-migrate and re-seed the dev DB
 npm run db:seed             # reference data: 1 agency, 69 wilayas, 1,541 communes (idempotent)
+npm run db:seed -- --demo   # demo organization; requires an active director and DEMO_PASSWORD
 npm run db:bootstrap -- --email <e> --name "<n>"  # first director of the seeded agency (once; prints a temporary password)
 npm run db:studio           # Prisma Studio
 ```

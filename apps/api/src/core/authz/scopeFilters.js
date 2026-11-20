@@ -4,6 +4,7 @@
 //
 // Pattern for later modules: add `<resource>Where(scope, options)` here, start with
 // `assertScope(scope)`, return `{}` only for SYSTEM_SCOPE and always include `agencyId` otherwise.
+import { descendantIds } from '../../modules/organization/hierarchy.repository.js';
 import { prisma } from '../../db/client.js';
 import { businessDate } from '../time/clock.js';
 import { SCOPE_LEVELS, SYSTEM_SCOPE } from './scopeService.js';
@@ -98,24 +99,6 @@ function toBusinessDate(at) {
  */
 async function regionalUserIds(db, { agencyId, userId }, at) {
   const rows = await db.$queryRaw`
-    WITH RECURSIVE tree (user_id, depth) AS (
-      SELECT rl.user_id, 1
-      FROM reporting_lines rl
-      WHERE rl.agency_id = ${agencyId}::uuid
-        AND rl.manager_id = ${userId}::uuid
-        AND rl.valid_from <= ${at}::date
-        AND (rl.valid_to IS NULL OR rl.valid_to > ${at}::date)
-      UNION
-      SELECT rl.user_id, tree.depth + 1
-      FROM reporting_lines rl
-      JOIN tree ON rl.manager_id = tree.user_id
-      WHERE tree.depth < ${REPORTING_TREE_MAX_DEPTH}
-        AND rl.agency_id = ${agencyId}::uuid
-        AND rl.valid_from <= ${at}::date
-        AND (rl.valid_to IS NULL OR rl.valid_to > ${at}::date)
-    )
-    SELECT user_id AS id FROM tree
-    UNION
     SELECT unnest(ARRAY[a.animateur_id, a.supervisor_id]) AS id
     FROM assignments a
     WHERE a.agency_id = ${agencyId}::uuid
@@ -126,24 +109,20 @@ async function regionalUserIds(db, { agencyId, userId }, at) {
           AND cs.user_id = ${userId}::uuid
           AND cs.role = 'regional_manager'
       )`;
-  return rows.map((row) => row.id);
+  return [
+    ...(await descendantIds(db, { agencyId, userId }, at, REPORTING_TREE_MAX_DEPTH)),
+    ...rows.map(({ id }) => id),
+  ];
 }
 
 /** Ids under a supervisor at `at`: direct reports valid at `at` plus Animateurs on assignments they supervise. */
 async function supervisorUserIds(db, { agencyId, userId }, at) {
   const rows = await db.$queryRaw`
-    SELECT rl.user_id AS id
-    FROM reporting_lines rl
-    WHERE rl.agency_id = ${agencyId}::uuid
-      AND rl.manager_id = ${userId}::uuid
-      AND rl.valid_from <= ${at}::date
-      AND (rl.valid_to IS NULL OR rl.valid_to > ${at}::date)
-    UNION
     SELECT a.animateur_id AS id
     FROM assignments a
     WHERE a.agency_id = ${agencyId}::uuid
       AND a.supervisor_id = ${userId}::uuid`;
-  return rows.map((row) => row.id);
+  return [...(await descendantIds(db, { agencyId, userId }, at, 1)), ...rows.map(({ id }) => id)];
 }
 
 /**
@@ -153,9 +132,9 @@ async function supervisorUserIds(db, { agencyId, userId }, at) {
  * agency: all users of the agency · regional / supervisor: themselves + their tree at `at` +
  * people on their campaigns' / supervised assignments · self: themselves · client: nobody.
  * @param {import('./scopeService.js').Scope} scope
- * @param {{ at?: Date | string, db?: import('@prisma/client').Prisma.TransactionClient }} [options]
+ * @param {{ at?: Date | string, reportingOnly?: boolean, db?: import('@prisma/client').Prisma.TransactionClient }} [options]
  */
-export async function userWhere(scope, { at, db = prisma } = {}) {
+export async function userWhere(scope, { at, reportingOnly = false, db = prisma } = {}) {
   if (assertScope(scope)) return {};
   const { agencyId } = scope;
   switch (scope.level) {
@@ -164,7 +143,15 @@ export async function userWhere(scope, { at, db = prisma } = {}) {
     case 'regional':
     case 'supervisor': {
       const lookup = scope.level === 'regional' ? regionalUserIds : supervisorUserIds;
-      const ids = await lookup(db, scope, toBusinessDate(at));
+      const date = toBusinessDate(at);
+      const ids = reportingOnly
+        ? await descendantIds(
+            db,
+            scope,
+            date,
+            scope.level === 'regional' ? REPORTING_TREE_MAX_DEPTH : 1,
+          )
+        : await lookup(db, scope, date);
       return { agencyId, id: { in: [...new Set([scope.userId, ...ids])] } };
     }
     case 'self':
