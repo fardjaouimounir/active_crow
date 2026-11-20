@@ -10,6 +10,13 @@ export function slotStatus(_expected, record, absence) {
 import { z } from 'zod';
 import { issueCreate } from './communications.js';
 
+export const fieldCheckpointBody = z.strictObject({
+  checkpoint: z.string().trim().min(1).max(60),
+  latitude: z.number().min(-90).max(90).optional(),
+  longitude: z.number().min(-180).max(180).optional(),
+  gpsAccuracyM: z.int().min(0).max(10000).optional(),
+});
+
 export const attendanceReason = z.strictObject({ reason: z.string().trim().min(3).max(300) });
 export const attendanceOverride = z.strictObject({
   status: z.enum(['verified', 'rejected']),

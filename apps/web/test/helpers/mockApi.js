@@ -21,7 +21,7 @@ export function mockApi(routes) {
       key,
       authorization: config.headers.get('Authorization') ?? undefined,
       idempotencyKey: config.headers.get('Idempotency-Key') ?? undefined,
-      body: config.data ? JSON.parse(config.data) : undefined,
+      body: typeof config.data === 'string' ? JSON.parse(config.data) : config.data,
     });
     const handler = routes[key];
     const [status, data] = handler

@@ -29,6 +29,15 @@ export const saleCustomer = z.strictObject({
   phone: z.string().trim().min(1).max(40).optional(),
   consentTombola: z.boolean().optional(),
 });
+export const fieldSaleBody = z.strictObject({
+  items: saleItems,
+  customer: saleCustomer.optional(),
+  invoiceRef: z.string().trim().min(1).max(60).optional(),
+});
+export function algerianMobileNumber(value) {
+  const match = /^(?:0|\+213|00213)([567][0-9]{8})$/.exec(value?.replace(/[\s-]/g, '') ?? '');
+  return match ? '+213' + match[1] : null;
+}
 export const tombolaInput = z.strictObject({
   name: z.string().trim().min(2).max(120),
   entryBasis: z.enum(['per_sale', 'per_unit']),

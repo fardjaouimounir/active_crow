@@ -12951,7 +12951,7 @@
     },
     "/api/v1/me/sales/today": {
       "get": {
-        "summary": "Read today’s sales and interactions",
+        "summary": "Read today’s schedule, sales, field catalog, and interactions",
         "x-permission": "sale.record",
         "security": [{ "bearerAuth": [] }],
         "parameters": [],
@@ -12960,7 +12960,51 @@
             "description": "Success",
             "content": {
               "application/json": {
-                "schema": { "type": "object", "required": ["data"], "properties": { "data": {} } }
+                "schema": {
+                  "type": "object",
+                  "required": ["data"],
+                  "properties": {
+                    "data": {
+                      "type": "object",
+                      "properties": {
+                        "date": { "type": "string", "format": "date" },
+                        "salesCount": { "type": "integer" },
+                        "units": { "type": "integer" },
+                        "giftsDelivered": { "type": "integer" },
+                        "nextAssignmentDate": { "type": ["string", "null"], "format": "date" },
+                        "undelivered": { "type": "array", "items": { "type": "object" } },
+                        "giftBalances": { "type": "array", "items": { "type": "object" } },
+                        "interactions": { "type": "object" },
+                        "field": {
+                          "type": ["object", "null"],
+                          "properties": {
+                            "assignmentId": { "type": "string", "format": "uuid" },
+                            "campaignId": { "type": "string", "format": "uuid" },
+                            "campaignName": { "type": "string" },
+                            "campaignStatus": { "type": "string" },
+                            "pointOfSale": {
+                              "type": "object",
+                              "properties": {
+                                "id": { "type": "string", "format": "uuid" },
+                                "name": { "type": "string" },
+                                "address": { "type": ["string", "null"] }
+                              }
+                            },
+                            "shiftStart": { "type": ["string", "null"] },
+                            "shiftEnd": { "type": ["string", "null"] },
+                            "closedReason": {
+                              "enum": [null, "campaign_not_active", "rules_unavailable"]
+                            },
+                            "products": { "type": "array", "items": { "type": "object" } },
+                            "stockItems": { "type": "array", "items": { "type": "object" } },
+                            "promotions": { "type": "array", "items": { "type": "object" } },
+                            "customerFields": { "type": ["object", "null"] }
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
               }
             }
           },
@@ -13346,7 +13390,14 @@
         "summary": "Create issues",
         "x-permission": "issue.create",
         "security": [{ "bearerAuth": [] }],
-        "parameters": [],
+        "parameters": [
+          {
+            "in": "header",
+            "name": "Idempotency-Key",
+            "required": false,
+            "schema": { "type": "string", "format": "uuid" }
+          }
+        ],
         "requestBody": {
           "required": true,
           "content": {

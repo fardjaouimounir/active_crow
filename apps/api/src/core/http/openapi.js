@@ -168,7 +168,7 @@ function operationDocument(config) {
             {
               in: 'header',
               name: 'Idempotency-Key',
-              required: true,
+              required: config.idempotent === true,
               schema: { type: 'string', format: 'uuid' },
             },
           ]

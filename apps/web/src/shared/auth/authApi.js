@@ -21,7 +21,7 @@ export async function me() {
 }
 
 export async function logout() {
-  await apiClient.post('/auth/logout');
+  await apiClient.post('/auth/logout', undefined, { timeout: 20_000 });
 }
 
 /** @param {{ currentPassword: string, newPassword: string }} input @returns {Promise<SessionPayload>} */

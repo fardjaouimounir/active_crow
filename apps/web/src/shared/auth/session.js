@@ -2,6 +2,7 @@
 import { apiClient } from '../api/client.js';
 import * as authApi from './authApi.js';
 import { authStore } from './authStore.js';
+import { clearFieldDrafts } from './fieldDrafts.js';
 import { installAuthInterceptors } from './interceptors.js';
 import { tokenStore } from './tokenStore.js';
 
@@ -20,11 +21,14 @@ export function applySession({ accessToken, user }) {
  */
 export function clearSession(endedBy = 'expired') {
   tokenStore.clear();
+  if (endedBy === 'logout') clearFieldDrafts();
   authStore.setAnonymous(endedBy);
 }
 
 async function rotate() {
-  applySession(await authApi.refresh());
+  const version = authStore.getSessionVersion();
+  const payload = await authApi.refresh();
+  if (version === authStore.getSessionVersion() && !authStore.isClosing()) applySession(payload);
 }
 
 let inflight = null;
@@ -67,6 +71,8 @@ export function bootstrapSession() {
 
 /** Ends the session on the server (best effort) and locally. */
 export async function logout() {
+  authStore.beginLogout();
+  clearFieldDrafts();
   try {
     await authApi.logout();
   } finally {

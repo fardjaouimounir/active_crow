@@ -8,6 +8,8 @@ const NO_RETRY = new Set(['/auth/login', '/auth/refresh', '/auth/logout']);
 
 /** @param {string | undefined} url */
 const isNoRetry = (url) => NO_RETRY.has((url ?? '').split('?')[0]);
+const staleFieldRequest = (config) =>
+  config.signal?.aborted || config.fieldSessionCheck?.() === false;
 
 /**
  * @param {import('axios').AxiosInstance} client
@@ -19,6 +21,7 @@ const isNoRetry = (url) => NO_RETRY.has((url ?? '').split('?')[0]);
  */
 export function installAuthInterceptors(client, { getAccessToken, refresh, onSessionLost }) {
   client.interceptors.request.use((config) => {
+    if (staleFieldRequest(config)) throw new Error('Request session has ended');
     const token = getAccessToken();
     if (token && !config.headers.has('Authorization')) {
       config.headers.set('Authorization', `Bearer ${token}`);
@@ -34,12 +37,14 @@ export function installAuthInterceptors(client, { getAccessToken, refresh, onSes
       if (error?.status !== 401 || !config || config._authRetried || isNoRetry(config.url)) {
         throw error;
       }
+      if (staleFieldRequest(config)) throw error;
       try {
         await refresh();
       } catch {
-        onSessionLost();
+        if (!staleFieldRequest(config)) onSessionLost();
         throw error;
       }
+      if (staleFieldRequest(config)) throw error;
       config._authRetried = true;
       config.headers.set('Authorization', `Bearer ${getAccessToken()}`);
       return client.request(config);

@@ -212,10 +212,35 @@ export const routes = [
         element: <RequireSurface surface="field" />,
         children: [
           {
-            index: true,
             lazy: async () => ({
               Component: (await import('./layouts/FieldLayout.jsx')).FieldLayout,
             }),
+            children: [
+              {
+                index: true,
+                lazy: async () => ({
+                  Component: (await import('../surfaces/field/Today.jsx')).Today,
+                }),
+              },
+              {
+                path: 'attendance',
+                lazy: async () => ({
+                  Component: (await import('../surfaces/field/Attendance.jsx')).Attendance,
+                }),
+              },
+              {
+                path: 'sale',
+                lazy: async () => ({
+                  Component: (await import('../surfaces/field/Sale.jsx')).Sale,
+                }),
+              },
+              {
+                path: 'issue',
+                lazy: async () => ({
+                  Component: (await import('../surfaces/field/Issue.jsx')).Issue,
+                }),
+              },
+            ],
           },
         ],
       },

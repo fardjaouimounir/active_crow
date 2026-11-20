@@ -13,6 +13,7 @@ export function registerIssuesOpenApi(registry) {
     operation('post', '/issues', 'Create issues', 'issue.create', {
       body: schema.issueCreate,
       status: 201,
+      idempotent: 'optional',
       multipart: { fields: schema.issueCreate, multiple: true },
     }),
   );

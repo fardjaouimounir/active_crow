@@ -6,6 +6,7 @@ import { requirePermission } from '../../core/authz/index.js';
 import { NotFoundError } from '../../core/errors/index.js';
 import { uploadIssueAttachments } from './issues.upload.js';
 import { validate } from '../../core/http/index.js';
+import { requireIdempotencyKey } from '../../core/http/idempotency.js';
 import * as controller from './issues.controller.js';
 const params = z.strictObject({ id: z.uuid() });
 const empty = z.strictObject({});
@@ -28,6 +29,8 @@ export function createIssuesRouter() {
     requirePermission('issue.create'),
     uploadIssueAttachments,
     validate({ query: empty, body: schema.issueCreate }),
+    (req, res, next) =>
+      req.get('Idempotency-Key') === undefined ? next() : requireIdempotencyKey(req, res, next),
     controller.create,
   );
   router.get(

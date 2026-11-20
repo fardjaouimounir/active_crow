@@ -224,5 +224,45 @@ export const interactions = (db, scope, animateurId, workDate) =>
     where: scoped(agencyWhere(scope), { animateurId, workDate }),
     _sum: { count: true },
   });
+export const fieldSchedule = (db, scope, day) =>
+  db.assignment.findMany({
+    where: scoped(agencyWhere(scope), {
+      animateurId: scope.userId,
+      status: 'approved',
+      endDate: { gte: day },
+    }),
+    orderBy: [{ startDate: 'asc' }, { id: 'asc' }],
+    select: {
+      id: true,
+      startDate: true,
+      endDate: true,
+      workDays: true,
+      shiftStart: true,
+      shiftEnd: true,
+      pointOfSale: { select: { id: true, name: true, address: true } },
+      campaign: { select: { id: true, name: true, status: true, clientId: true } },
+    },
+  });
+export async function fieldCatalog(db, scope, campaign) {
+  const products = await db.campaignProduct.findMany({
+    where: scoped(agencyWhere(scope), { campaignId: campaign.id, product: { deletedAt: null } }),
+    select: { product: { select: { id: true, name: true, unitLabel: true } } },
+    orderBy: [{ product: { name: 'asc' } }, { productId: 'asc' }],
+  });
+  const stockItems = await db.stockItem.findMany({
+    where: scoped(agencyWhere(scope), { clientId: campaign.clientId, deletedAt: null }),
+    select: { id: true, name: true, kind: true },
+    orderBy: [{ name: 'asc' }, { id: 'asc' }],
+  });
+  return { products: products.map(({ product }) => product), stockItems };
+}
+export const deliveredToday = (db, scope, animateurId, from, to) =>
+  db.giftEntitlement.aggregate({
+    where: scoped(agencyWhere(scope), {
+      sale: { animateurId },
+      distributionMovement: { createdAt: { gte: from, lt: to } },
+    }),
+    _sum: { quantity: true },
+  });
 export const customer = (db, scope, id) =>
   db.customer.findFirst({ where: scoped(agencyWhere(scope), { id }) });

@@ -23,10 +23,14 @@ const INITIAL = Object.freeze({ status: 'loading', user: null });
 
 /** @type {AuthState} */
 let state = INITIAL;
+let sessionVersion = 0;
+let closing = false;
 const listeners = new Set();
 
 function setState(next) {
+  if (state.user?.id !== next.user?.id || next.status !== 'authenticated') sessionVersion++;
   state = Object.freeze(next);
+  closing = false;
   for (const listener of listeners) listener();
 }
 
@@ -38,6 +42,13 @@ export const authStore = Object.freeze({
   },
   /** @returns {AuthState} */
   getSnapshot: () => state,
+  getSessionVersion: () => sessionVersion,
+  isClosing: () => closing,
+  beginLogout() {
+    closing = true;
+    sessionVersion++;
+    for (const listener of listeners) listener();
+  },
   /** @param {SessionUser} user */
   setUser(user) {
     setState({ status: 'authenticated', user });

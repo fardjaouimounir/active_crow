@@ -1,6 +1,8 @@
 import tailwindcss from '@tailwindcss/vite';
 import react from '@vitejs/plugin-react';
 import { defineConfig, loadEnv } from 'vite';
+import { VitePWA } from 'vite-plugin-pwa';
+import { fieldPwa } from './field-pwa.js';
 
 export default defineConfig(({ mode }) => {
   // Load every variable from apps/web/.env* (not only VITE_*): these are dev-server settings,
@@ -10,7 +12,7 @@ export default defineConfig(({ mode }) => {
   const webPort = Number(env.WEB_PORT ?? 5173);
 
   return {
-    plugins: [react(), tailwindcss()],
+    plugins: [react(), tailwindcss(), VitePWA(fieldPwa)],
     server: {
       port: webPort,
       strictPort: true,

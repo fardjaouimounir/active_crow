@@ -118,6 +118,50 @@ describe('Prompt 12 sales', () => {
     }
   });
 
+  it('supplies the current field catalog, rule and next work date without exposing other assignments', async () => {
+    const context = await setup({ entries: false });
+    const summary = await get(context.animateurAuth, '/me/sales/today');
+    expect(summary.field).toMatchObject({
+      assignmentId: context.assignment.id,
+      campaignId: context.id,
+      campaignStatus: 'active',
+      products: [{ id: context.product.id }],
+      stockItems: [{ id: context.gift.id }],
+      promotions: [{ name: 'Tiered gift' }],
+      customerFields: { phone: 'optional' },
+      closedReason: null,
+    });
+    expect(summary.nextAssignmentDate > summary.date).toBe(true);
+    expect((await get('animateur', '/me/sales/today')).field).toBeNull();
+    await prisma.campaign.update({ where: { id: context.id }, data: { status: 'suspended' } });
+    expect((await get(context.animateurAuth, '/me/sales/today')).field.closedReason).toBe(
+      'campaign_not_active',
+    );
+  });
+
+  it('replays a field issue as one submission while keeping the desktop route compatible', async () => {
+    const context = await setup({ entries: false });
+    const body = {
+      campaignId: context.id,
+      pointOfSaleId: context.pointOfSale.id,
+      stockItemId: context.gift.id,
+      category: 'stock_shortage',
+      title: 'Restock request',
+    };
+    const key = randomUUID();
+    const first = await world.ok(
+      world.call(context.animateurAuth, 'post', '/issues', body, { key }),
+      201,
+    );
+    const replay = await world.call(context.animateurAuth, 'post', '/issues', body, { key });
+    expect(replay.headers['idempotent-replayed']).toBe('true');
+    expect(replay.body.data.id).toBe(first.id);
+    expect(await prisma.issue.count({ where: { campaignId: context.id, title: body.title } })).toBe(
+      1,
+    );
+    await world.ok(world.send('post', '/issues', 'supervisor', body), 201);
+  });
+
   it('uses the highest tier, records movement and numbers, and replays the exact response', async () => {
     const context = await setup({ maxPerCustomer: 1 });
     await restock(context, 8);

@@ -1,4 +1,4 @@
-import { ERROR_CODES } from '@fieldflow/shared';
+import { algerianMobileNumber, ERROR_CODES } from '@fieldflow/shared';
 import { AppError, NotFoundError } from '../../core/errors/index.js';
 
 export const problem = (code, status, message, details) =>
@@ -9,10 +9,9 @@ export function required(value) {
 }
 export function normalizePhone(value) {
   if (!value) return undefined;
-  const input = value.replace(/[\s-]/g, '');
-  const match = /^(?:0|\+213|00213)([567][0-9]{8})$/.exec(input);
-  if (!match) throw problem('INVALID_PHONE', 422, 'Enter an Algerian mobile number');
-  return '+213' + match[1];
+  const phone = algerianMobileNumber(value);
+  if (!phone) throw problem('INVALID_PHONE', 422, 'Enter an Algerian mobile number');
+  return phone;
 }
 export function maskedCustomer(row) {
   if (!row) return null;

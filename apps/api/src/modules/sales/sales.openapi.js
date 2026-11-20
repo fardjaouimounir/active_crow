@@ -58,5 +58,49 @@ export function registerSalesOpenApi(registry) {
     list: true,
   });
   add('get', '/sales/{id}', 'Read a sale and its recorded outcomes', 'sale.read');
-  add('get', '/me/sales/today', 'Read today’s sales and interactions', 'sale.record');
+  add(
+    'get',
+    '/me/sales/today',
+    'Read today’s schedule, sales, field catalog, and interactions',
+    'sale.record',
+    {
+      dataSchema: {
+        type: 'object',
+        properties: {
+          date: { type: 'string', format: 'date' },
+          salesCount: { type: 'integer' },
+          units: { type: 'integer' },
+          giftsDelivered: { type: 'integer' },
+          nextAssignmentDate: { type: ['string', 'null'], format: 'date' },
+          undelivered: { type: 'array', items: { type: 'object' } },
+          giftBalances: { type: 'array', items: { type: 'object' } },
+          interactions: { type: 'object' },
+          field: {
+            type: ['object', 'null'],
+            properties: {
+              assignmentId: { type: 'string', format: 'uuid' },
+              campaignId: { type: 'string', format: 'uuid' },
+              campaignName: { type: 'string' },
+              campaignStatus: { type: 'string' },
+              pointOfSale: {
+                type: 'object',
+                properties: {
+                  id: { type: 'string', format: 'uuid' },
+                  name: { type: 'string' },
+                  address: { type: ['string', 'null'] },
+                },
+              },
+              shiftStart: { type: ['string', 'null'] },
+              shiftEnd: { type: ['string', 'null'] },
+              closedReason: { enum: [null, 'campaign_not_active', 'rules_unavailable'] },
+              products: { type: 'array', items: { type: 'object' } },
+              stockItems: { type: 'array', items: { type: 'object' } },
+              promotions: { type: 'array', items: { type: 'object' } },
+              customerFields: { type: ['object', 'null'] },
+            },
+          },
+        },
+      },
+    },
+  );
 }

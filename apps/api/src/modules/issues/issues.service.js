@@ -81,8 +81,8 @@ async function attach(tx, actor, issueId, files, commentId) {
   }
 }
 
-function create(actor, input, files) {
-  return fileService.transaction(async (tx) => {
+function create(actor, input, files, transaction = fileService.transaction) {
+  return transaction(async (tx) => {
     const { agencyId } = actor;
     await tx.$queryRaw`SELECT id FROM campaigns WHERE id = ${input.campaignId}::uuid AND agency_id = ${agencyId}::uuid FOR SHARE`;
     const campaign = await repo.campaignForIssue(tx, actor, input.campaignId);

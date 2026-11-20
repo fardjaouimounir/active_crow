@@ -4,7 +4,7 @@ import { ScopeService } from '../../core/authz/index.js';
 import { events } from '../../core/events/index.js';
 import { runIdempotent } from '../../core/http/idempotency.js';
 import { businessDate, clock } from '../../core/time/clock.js';
-import { assertFieldEntry } from '../../core/time/fieldEntry.js';
+import { assertFieldEntry, coversDay } from '../../core/time/fieldEntry.js';
 import { prisma } from '../../db/client.js';
 import { withTransaction } from '../../db/transaction.js';
 import { ruleSetsService } from '../campaigns/ruleSets.service.js';
@@ -402,8 +402,10 @@ export function customerDetail(actor, id) {
 }
 export async function today(actor) {
   const scope = ScopeService.resolve(actor);
-  const date = businessDate();
-  const [rows, missed, counted, balances] = await Promise.all([
+  const instant = clock.now();
+  const date = businessDate(instant);
+  const midnight = new Date(date + 'T00:00:00+01:00');
+  const [rows, missed, counted, balances, schedule, delivered] = await Promise.all([
     repo.sales(prisma, scope, {
       animateurId: actor.id,
       status: 'recorded',
@@ -412,11 +414,54 @@ export async function today(actor) {
     repo.sales(prisma, scope, { animateurId: actor.id, ...withUndelivered }),
     repo.interactions(prisma, scope, actor.id, dateValue(date)),
     inventoryMine(actor, 'gift'),
+    repo.fieldSchedule(prisma, scope, dateValue(date)),
+    repo.deliveredToday(prisma, scope, actor.id, midnight, new Date(+midnight + 86_400_000)),
   ]);
+  const current = schedule.find((row) => coversDay(row, date));
+  let nextAssignmentDate = null;
+  const tomorrow = +dateValue(date) + 86_400_000;
+  for (const row of schedule) {
+    const start = Math.max(tomorrow, +row.startDate);
+    for (let offset = 0; offset < 7; offset++) {
+      const candidate = new Date(start + offset * 86_400_000).toISOString().slice(0, 10);
+      if (!coversDay(row, candidate)) continue;
+      if (!nextAssignmentDate || candidate < nextAssignmentDate) nextAssignmentDate = candidate;
+      break;
+    }
+  }
+  let field = null;
+  if (current) {
+    const { campaign, id, pointOfSale, shiftStart, shiftEnd } = current;
+    const catalog = await repo.fieldCatalog(prisma, scope, campaign);
+    const rule =
+      campaign.status === 'active'
+        ? await ruleSetsService.effective(scope, campaign.id, instant).catch((error) => {
+            if (error.status === 404) return null;
+            throw error;
+          })
+        : null;
+    field = {
+      assignmentId: id,
+      campaignId: campaign.id,
+      campaignName: campaign.name,
+      campaignStatus: campaign.status,
+      pointOfSale,
+      shiftStart: shiftStart?.toISOString().slice(11, 16) ?? null,
+      shiftEnd: shiftEnd?.toISOString().slice(11, 16) ?? null,
+      closedReason:
+        campaign.status !== 'active' ? 'campaign_not_active' : rule ? null : 'rules_unavailable',
+      ...catalog,
+      promotions: rule?.promotions ?? [],
+      customerFields: rule?.rules.customer_fields ?? null,
+    };
+  }
   return {
     date,
     salesCount: rows.length,
     units: rows.reduce((sum, row) => sum + units(row.items), 0),
+    giftsDelivered: delivered._sum.quantity ?? 0,
+    field,
+    nextAssignmentDate,
     undelivered: groupUndelivered(missed),
     giftBalances: balances.balances,
     interactions: Object.fromEntries(counted.map((row) => [row.kind, row._sum.count])),
