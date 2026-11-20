@@ -20,12 +20,12 @@ export function HistoryTab({ campaignId }) {
   return (
     <ol className="grid gap-3">
       {rows.map((row) => (
-        <li key={row.id} className="border-s-2 border-slate-300 ps-3 text-sm">
+        <li key={row.id} className="border-s-2 border-control ps-3 text-sm">
           <p className="font-medium">
             {row.fromStatus ? t('campaigns.status.' + row.fromStatus) + ' → ' : ''}
             {t('campaigns.status.' + row.toStatus)}
           </p>
-          <p className="text-slate-600">
+          <p className="text-fg-2">
             {date.format(new Date(row.createdAt))}
             {row.changedBy ? ' · ' + row.changedBy.fullName : ''}
           </p>

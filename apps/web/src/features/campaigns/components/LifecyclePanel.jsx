@@ -1,4 +1,5 @@
 import { LIFECYCLE_STEPS } from '@fieldflow/shared';
+import { CircleX } from 'lucide-react';
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Link } from 'react-router';
@@ -7,6 +8,7 @@ import { ConfirmDialog, Modal } from '../../../shared/ui/Dialogs.jsx';
 import { FormField, TextInput } from '../../../shared/ui/FormControls.jsx';
 import { StatusBadge, Toast } from '../../../shared/ui/PageParts.jsx';
 import { useApiError } from '../../../shared/ui/useApiError.js';
+import { Stepper } from '../../../ui/data.jsx';
 import { useWilayas } from '../../organization/api.js';
 import { actionStyle, areaOptions, primaryStyle } from '../../organization/components/Fields.jsx';
 import { useCampaignWrite, useReadiness } from '../api.js';
@@ -23,39 +25,23 @@ const FIX_TAB = {
   AFTER_END_DATE: 'overview',
 };
 
-function Stepper({ status }) {
+/** Lifecycle position for the campaign header: planning → … → closed, with suspended / cancelled notes. */
+export function LifecycleStepper({ status }) {
   const { t } = useTranslation('common');
   const cancelled = status === 'cancelled';
-  const current = LIFECYCLE_STEPS.indexOf(status === 'suspended' ? 'active' : status);
   return (
     <div className="grid gap-2">
-      <ol aria-label={t('campaigns.lifecycle.title')} className="flex flex-wrap gap-2 text-sm">
-        {LIFECYCLE_STEPS.map((step, index) => {
-          const done = !cancelled && index < current;
-          const here = !cancelled && index === current;
-          return (
-            <li
-              key={step}
-              aria-current={here ? 'step' : undefined}
-              className={
-                'rounded-full border px-3 py-1 ' +
-                (here
-                  ? 'border-slate-900 bg-slate-900 text-white'
-                  : done
-                    ? 'border-emerald-300 bg-emerald-50 text-emerald-900'
-                    : 'border-slate-200 text-slate-500')
-              }
-            >
-              {t('campaigns.status.' + step)}
-            </li>
-          );
-        })}
-      </ol>
+      <Stepper
+        label={t('campaigns.lifecycle.title')}
+        steps={LIFECYCLE_STEPS.map((step) => ({ key: step, label: t('campaigns.status.' + step) }))}
+        current={cancelled ? null : status === 'suspended' ? 'active' : status}
+      />
       {status === 'suspended' && (
         <StatusBadge tone="warn">{t('campaigns.lifecycle.suspendedNote')}</StatusBadge>
       )}
       {cancelled && (
-        <p role="status" className="rounded-lg bg-red-50 p-3 text-sm text-red-800">
+        <p role="status" className="flex items-center gap-2 text-sm text-danger">
+          <CircleX aria-hidden="true" size={16} />
           {t('campaigns.lifecycle.cancelledNote')}
         </p>
       )}
@@ -71,24 +57,30 @@ export function BlockerList({ blockers, wilayaName }) {
   });
   const day = (iso) => date.format(new Date(iso + 'T00:00:00Z'));
   return (
-    <ul className="list-disc ps-5 text-sm">
+    <ul className="space-y-1.5 text-sm">
       {blockers.map((blocker, index) => {
         const details = blocker.details ?? {};
         const tab = FIX_TAB[blocker.code];
         return (
-          <li key={blocker.code + index}>
-            {t('campaigns.blockers.' + blocker.code, {
-              defaultValue: blocker.code,
-              wilayas: (details.wilayaIds ?? []).map(wilayaName).join(', '),
-              startDate: details.startDate ? day(details.startDate) : '',
-              endDate: details.endDate ? day(details.endDate) : '',
-              count: details.count ?? 0,
-            })}{' '}
-            {tab && (
-              <Link className="underline" to={{ search: '?tab=' + tab }}>
-                {t('campaigns.lifecycle.fixIn', { tab: t('campaigns.tabs.' + tab) })}
-              </Link>
-            )}
+          <li key={blocker.code + index} className="flex items-start gap-2">
+            <CircleX aria-hidden="true" size={14} className="mt-0.5 shrink-0 text-danger" />
+            <span>
+              {t('campaigns.blockers.' + blocker.code, {
+                defaultValue: blocker.code,
+                wilayas: (details.wilayaIds ?? []).map(wilayaName).join(', '),
+                startDate: details.startDate ? day(details.startDate) : '',
+                endDate: details.endDate ? day(details.endDate) : '',
+                count: details.count ?? 0,
+              })}{' '}
+              {tab && (
+                <Link
+                  className="text-accent-text underline underline-offset-4"
+                  to={{ search: '?tab=' + tab }}
+                >
+                  {t('campaigns.lifecycle.fixIn', { tab: t('campaigns.tabs.' + tab) })}
+                </Link>
+              )}
+            </span>
           </li>
         );
       })}
@@ -131,8 +123,7 @@ export function LifecyclePanel({ campaign }) {
     : [];
 
   return (
-    <section className="grid gap-3 rounded-xl border border-slate-200 bg-white p-5">
-      <Stepper status={campaign.status} />
+    <section className="grid gap-3 rounded-lg border border-line bg-surface p-4">
       {actions.length > 0 && (
         <div
           className="flex flex-wrap gap-2"
@@ -143,7 +134,7 @@ export function LifecyclePanel({ campaign }) {
             <button
               key={item.action}
               type="button"
-              className={item.action === 'cancel' ? actionStyle + ' text-red-700' : primaryStyle}
+              className={item.action === 'cancel' ? actionStyle + ' text-danger' : primaryStyle}
               disabled={!item.allowed || !canTransition}
               title={
                 !canTransition
@@ -195,7 +186,7 @@ export function LifecyclePanel({ campaign }) {
                 />
               )}
             </FormField>
-            <p className="text-xs text-slate-600">{t('campaigns.lifecycle.reasonHint')}</p>
+            <p className="text-xs text-fg-2">{t('campaigns.lifecycle.reasonHint')}</p>
             <Toast error message={message} />
             {blockersOfError.length > 0 && (
               <BlockerList blockers={blockersOfError} wilayaName={wilayaName} />

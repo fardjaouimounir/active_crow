@@ -7,9 +7,19 @@ import {
   Line,
   LineChart,
   ResponsiveContainer,
+  Tooltip,
   XAxis,
   YAxis,
 } from 'recharts';
+import { KpiStrip, KpiTile, TableFrame, tableClass } from '../../ui/data.jsx';
+import { buttonClass } from '../../ui/primitives.jsx';
+import {
+  chartAxis,
+  chartGrid,
+  chartLegend,
+  chartSeries,
+  chartTooltip,
+} from '../../ui/chartTheme.js';
 import { messages } from './messages.js';
 import { useReportExport } from './api.js';
 
@@ -34,6 +44,16 @@ export function useReportingText() {
   return { rtl, language, num, t: (key) => messages[key]?.[rtl ? 1 : 0] ?? key };
 }
 
+/** Attendance status → series color: good = spring family, problems stay distinguishable. */
+const STATUS_COLORS = {
+  verified: chartSeries[0],
+  pending: chartSeries[1],
+  rejected: 'var(--danger-solid)',
+  notSent: chartSeries[3],
+  absentJustified: chartSeries[4],
+  absentUnjustified: chartSeries[5],
+};
+
 const indicators = [
   ['attendance', 'attendance', 'rate', true],
   ['sales', 'sales', 'units'],
@@ -52,7 +72,9 @@ const statuses = [
   'absentJustified',
   'absentUnjustified',
 ];
-const colors = ['#147a59', '#986311', '#ae2b39', '#526174', '#325a99', '#775a96'];
+
+/** Cards where an increase is bad news. */
+const REGRESSIONS = new Set(['rejected', 'notSent', 'absentUnjustified']);
 
 /** What a client may see: no attendance, no visits (staff work), only results. */
 const CLIENT_CARDS = new Set(['sales', 'buyers', 'conversion', 'gifts', 'completion', 'target']);
@@ -69,56 +91,62 @@ export function Cards({ values, supervisor = false, view = 'staff' }) {
       ? indicators.filter(([title]) => CLIENT_CARDS.has(title))
       : indicators;
   return (
-    <dl className="grid grid-cols-2 gap-3 lg:grid-cols-4">
-      {cards.map(([title, group, field, percent]) => (
-        <div key={title} className="rounded-xl border border-slate-200 bg-white p-4">
-          <dt className="text-sm text-slate-600">{t(title)}</dt>
-          <dd className="mt-1 text-2xl font-semibold tabular-nums">
-            {num(values[group]?.[field], percent)}
-          </dd>
-          {values.previous && !supervisor && (
-            <dd className="mt-1 text-xs text-slate-600">
-              {t('previous')} {num(values.previous[group]?.[field], percent)}
-            </dd>
-          )}
-        </div>
-      ))}
-    </dl>
+    <KpiStrip>
+      {cards.map(([title, group, field, percent]) => {
+        const value = values[group]?.[field];
+        const previous = values.previous && !supervisor ? values.previous[group]?.[field] : null;
+        return (
+          <KpiTile
+            key={title}
+            label={t(title)}
+            value={value ?? null}
+            format={(number) => num(number, percent)}
+            delta={previous != null && value != null ? value - previous : null}
+            deltaFormat={(number) => num(number, percent)}
+            deltaGood={!REGRESSIONS.has(title)}
+            period={previous != null ? `${t('previous')} ${num(previous, percent)}` : undefined}
+          />
+        );
+      })}
+    </KpiStrip>
   );
 }
 
+/** Columns are [translationKey, render, numeric?]; numeric columns are right-aligned tabular figures. */
 export function ReportTable({ rows, title, columns }) {
   const { t } = useReportingText();
   return (
     <section className="report-section space-y-2">
-      {title && <h2 className="text-lg font-semibold">{title}</h2>}
+      {title && <h2 className="text-lg font-semibold tracking-tight">{title}</h2>}
       {rows.length ? (
-        <div className="overflow-x-auto rounded-lg border border-slate-200">
-          <table className="w-full text-start text-sm">
-            <thead className="bg-slate-100">
-              <tr>
-                {columns.map(([key]) => (
-                  <th key={key} scope="col" className="p-2 text-start">
-                    {t(key)}
-                  </th>
-                ))}
-              </tr>
-            </thead>
-            <tbody>
-              {rows.map((row, index) => (
-                <tr key={row.id ?? index} className="border-t border-slate-200">
-                  {columns.map(([key, render]) => (
-                    <td key={key} className="p-2">
-                      {render(row)}
-                    </td>
+        <TableFrame>
+          <div className="overflow-x-auto">
+            <table className={tableClass.table}>
+              <thead className={tableClass.head}>
+                <tr>
+                  {columns.map(([key, , numeric]) => (
+                    <th key={key} scope="col" className={tableClass.th(true, numeric)}>
+                      {t(key)}
+                    </th>
                   ))}
                 </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
+              </thead>
+              <tbody>
+                {rows.map((row, index) => (
+                  <tr key={row.id ?? index} className={tableClass.row()}>
+                    {columns.map(([key, render, numeric]) => (
+                      <td key={key} className={tableClass.td(true, numeric)}>
+                        {render(row)}
+                      </td>
+                    ))}
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </TableFrame>
       ) : (
-        <p>{t('empty')}</p>
+        <p className="text-sm text-fg-2">{t('empty')}</p>
       )}
     </section>
   );
@@ -132,10 +160,12 @@ export function BreakdownTable({ rows, title, view = 'staff' }) {
       title={t(title)}
       columns={[
         ['label', (row) => (rtl && row.labelAr) || row.label || row.id || '—'],
-        ['sales', (row) => num(row.sales.units)],
-        ...(view === 'client' ? [] : [['attendance', (row) => num(row.attendance.rate, true)]]),
-        ['buyers', (row) => num(row.customers.buyers)],
-        ...(view === 'client' ? [] : [['visits', (row) => num(row.visits.count)]]),
+        ['sales', (row) => num(row.sales.units), true],
+        ...(view === 'client'
+          ? []
+          : [['attendance', (row) => num(row.attendance.rate, true), true]]),
+        ['buyers', (row) => num(row.customers.buyers), true],
+        ...(view === 'client' ? [] : [['visits', (row) => num(row.visits.count), true]]),
       ]}
     />
   );
@@ -148,8 +178,8 @@ export function DailyChart({ rows, attendance = false }) {
   const Chart = attendance ? BarChart : LineChart;
   const title = t(attendance ? 'dailyAttendance' : 'dailySales');
   return (
-    <section className="report-section min-w-0 rounded-xl border border-slate-200 bg-white p-4">
-      <h2 className="font-semibold">{title}</h2>
+    <section className="report-section min-w-0 rounded-lg border border-line bg-surface p-4">
+      <h2 className="font-semibold tracking-tight">{title}</h2>
       {data.length ? (
         <>
           <div role="img" aria-label={title} className="report-chart mt-3 h-64" dir="ltr">
@@ -159,24 +189,30 @@ export function DailyChart({ rows, attendance = false }) {
               initialDimension={{ width: 320, height: 256 }}
             >
               <Chart data={data} accessibilityLayer>
-                <CartesianGrid strokeDasharray="3 3" />
-                <XAxis dataKey="id" reversed={rtl} tickFormatter={(value) => value.slice(5)} />
+                <CartesianGrid {...chartGrid} />
+                <XAxis
+                  {...chartAxis}
+                  dataKey="id"
+                  reversed={rtl}
+                  tickFormatter={(value) => value.slice(5)}
+                />
                 <YAxis
+                  {...chartAxis}
                   orientation={rtl ? 'right' : 'left'}
                   allowDecimals={false}
                   tickFormatter={(value) => num(value)}
                 />
-                <Legend />
+                <Tooltip {...chartTooltip} formatter={(value) => num(value)} />
+                <Legend {...chartLegend} />
                 {attendance ? (
-                  keys.map((key, index) => (
+                  keys.map((key) => (
                     <Bar
                       key={key}
                       dataKey={key}
                       name={t(key)}
                       stackId="attendance"
-                      fill={colors[index]}
-                      stroke="#fff"
-                      strokeDasharray={index % 2 ? '3 2' : undefined}
+                      fill={STATUS_COLORS[key]}
+                      stroke="var(--surface)"
                       isAnimationActive={false}
                     />
                   ))
@@ -184,8 +220,9 @@ export function DailyChart({ rows, attendance = false }) {
                   <Line
                     dataKey="sales"
                     name={t('sales')}
-                    stroke={colors[0]}
+                    stroke={chartSeries[0]}
                     strokeWidth={2}
+                    dot={false}
                     isAnimationActive={false}
                   />
                 )}
@@ -218,7 +255,7 @@ export function ExportButton({ id, filters }) {
       <button
         type="button"
         disabled={download.isPending}
-        className="min-h-10 rounded-md bg-slate-900 px-4 text-white disabled:opacity-50"
+        className={buttonClass({ variant: 'primary' })}
         onClick={() => download.mutate({ id, filters })}
       >
         {t('export')}

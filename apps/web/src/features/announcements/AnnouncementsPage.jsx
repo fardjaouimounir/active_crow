@@ -138,7 +138,7 @@ function Receipts({ id }) {
   return (
     <section className="grid gap-2 sm:grid-cols-2">
       {['read', 'notRead'].map((key) => (
-        <div key={key} className="rounded border bg-white p-3">
+        <div key={key} className="rounded border bg-surface p-3">
           <h2 className="font-medium">{t('announcements.' + key)}</h2>
           <ul className="text-sm">
             {receipts[key].map(({ id, fullName }) => (
@@ -174,7 +174,7 @@ export function AnnouncementDetailPage() {
           {t('admin.back')}
         </button>
       </PageHeader>
-      <article className="grid gap-2 rounded border bg-white p-4">
+      <article className="grid gap-2 rounded border bg-surface p-4">
         <strong>{row.author.fullName}</strong>
         <p className="whitespace-pre-wrap break-words">{row.body}</p>
       </article>
@@ -208,7 +208,8 @@ export function AnnouncementsPage() {
           <li key={row.id}>
             <Link
               className={
-                'block rounded border p-3 ' + (row.readAt ? 'bg-white' : 'bg-blue-50 font-semibold')
+                'block rounded border p-3 ' +
+                (row.readAt ? 'bg-surface' : 'bg-info-soft font-semibold')
               }
               to={'/app/announcements/' + row.id}
             >

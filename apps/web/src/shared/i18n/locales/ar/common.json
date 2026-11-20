@@ -111,7 +111,7 @@
       "pos_without_location": "إحداثيات نقطة البيع غير متاحة"
     }
   },
-  "appName": "FieldFlow",
+  "appName": "ActiCrew",
   "surfaces": {
     "app": "مساحة عمل الوكالة",
     "field": "تطبيق الميدان",
@@ -850,5 +850,43 @@
       "adjustments": "التسويات",
       "disputes": "النزاعات"
     }
+  },
+  "brand": {
+    "tagline": "مستقبل فرق التنشيط"
+  },
+  "ui": {
+    "density": {
+      "label": "كثافة الصفوف",
+      "compact": "مضغوط",
+      "comfortable": "مريح"
+    },
+    "theme": {
+      "toLight": "التبديل إلى السمة الفاتحة",
+      "toDark": "التبديل إلى السمة الداكنة",
+      "label": "السمة"
+    },
+    "sidebar": {
+      "collapse": "طيّ الشريط الجانبي",
+      "expand": "توسيع الشريط الجانبي"
+    },
+    "skip": "تخطَّ إلى المحتوى",
+    "aiGenerated": "مُولَّد بالذكاء الاصطناعي"
+  },
+  "shell": {
+    "groups": {
+      "overview": "نظرة عامة",
+      "campaigns": "الحملات",
+      "fieldOps": "العمليات الميدانية",
+      "stock": "المخزون",
+      "people": "الأشخاص والشبكة",
+      "clients": "العملاء",
+      "ai": "مراجعة الذكاء الاصطناعي",
+      "settings": "الإعدادات"
+    },
+    "breadcrumbs": "مسار التنقل",
+    "status": "حالة النظام",
+    "openSearch": "ابحث أو انتقل إلى…",
+    "userMenu": "الحساب",
+    "new": "جديد"
   }
 }

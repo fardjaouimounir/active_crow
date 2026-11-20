@@ -111,7 +111,7 @@
       "pos_without_location": "Point de Vente has no coordinates"
     }
   },
-  "appName": "FieldFlow",
+  "appName": "ActiCrew",
   "surfaces": {
     "app": "Agency workspace",
     "field": "Field app",
@@ -850,5 +850,43 @@
       "adjustments": "Adjustments",
       "disputes": "Disputes"
     }
+  },
+  "brand": {
+    "tagline": "The future of active crews"
+  },
+  "ui": {
+    "density": {
+      "label": "Row density",
+      "compact": "Compact",
+      "comfortable": "Comfortable"
+    },
+    "theme": {
+      "toLight": "Switch to light theme",
+      "toDark": "Switch to dark theme",
+      "label": "Theme"
+    },
+    "sidebar": {
+      "collapse": "Collapse sidebar",
+      "expand": "Expand sidebar"
+    },
+    "skip": "Skip to content",
+    "aiGenerated": "AI-generated"
+  },
+  "shell": {
+    "groups": {
+      "overview": "Overview",
+      "campaigns": "Campaigns",
+      "fieldOps": "Field ops",
+      "stock": "Stock",
+      "people": "People & network",
+      "clients": "Clients",
+      "ai": "AI review",
+      "settings": "Settings"
+    },
+    "breadcrumbs": "Breadcrumb",
+    "status": "System status",
+    "openSearch": "Search or jump to…",
+    "userMenu": "Account",
+    "new": "New"
   }
 }

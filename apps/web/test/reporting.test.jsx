@@ -78,7 +78,7 @@ it('renders the director dashboard with Arabic labels and RTL', async () => {
   const title = await screen.findByRole('heading', { name: 'لوحة الأداء' });
   expect(document.documentElement.dir).toEqual('rtl');
   expect(title.outerHTML).toMatchInlineSnapshot(
-    `"<h1 class="text-2xl font-semibold">لوحة الأداء</h1>"`,
+    `"<h1 class="text-2xl font-semibold tracking-tight">لوحة الأداء</h1>"`,
   );
 });
 

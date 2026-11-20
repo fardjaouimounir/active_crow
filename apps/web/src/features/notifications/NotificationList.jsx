@@ -53,13 +53,13 @@ export function NotificationList({ query, onNavigate }) {
   const items = query.data.data;
   if (!items.length) return <EmptyState />;
   return (
-    <ul className="divide-y divide-slate-100">
+    <ul className="divide-y divide-line">
       {items.map((item) => {
         const Icon = icons[item.entityType] ?? Bell;
         return (
-          <li key={item.id} className={item.readAt ? '' : 'bg-blue-50'}>
+          <li key={item.id} className={item.readAt ? '' : 'bg-info-soft'}>
             <Link
-              className="flex items-center gap-3 p-3 text-sm hover:bg-slate-100"
+              className="flex items-center gap-3 p-3 text-sm hover:bg-sunken"
               to={destination(item)}
               onClick={() => {
                 if (!item.readAt) mutation.mutate({ path: '/notifications/' + item.id + '/read' });
@@ -69,9 +69,7 @@ export function NotificationList({ query, onNavigate }) {
               <Icon className="size-4 shrink-0" aria-hidden />
               <span>
                 {t('notices.events.' + item.type.replace('.', '_'))}
-                <small className="block text-slate-500">
-                  {date.format(new Date(item.createdAt))}
-                </small>
+                <small className="block text-fg-3">{date.format(new Date(item.createdAt))}</small>
               </span>
             </Link>
           </li>

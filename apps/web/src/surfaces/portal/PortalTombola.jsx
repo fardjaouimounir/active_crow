@@ -2,13 +2,14 @@ import { useState } from 'react';
 import { Link, useParams } from 'react-router';
 import { useCan } from '../../shared/auth/hooks.js';
 import { Modal } from '../../shared/ui/Dialogs.jsx';
+import { ShieldCheck } from 'lucide-react';
+import { buttonClass, controlClass } from '../../ui/primitives.jsx';
 import { useApiError } from '../../shared/ui/useApiError.js';
 import { usePortalQuery, usePortalText, usePortalWrite, useVerifyDraw } from './api.js';
 
-const field = 'min-h-10 w-full rounded-md border border-slate-300 bg-white px-2';
-const button =
-  'min-h-10 rounded-md border border-slate-300 bg-white px-3 text-sm disabled:opacity-50';
-const primary = 'min-h-10 rounded-md bg-slate-900 px-4 text-white disabled:opacity-50';
+const field = controlClass;
+const button = buttonClass({ variant: 'secondary' });
+const primary = buttonClass({ variant: 'primary' });
 
 const randomPhrase = () =>
   Array.from(crypto.getRandomValues(new Uint8Array(8)), (byte) =>
@@ -44,7 +45,7 @@ function DrawForm({ tombola }) {
       { onSettled: () => setConfirming(false) },
     );
   return (
-    <section className="space-y-3 rounded-xl border border-slate-200 bg-white p-4">
+    <section className="space-y-3 rounded-xl border border-line bg-surface p-4">
       <h2 className="text-lg font-semibold">{t('drawTitle')}</h2>
       <label className="block space-y-1 text-sm">
         <span>{t('nonce')}</span>
@@ -60,7 +61,7 @@ function DrawForm({ tombola }) {
             {t('generateNonce')}
           </button>
         </div>
-        <span className="text-xs text-slate-600">{t('nonceHelp')}</span>
+        <span className="text-xs text-fg-2">{t('nonceHelp')}</span>
       </label>
       {labels.map((label, index) => (
         <label key={index} className="block space-y-1 text-sm">
@@ -77,7 +78,7 @@ function DrawForm({ tombola }) {
         </label>
       ))}
       {message && (
-        <p role="alert" className="text-sm text-red-700">
+        <p role="alert" className="text-sm text-danger">
           {message}
         </p>
       )}
@@ -134,7 +135,7 @@ function UnreachableDialog({ tombolaId, winner, close }) {
         />
       </label>
       {message && (
-        <p role="alert" className="mt-2 text-sm text-red-700">
+        <p role="alert" className="mt-2 text-sm text-danger">
           {message}
         </p>
       )}
@@ -194,13 +195,13 @@ export function WinnersTable({ tombolaId, staff }) {
         )}
       </div>
       {message && (
-        <p role="alert" className="text-sm text-red-700">
+        <p role="alert" className="text-sm text-danger">
           {message}
         </p>
       )}
-      <div className="overflow-x-auto rounded-lg border border-slate-200 bg-white">
+      <div className="overflow-x-auto rounded-lg border border-line bg-surface">
         <table className="w-full text-start text-sm">
-          <thead className="bg-slate-100">
+          <thead className="bg-sunken">
             <tr>
               {['rank', 'entryNumber', 'customer', 'prize', 'delivery'].map((key) => (
                 <th key={key} scope="col" className="p-2 text-start">
@@ -212,7 +213,7 @@ export function WinnersTable({ tombolaId, staff }) {
           </thead>
           <tbody>
             {rows.map((row) => (
-              <tr key={row.id} className="border-t border-slate-200">
+              <tr key={row.id} className="border-t border-line">
                 <td className="p-2">{rowLabel(row)}</td>
                 <td className="p-2 tabular-nums">
                   <bdi>{row.entryNumber}</bdi>
@@ -228,7 +229,7 @@ export function WinnersTable({ tombolaId, staff }) {
                   {t('delivery.' + row.deliveryStatus)}
                   {row.deliveredAt && <> · {dateTime(row.deliveredAt)}</>}
                   {row.unreachableReason && (
-                    <span className="block text-xs text-slate-600" dir="auto">
+                    <span className="block text-xs text-fg-2" dir="auto">
                       {row.unreachableReason}
                     </span>
                   )}
@@ -313,14 +314,14 @@ function Verification({ tombolaId, committedHash }) {
           role="status"
           className={
             'rounded-md p-3 text-sm ' +
-            (verify.data.result.ok ? 'bg-emerald-50 text-emerald-900' : 'bg-red-50 text-red-900')
+            (verify.data.result.ok ? 'bg-success-soft text-success' : 'bg-danger-soft text-danger')
           }
         >
           {verify.data.result.ok ? '✓ ' + t('verifyOk') : '✗ ' + t('verifyFail')}
         </p>
       )}
       {verify.isError && (
-        <p role="alert" className="text-sm text-red-700">
+        <p role="alert" className="text-sm text-danger">
           {t('error')}
         </p>
       )}
@@ -360,15 +361,15 @@ export function PortalTombola({ staff = false }) {
         {t('back')}
       </Link>
       <header className="space-y-1">
-        <p className="text-sm text-slate-600" dir="auto">
+        <p className="text-sm text-fg-2" dir="auto">
           {tombola.campaign.name}
         </p>
-        <h1 className="text-2xl font-semibold" dir="auto">
+        <h1 className="text-2xl font-semibold tracking-tight" dir="auto">
           {tombola.name}
         </h1>
         <p className="text-sm">{t('tombolaStatus.' + tombola.status)}</p>
       </header>
-      <dl className="grid gap-3 rounded-xl border border-slate-200 bg-white p-4 text-sm sm:grid-cols-2">
+      <dl className="grid gap-3 rounded-xl border border-line bg-surface p-4 text-sm sm:grid-cols-2">
         <div>
           <dt className="font-medium">{t('rules')}</dt>
           <dd>
@@ -398,9 +399,12 @@ export function PortalTombola({ staff = false }) {
         </div>
       </dl>
       {tombola.commitment && (
-        <section className="space-y-1 rounded-xl border border-slate-200 bg-white p-4 text-sm">
-          <h2 className="font-semibold">{t('commitment')}</h2>
-          <p className="text-slate-600">{t('commitmentHelp')}</p>
+        <section className="space-y-1.5 rounded-lg border border-accent-line bg-surface p-4 text-sm">
+          <h2 className="flex items-center gap-2 font-semibold tracking-tight">
+            <ShieldCheck aria-hidden="true" size={16} className="text-accent-text" />
+            {t('commitment')}
+          </h2>
+          <p className="text-fg-2">{t('commitmentHelp')}</p>
           <p>
             {t('eligibleEntries')}: <b>{number(tombola.commitment.eligibleCount)}</b> ·{' '}
             {t('committedAt')}: {dateTime(tombola.commitment.committedAt)}

@@ -14,6 +14,7 @@ import { useNavigate, useSearchParams } from 'react-router';
 import { landingPathFor } from '../../../shared/auth/guards.jsx';
 import { useAuth } from '../../../shared/auth/hooks.js';
 import { TextField } from '../../../shared/ui/TextField.jsx';
+import { buttonClass } from '../../../ui/primitives.jsx';
 import { useChangePasswordMutation, useLogoutMutation } from '../api.js';
 import { AuthCard } from '../components/AuthCard.jsx';
 import { apiErrorMessage } from '../errorMessage.js';
@@ -41,7 +42,7 @@ function PolicyHints({ value, failed }) {
               key={rule.id}
               data-rule={rule.id}
               data-met={met}
-              className={`flex items-center gap-2 ${met ? 'text-emerald-700' : failed.includes(rule.id) ? 'text-red-700' : ''}`}
+              className={`flex items-center gap-2 ${met ? 'text-success' : failed.includes(rule.id) ? 'text-danger' : ''}`}
             >
               <Icon aria-hidden="true" className="size-3.5 shrink-0" />
               {t(`policy.${rule.id}`, RULE_PARAMS[rule.id])}
@@ -49,7 +50,7 @@ function PolicyHints({ value, failed }) {
           );
         })}
         {extra.map((id) => (
-          <li key={id} data-rule={id} className="flex items-center gap-2 text-red-700">
+          <li key={id} data-rule={id} className="flex items-center gap-2 text-danger">
             <CircleAlert aria-hidden="true" className="size-3.5 shrink-0" />
             {t(`policy.${id}`, RULE_PARAMS[id])}
           </li>
@@ -118,9 +119,9 @@ export function ChangePasswordPage() {
         {errors.root?.server?.message && (
           <div
             role="alert"
-            className="flex items-start gap-2 rounded-lg bg-red-50 p-3 text-sm text-red-900"
+            className="flex items-start gap-2 rounded-lg bg-danger-soft p-3 text-sm text-danger"
           >
-            <CircleAlert aria-hidden="true" className="mt-0.5 size-4 shrink-0 text-red-600" />
+            <CircleAlert aria-hidden="true" className="mt-0.5 size-4 shrink-0 text-danger" />
             <span>{errors.root?.server?.message}</span>
           </div>
         )}
@@ -168,7 +169,7 @@ export function ChangePasswordPage() {
         <button
           type="submit"
           disabled={busy}
-          className="w-full rounded-lg bg-slate-900 px-4 py-2 font-medium text-white hover:bg-slate-800 disabled:cursor-not-allowed disabled:opacity-60"
+          className={buttonClass({ variant: 'primary', size: 'lg', className: 'w-full' })}
         >
           {change.isPending ? t('changePassword.submitting') : t('changePassword.submit')}
         </button>
@@ -176,7 +177,7 @@ export function ChangePasswordPage() {
           type="button"
           onClick={() => logout.mutate()}
           disabled={busy}
-          className="w-full rounded-lg px-4 py-2 text-sm font-medium text-slate-600 hover:bg-slate-100 disabled:opacity-60"
+          className="w-full rounded-lg px-4 py-2 text-sm font-medium text-fg-2 hover:bg-sunken disabled:opacity-60"
         >
           {t('common:actions.logout')}
         </button>

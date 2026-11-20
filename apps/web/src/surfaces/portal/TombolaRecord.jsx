@@ -1,5 +1,6 @@
 import { useEffect } from 'react';
 import { Link, useParams } from 'react-router';
+import { PrintBrand, buttonClass } from '../../ui/primitives.jsx';
 import '../../features/reporting/report-print.css';
 import { usePortalQuery, usePortalText, useVerifyDraw } from './api.js';
 import { Hash, drawnByText } from './PortalTombola.jsx';
@@ -26,24 +27,25 @@ export function TombolaRecord({ staff = false }) {
   const rows = winners.data ?? [];
   return (
     <article className="campaign-print-report space-y-5">
+      <PrintBrand />
       <div className="report-actions flex flex-wrap gap-2">
         <Link
-          className="rounded-md border px-4 py-2"
+          className={buttonClass({ variant: 'secondary' })}
           to={staff ? `/app/tombolas/${id}` : `/portal/tombolas/${id}`}
         >
           {t('back')}
         </Link>
         <button
           type="button"
-          className="rounded-md border px-4 py-2"
+          className={buttonClass({ variant: 'secondary' })}
           onClick={() => window.print()}
         >
           {t('print')}
         </button>
       </div>
       <header className="space-y-1">
-        <p className="text-sm text-slate-600">{t('recordTitle')}</p>
-        <h1 className="text-3xl font-semibold" dir="auto">
+        <p className="text-sm text-fg-2">{t('recordTitle')}</p>
+        <h1 className="text-3xl font-semibold tracking-tight" dir="auto">
           {data.name}
         </h1>
         <p dir="auto">

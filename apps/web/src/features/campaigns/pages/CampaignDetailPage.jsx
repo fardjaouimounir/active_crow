@@ -21,7 +21,8 @@ import { CampaignStatus, formatPeriod } from '../components/CampaignStatus.jsx';
 import { CoverageTab } from '../components/CoverageTab.jsx';
 import { DocumentsTab } from '../components/DocumentsTab.jsx';
 import { HistoryTab } from '../components/HistoryTab.jsx';
-import { LifecyclePanel } from '../components/LifecyclePanel.jsx';
+import { LifecyclePanel, LifecycleStepper } from '../components/LifecyclePanel.jsx';
+import { usePageCrumb } from '../../../ui/controls.jsx';
 import { PointsOfSaleTab } from '../components/PointsOfSaleTab.jsx';
 import { ProductsTab } from '../components/ProductsTab.jsx';
 import { StockTab } from '../../inventory/StockTab.jsx';
@@ -63,7 +64,7 @@ function Overview({ campaign, canManage }) {
     <div className="grid gap-4">
       <LifecyclePanel campaign={campaign} />
       <div className="grid gap-4 lg:grid-cols-3">
-        <section className="rounded-xl border border-slate-200 bg-white p-5 lg:col-span-2">
+        <section className="rounded-lg border border-line bg-surface p-4 lg:col-span-2">
           {saved && <Toast message={t('admin.saved')} />}
           {canManage && anyField ? (
             <CampaignForm
@@ -92,12 +93,12 @@ function Overview({ campaign, canManage }) {
             </dl>
           )}
         </section>
-        <section className="rounded-xl border border-slate-200 bg-white p-5">
-          <dl className="grid gap-3 text-sm">
+        <section className="rounded-lg border border-line bg-surface p-4">
+          <dl className="grid gap-2.5 text-sm">
             {Object.entries(campaign.counts).map(([key, value]) => (
               <div key={key} className="flex justify-between gap-3">
                 <dt className="font-medium">{t('campaigns.counts.' + key)}</dt>
-                <dd>{number.format(value)}</dd>
+                <dd className="tnum">{number.format(value)}</dd>
               </div>
             ))}
           </dl>
@@ -123,6 +124,7 @@ export function CampaignDetailPage() {
   const { filters, setFilters } = useFilters();
   const query = useCampaign(id);
   const { message } = useApiError(query.error);
+  usePageCrumb(query.data?.data.name);
   const tabs = TABS.filter(
     (item) =>
       (showAssignments || item !== 'assignments') &&
@@ -142,15 +144,15 @@ export function CampaignDetailPage() {
   const area = TAB_AREA[tab];
   const lockedNote =
     area && canManage && !allowed(area) ? (
-      <p role="note" className="mb-3 text-sm text-amber-800">
+      <p role="note" className="mb-3 text-sm text-warning">
         {t('campaigns.locked', { status: t('campaigns.status.' + campaign.status) })}
       </p>
     ) : null;
   return (
     <>
       <PageHeader title={campaign.name}>
-        <div className="flex flex-wrap items-center gap-3">
-          <bdi dir="ltr" className="text-sm text-slate-600">
+        <div className="flex flex-wrap items-center gap-2">
+          <bdi dir="ltr" className="text-sm text-fg-2">
             {campaign.code}
           </bdi>
           <CampaignStatus status={campaign.status} />
@@ -169,6 +171,9 @@ export function CampaignDetailPage() {
           </Link>
         </div>
       </PageHeader>
+      <div className="-mt-2 mb-5">
+        <LifecycleStepper status={campaign.status} />
+      </div>
       <Tabs
         label={campaign.name}
         value={tab}

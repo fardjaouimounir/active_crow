@@ -122,7 +122,7 @@ export function CampaignForm({ campaign, onSuccess, readOnly = false }) {
           options={APPROVER_ROLES.map((role) => ({ value: role, label: t('roles.' + role) }))}
           onChange={set('assignmentApproverRole')}
         />
-        <p className="text-xs text-slate-600">{t('campaigns.approverHelp')}</p>
+        <p className="text-xs text-fg-2">{t('campaigns.approverHelp')}</p>
       </div>
       <Toast error message={message} />
       {anyEditable && (

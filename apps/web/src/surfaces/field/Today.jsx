@@ -55,7 +55,7 @@ function StockForm({ movement, onSubmit, busy, close }) {
         </label>
       ))}
       {short && (
-        <p role="status" className="rounded-lg bg-amber-100 p-3 text-amber-950">
+        <p role="status" className="rounded-lg bg-warning-soft p-3 text-warning">
           {t('disputeWarning')}
         </p>
       )}
@@ -100,17 +100,20 @@ export function Today() {
   const active = incoming.find((row) => row.id === selected);
   return (
     <>
-      <h1 className="text-2xl font-bold">{t('today')}</h1>
+      <h1 className="text-3xl font-bold tracking-tight">{t('today')}</h1>
       {install && (
         <section className={card}>
           <p>{t('installHelp')}</p>
-          <button className={primary} onClick={installApp}>
+          <button className={secondary} onClick={installApp}>
             {t('install')}
           </button>
         </section>
       )}
       {notice && (
-        <p role="status" className="rounded-xl bg-teal-100 p-3 text-teal-950">
+        <p
+          role="status"
+          className="rounded-lg border-2 border-success-line bg-success-soft p-3 font-medium text-success"
+        >
           {t(notice)}
         </p>
       )}
@@ -127,12 +130,15 @@ export function Today() {
             </p>
           )}
           {field.closedReason ? (
-            <p className="text-amber-900">{t('closed.' + field.closedReason)}</p>
+            <p className="text-warning">{t('closed.' + field.closedReason)}</p>
           ) : (
             <>
               <QueryState query={attendance} />
               {current?.checkpoints.map((item) => (
-                <div className="flex justify-between gap-2 border-b pb-2" key={item.code}>
+                <div
+                  className="flex justify-between gap-2 border-b border-line pb-2"
+                  key={item.code}
+                >
                   <span>{item.label[i18n.resolvedLanguage] ?? item.label.en}</span>
                   <strong>
                     {item.record
@@ -173,14 +179,14 @@ export function Today() {
                 Object.values(count.interactions ?? {}).reduce((sum, value) => sum + value, 0),
               ],
             ].map(([label, value]) => (
-              <div className="rounded-xl bg-slate-100 p-3" key={label}>
+              <div className="rounded-xl bg-sunken p-3" key={label}>
                 <dt>{t(label)}</dt>
-                <dd className="text-2xl font-bold tabular-nums">{value ?? 0}</dd>
+                <dd className="text-3xl font-bold tabular-nums">{value ?? 0}</dd>
               </div>
             ))}
           </dl>
           {field && !field.closedReason && (
-            <Link className={primary} to="/field/sale">
+            <Link className={next ? secondary : primary} to="/field/sale">
               {t('newSale')}
             </Link>
           )}

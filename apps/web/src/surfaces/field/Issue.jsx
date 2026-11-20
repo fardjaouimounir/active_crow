@@ -93,7 +93,7 @@ export function Issue() {
   const issues = [...(open.data?.data ?? []), ...(inProgress.data?.data ?? [])];
   return (
     <>
-      <h1 className="text-2xl font-bold">{t('issue')}</h1>
+      <h1 className="text-3xl font-bold tracking-tight">{t('issue')}</h1>
       {saved > 0 && (
         <p role="status" className={card}>
           {t('issueRecorded')}
@@ -111,7 +111,7 @@ export function Issue() {
         <QueryState query={inProgress} />
         {open.isSuccess && inProgress.isSuccess && !issues.length && <p>{t('noIssues')}</p>}
         {issues.map((item) => (
-          <div key={item.id} className="rounded-xl bg-slate-100 p-3">
+          <div key={item.id} className="rounded-xl bg-sunken p-3">
             <p className="font-semibold">{item.title}</p>
             <p>{t('issues.status.' + item.status, { ns: 'common' })}</p>
           </div>

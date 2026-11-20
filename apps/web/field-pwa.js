@@ -2,13 +2,13 @@ export const fieldPwa = {
   registerType: 'autoUpdate',
   injectRegister: false,
   manifest: {
-    name: 'FieldFlow',
-    short_name: 'FieldFlow',
+    name: 'ActiCrew',
+    short_name: 'ActiCrew',
     start_url: '/field',
     scope: '/field',
     display: 'standalone',
-    theme_color: '#0f172a',
-    background_color: '#f8fafc',
+    theme_color: '#000000',
+    background_color: '#ffffff',
     lang: 'ar',
     dir: 'rtl',
     icons: [

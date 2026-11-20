@@ -10,7 +10,7 @@ export function PortalCampaigns() {
     <section className="space-y-4">
       <h1 className="text-2xl font-semibold">{t('campaigns')}</h1>
       {rows[0]?.client && (
-        <p className="text-slate-600">
+        <p className="text-fg-2">
           <bdi dir="auto">{rows[0].client.name}</bdi>
         </p>
       )}
@@ -19,21 +19,18 @@ export function PortalCampaigns() {
       {query.data && !rows.length && <p>{t('noCampaigns')}</p>}
       <ul className="grid gap-4 md:grid-cols-2">
         {rows.map((campaign) => (
-          <li
-            key={campaign.id}
-            className="space-y-3 rounded-xl border border-slate-200 bg-white p-4"
-          >
+          <li key={campaign.id} className="space-y-3 rounded-xl border border-line bg-surface p-4">
             <div className="flex items-start justify-between gap-2">
               <div>
                 <h2 className="text-lg font-semibold" dir="auto">
                   {campaign.name}
                 </h2>
-                <p className="text-xs text-slate-500">
+                <p className="text-xs text-fg-3">
                   <bdi>{campaign.code}</bdi> · {campaign.status}
                 </p>
               </div>
               {campaign.provisional && (
-                <span className="rounded-full bg-amber-100 px-2 py-0.5 text-xs text-amber-900">
+                <span className="rounded-full bg-warning-soft px-2 py-0.5 text-xs text-warning">
                   {t('provisional')}
                 </span>
               )}
@@ -43,7 +40,7 @@ export function PortalCampaigns() {
                 {date(campaign.startDate)} – {date(campaign.endDate)}
               </bdi>
             </p>
-            <p className="text-sm text-slate-600">
+            <p className="text-sm text-fg-2">
               {campaign.wilayas.map((item) => wilaya(item)).join(' · ')}
             </p>
             <dl className="grid grid-cols-2 gap-2 text-sm">
@@ -54,13 +51,13 @@ export function PortalCampaigns() {
                 ['completion', percent(campaign.headline.completionRate)],
               ].map(([key, value]) => (
                 <div key={key}>
-                  <dt className="text-slate-600">{t(key)}</dt>
+                  <dt className="text-fg-2">{t(key)}</dt>
                   <dd className="font-semibold tabular-nums">{value}</dd>
                 </div>
               ))}
             </dl>
             <Link
-              className="inline-block rounded-md bg-slate-900 px-4 py-2 text-sm text-white"
+              className="inline-block rounded-md bg-accent px-4 py-2 text-sm text-accent-fg"
               to={`/portal/campaigns/${campaign.id}`}
             >
               {t('open')}

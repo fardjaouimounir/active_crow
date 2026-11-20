@@ -129,7 +129,7 @@ describe('organization administration', () => {
     stub('supervisor');
     renderApp('/app/users');
     const table = await screen.findByRole('table');
-    const nav = screen.getByRole('navigation');
+    const nav = screen.getByRole('navigation', { name: 'القائمة' });
     expect({
       direction: document.documentElement.dir,
       heading: within(screen.getByRole('main')).getByRole('heading').textContent,
@@ -153,23 +153,24 @@ describe('organization administration', () => {
         ],
         "direction": "rtl",
         "headers": [
-          "الاسم الكامل ↑",
+          "الاسم الكامل",
           "البريد الإلكتروني",
           "الدور",
           "الحالة",
-          "تاريخ الإنشاء ↕",
+          "تاريخ الإنشاء",
         ],
         "heading": "المستخدمون",
         "navigation": [
           "لوحة الأداء",
-          "المستخدمون",
-          "الهيكل التنظيمي",
-          "العملاء",
           "الحملات",
           "الحضور",
           "البلاغات",
           "الإعلانات",
           "مخزوني",
+          "المستخدمون",
+          "الهيكل التنظيمي",
+          "العملاء",
+          "حالة النظام",
         ],
       }
     `);

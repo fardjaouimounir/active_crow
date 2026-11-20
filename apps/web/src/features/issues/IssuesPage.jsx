@@ -13,6 +13,9 @@ import { useWilayas } from '../organization/api.js';
 import { SelectField, areaOptions, primaryStyle } from '../organization/components/Fields.jsx';
 import { IssueForm } from './IssueForm.jsx';
 
+/** Status → tone: open needs attention, in progress is moving, resolved is good, closed is done. */
+const STATUS_TONES = { open: 'bad', in_progress: 'info', resolved: 'good', closed: 'neutral' };
+
 export function IssuesPage({ campaignId }) {
   const { t, i18n } = useTranslation('common');
   const allowCreate = useCan('issue.create');
@@ -36,7 +39,10 @@ export function IssuesPage({ campaignId }) {
       id: 'title',
       header: t('admin.title'),
       cell: ({ row }) => (
-        <Link className="underline" to={'/app/issues/' + row.original.id}>
+        <Link
+          className="font-medium underline-offset-4 hover:text-accent-text hover:underline"
+          to={'/app/issues/' + row.original.id}
+        >
           {row.original.title}
         </Link>
       ),
@@ -50,7 +56,11 @@ export function IssuesPage({ campaignId }) {
     {
       id: 'status',
       header: t('admin.status'),
-      cell: ({ row }) => <StatusBadge>{t('issues.status.' + row.original.status)}</StatusBadge>,
+      cell: ({ row }) => (
+        <StatusBadge tone={STATUS_TONES[row.original.status]}>
+          {t('issues.status.' + row.original.status)}
+        </StatusBadge>
+      ),
     },
   ];
   return (
@@ -65,8 +75,9 @@ export function IssuesPage({ campaignId }) {
       {meta?.counts && (
         <div className="mb-3 flex flex-wrap gap-2">
           {ISSUE_STATUSES.map((status) => (
-            <StatusBadge key={status}>
-              {t('issues.status.' + status)} {meta.counts[status]}
+            <StatusBadge key={status} tone={STATUS_TONES[status]}>
+              {t('issues.status.' + status)}{' '}
+              <span className="tnum font-semibold">{meta.counts[status]}</span>
             </StatusBadge>
           ))}
         </div>

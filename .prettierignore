@@ -7,3 +7,6 @@ package-lock.json
 docs/
 prompts/
 CLAUDE.md
+
+# Local agent tooling (skills, scripts), not project source
+.claude/

@@ -25,9 +25,9 @@ function Commentary({ commentary }) {
   const { output, reviewedAt, period } = commentary;
   const items = (list) => (Array.isArray(list) ? list.map((item) => item?.text ?? item) : []);
   return (
-    <section className="space-y-2 rounded-xl border border-violet-200 bg-violet-50/40 p-4">
+    <section className="space-y-2 rounded-xl border border-accent-line bg-accent-soft/40 p-4">
       <h2 className="font-semibold">{t('commentary')}</h2>
-      <p className="text-xs text-slate-600">
+      <p className="text-xs text-fg-2">
         {t('commentaryNote', { date: date(reviewedAt), from: period.from, to: period.to })}
       </p>
       <p dir="auto" className="text-sm">
@@ -65,8 +65,8 @@ function Gifts({ kpis }) {
       <h2 className="text-lg font-semibold">{t('gifts')}</h2>
       <dl className="grid gap-2 sm:grid-cols-2 lg:grid-cols-4">
         {rows.map(([key, value]) => (
-          <div key={key} className="rounded-xl border border-slate-200 bg-white p-3">
-            <dt className="text-sm text-slate-600">{t(key)}</dt>
+          <div key={key} className="rounded-xl border border-line bg-surface p-3">
+            <dt className="text-sm text-fg-2">{t(key)}</dt>
             <dd className="text-xl font-semibold tabular-nums">{number(value)}</dd>
           </div>
         ))}
@@ -82,14 +82,14 @@ function Documents({ campaignId }) {
   return (
     <section className="report-actions space-y-2">
       <h2 className="text-lg font-semibold">{t('documents')}</h2>
-      {query.data && !rows.length && <p className="text-sm text-slate-600">{t('noDocuments')}</p>}
-      <ul className="divide-y rounded-lg border border-slate-200 bg-white">
+      {query.data && !rows.length && <p className="text-sm text-fg-2">{t('noDocuments')}</p>}
+      <ul className="divide-y rounded-lg border border-line bg-surface">
         {rows.map((row) => (
           <li key={row.fileId} className="flex items-center justify-between gap-3 p-3 text-sm">
             <Link className="underline" to={`/files/${row.fileId}`} dir="auto">
               {row.label ?? row.fileId}
             </Link>
-            <span className="text-slate-500">{dateTime(row.createdAt)}</span>
+            <span className="text-fg-3">{dateTime(row.createdAt)}</span>
           </li>
         ))}
       </ul>
@@ -106,11 +106,11 @@ function Tombolas({ tombolas, preview, campaignId }) {
       <h2 className="text-lg font-semibold">{t('tombolas')}</h2>
       <ul className="grid gap-3 sm:grid-cols-2">
         {tombolas.map((tombola) => (
-          <li key={tombola.id} className="rounded-xl border border-slate-200 bg-white p-4">
+          <li key={tombola.id} className="rounded-xl border border-line bg-surface p-4">
             <p className="font-medium" dir="auto">
               {tombola.name}
             </p>
-            <p className="text-sm text-slate-600">{t('tombolaStatus.' + tombola.status)}</p>
+            <p className="text-sm text-fg-2">{t('tombolaStatus.' + tombola.status)}</p>
             <Link className="mt-2 inline-block underline" to={paths.tombola(tombola.id)}>
               {t('open')}
             </Link>
@@ -145,12 +145,12 @@ export function PortalCampaign({ preview = false, variant = 'page' }) {
   return (
     <article className="campaign-print-report space-y-6">
       {preview && (
-        <p role="note" className="report-actions rounded-md bg-sky-50 p-2 text-sm text-sky-900">
+        <p role="note" className="report-actions rounded-md bg-info-soft p-2 text-sm text-info">
           {t('preview')}: {t('previewNote')}
         </p>
       )}
       <header className="space-y-2">
-        <p className="text-sm text-slate-600">
+        <p className="text-sm text-fg-2">
           {report ? t('final') : t('report')} · <bdi>{data.code}</bdi> ·{' '}
           <bdi dir="auto">{data.client.name}</bdi>
         </p>
@@ -163,7 +163,7 @@ export function PortalCampaign({ preview = false, variant = 'page' }) {
           </bdi>
         </p>
         {data.provisional && (
-          <p className="report-watermark w-fit rounded-md border border-amber-500 px-2 py-1 text-amber-800">
+          <p className="report-watermark w-fit rounded-md border border-warning-line px-2 py-1 text-warning">
             {t('provisional')}
           </p>
         )}
@@ -186,7 +186,7 @@ export function PortalCampaign({ preview = false, variant = 'page' }) {
             <button
               type="button"
               disabled={download.isPending}
-              className="rounded-md bg-slate-900 px-4 py-2 text-white disabled:opacity-50"
+              className="rounded-md bg-accent px-4 py-2 text-accent-fg disabled:opacity-50"
               onClick={() => download.mutate(id)}
             >
               {t('excel')}

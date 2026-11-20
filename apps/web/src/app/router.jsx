@@ -248,6 +248,17 @@ export const routes = [
                     .CampaignDetailPage,
                 }),
               },
+              // Component kit review page: development builds only (dead-code-eliminated in production).
+              ...(import.meta.env.DEV
+                ? [
+                    {
+                      path: '_design',
+                      lazy: async () => ({
+                        Component: (await import('../ui/DesignPage.jsx')).DesignPage,
+                      }),
+                    },
+                  ]
+                : []),
               {
                 index: true,
                 lazy: async () => ({

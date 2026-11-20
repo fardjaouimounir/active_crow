@@ -1,6 +1,8 @@
 import { reportingFilterFields, reportingFilters, today } from '@fieldflow/shared';
 import { useSearchParams } from 'react-router';
+import { TriangleAlert } from 'lucide-react';
 import { useAuth, useCan } from '../../shared/auth/hooks.js';
+import { buttonClass, controlClass } from '../../ui/primitives.jsx';
 import {
   AiActionButton,
   AiCommentaryCard,
@@ -21,7 +23,9 @@ const choices = fields.filter((name) => name !== 'from' && name !== 'to');
 const shift = (day, days) =>
   new Date(Date.parse(day) + days * 86_400_000).toISOString().slice(0, 10);
 const monday = (day) => shift(day, -((new Date(day).getUTCDay() + 6) % 7));
-const dateInput = 'min-h-10 w-full rounded-md border border-slate-300 bg-white px-2';
+const dateInput = controlClass;
+const multiInput = controlClass + ' h-auto py-1';
+const presetButton = buttonClass({ variant: 'secondary', size: 'sm' });
 
 function Filters({ raw, update, options }) {
   const { t, rtl } = useReportingText();
@@ -31,25 +35,17 @@ function Filters({ raw, update, options }) {
   );
   const preset = (from, to) => update({ from, to });
   return (
-    <section className="space-y-3 rounded-xl border border-slate-200 bg-white p-4">
+    <section className="space-y-3 rounded-lg border border-line bg-surface p-3">
       <div className="flex flex-wrap gap-2">
-        <button
-          type="button"
-          className="rounded-md border px-3 py-2"
-          onClick={() => preset(now, now)}
-        >
+        <button type="button" className={presetButton} onClick={() => preset(now, now)}>
           {t('today')}
         </button>
-        <button
-          type="button"
-          className="rounded-md border px-3 py-2"
-          onClick={() => preset(monday(now), now)}
-        >
+        <button type="button" className={presetButton} onClick={() => preset(monday(now), now)}>
           {t('week')}
         </button>
         <button
           type="button"
-          className="rounded-md border px-3 py-2 disabled:opacity-50"
+          className={presetButton}
           disabled={!selected.length}
           onClick={() =>
             preset(
@@ -76,7 +72,7 @@ function Filters({ raw, update, options }) {
             (id) => !options?.[name]?.some((option) => String(option.id) === id),
           );
           return (
-            <label key={name} className="min-w-0 space-y-1 text-sm">
+            <label key={name} className="min-w-0 space-y-1 text-xs text-fg-3">
               <span>{t(name)}</span>
               <select
                 multiple={multi}
@@ -90,7 +86,7 @@ function Filters({ raw, update, options }) {
                       .join(','),
                   })
                 }
-                className={dateInput}
+                className={multi ? multiInput : dateInput}
               >
                 {!multi && <option value="">{t('all')}</option>}
                 {missing.map((id) => (
@@ -108,7 +104,7 @@ function Filters({ raw, update, options }) {
           );
         })}
         {['from', 'to'].map((name) => (
-          <label key={name} className="min-w-0 space-y-1 text-sm">
+          <label key={name} className="min-w-0 space-y-1 text-xs text-fg-3">
             <span>{t(name)}</span>
             <input
               type="date"
@@ -178,7 +174,7 @@ export function Dashboard() {
   return (
     <section className="space-y-5">
       <div className="flex flex-wrap items-center justify-between gap-2">
-        <h1 className="text-2xl font-semibold">{t('heading')}</h1>
+        <h1 className="text-2xl font-semibold tracking-tight">{t('heading')}</h1>
         {canExport && parsed.success && <ExportButton filters={mainFilters} />}
       </div>
       <Filters raw={raw} update={update} options={values?.options} />
@@ -212,7 +208,7 @@ export function Dashboard() {
       )}
       {!parsed.success && <p role="alert">{t('invalid')}</p>}
       {parsed.success && current.isPending && (
-        <div role="status" className="animate-pulse rounded-xl bg-slate-100 p-6">
+        <div role="status" className="animate-pulse rounded-xl bg-sunken p-6">
           {t('loading')}
         </div>
       )}
@@ -222,9 +218,9 @@ export function Dashboard() {
       {values && (
         <>
           <Cards values={values} supervisor={supervisor} />
-          <section className="rounded-xl border border-slate-200 bg-white p-4">
-            <h2 className="font-semibold">{t('alerts')}</h2>
-            <dl className="mt-2 grid gap-2 sm:grid-cols-2">
+          <section className="rounded-lg border border-line bg-surface p-4">
+            <h2 className="font-semibold tracking-tight">{t('alerts')}</h2>
+            <dl className="mt-2 grid gap-x-8 gap-y-1.5 text-sm sm:grid-cols-2">
               {[
                 ['failures', values.stock?.failingChecks],
                 ['undelivered', values.gifts.undeliveredUnits],
@@ -234,9 +230,17 @@ export function Dashboard() {
                 ],
                 ['oldPending', values.alerts.oldPending],
               ].map(([key, value]) => (
-                <div key={key} className="flex justify-between gap-3">
-                  <dt>{t(key)}</dt>
-                  <dd>{num(value)}</dd>
+                <div key={key} className="flex justify-between gap-3 border-b border-line py-1">
+                  <dt className="text-fg-2">{t(key)}</dt>
+                  <dd
+                    className={
+                      'tnum flex items-center gap-1.5 ' +
+                      (value > 0 ? 'font-semibold text-warning' : 'text-fg-3')
+                    }
+                  >
+                    {value > 0 && <TriangleAlert aria-hidden="true" size={14} />}
+                    {num(value)}
+                  </dd>
                 </div>
               ))}
             </dl>

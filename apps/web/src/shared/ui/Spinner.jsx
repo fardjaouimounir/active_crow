@@ -6,8 +6,8 @@ import { LoaderCircle } from 'lucide-react';
  */
 export function Spinner({ label, className = '' }) {
   return (
-    <span role="status" className={`inline-flex items-center gap-2 text-slate-600 ${className}`}>
-      <LoaderCircle aria-hidden="true" className="size-5 animate-spin" />
+    <span role="status" className={`inline-flex items-center gap-2 text-fg-2 ${className}`}>
+      <LoaderCircle aria-hidden="true" className="size-4 animate-spin" strokeWidth={1.5} />
       {label && <span>{label}</span>}
     </span>
   );

@@ -18,7 +18,7 @@ export function ReviewPage() {
         (daily.campaigns.length ? (
           <ul className="grid gap-3">
             {daily.campaigns.map((item) => (
-              <li key={item.campaignId} className="rounded border border-slate-200 p-3">
+              <li key={item.campaignId} className="rounded border border-line p-3">
                 <Link
                   className="font-semibold underline"
                   to={`/app/campaigns/${item.campaignId}?tab=attendance&date=${daily.date}`}

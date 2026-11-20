@@ -294,7 +294,7 @@ export function VisitsTab({ campaign }) {
       <QueryState query={query} />
       {query.isSuccess &&
         (rows.length ? (
-          <ul className="divide-y divide-slate-200">
+          <ul className="divide-y divide-line">
             {rows.map((row) => (
               <li key={row.id} className="py-2">
                 <button className="text-start underline" onClick={() => setDetail(row.id)}>

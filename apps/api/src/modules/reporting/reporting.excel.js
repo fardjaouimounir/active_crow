@@ -128,7 +128,11 @@ export async function download(req, res, { filters, id, view }) {
       to: { row: rows.length + 1, column: headers.length },
     };
     const heading = sheet.addRow(headers);
-    heading.font = { bold: true };
+    // ActiCrew brand: black header row, white bold text.
+    heading.eachCell((cell) => {
+      cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FF000000' } };
+      cell.font = { bold: true, color: { argb: 'FFFFFFFF' } };
+    });
     heading.commit();
     rows.forEach((values, index) => {
       const row = sheet.addRow(values);

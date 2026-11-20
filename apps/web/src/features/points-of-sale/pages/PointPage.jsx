@@ -66,7 +66,7 @@ function PointForm({ point, canManage }) {
     <>
       {saved && <Toast message={t('admin.saved')} />}
       <form
-        className="grid max-w-2xl gap-4 rounded-xl border border-slate-200 bg-white p-5 sm:grid-cols-2"
+        className="grid max-w-2xl gap-4 rounded-xl border border-line bg-surface p-5 sm:grid-cols-2"
         noValidate
         onSubmit={handleSubmit((body) => {
           if (!canManage) return;

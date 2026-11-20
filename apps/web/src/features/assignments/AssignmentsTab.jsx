@@ -56,7 +56,7 @@ function Staffing({ campaign }) {
         {(query.data?.data ?? []).map((item) => (
           <li
             key={item.wilayaId}
-            className="space-y-2 rounded-xl border border-slate-200 bg-white p-4 text-sm"
+            className="space-y-2 rounded-xl border border-line bg-surface p-4 text-sm"
           >
             <h3 className="font-semibold">{areaName(item, i18n.resolvedLanguage)}</h3>
             <p>

@@ -3,13 +3,14 @@ import { useTranslation } from 'react-i18next';
 import { useOutletContext } from 'react-router';
 import { resizeFieldImage } from './image.js';
 
-export const card = 'grid gap-3 rounded-2xl border border-slate-200 bg-white p-4 shadow-sm';
+export const card = 'grid gap-3 rounded-xl border border-line-strong bg-surface p-4';
+/** Spring is reserved for the one primary action on a field screen. */
 export const primary =
-  'inline-flex min-h-12 items-center justify-center gap-2 rounded-xl bg-teal-800 px-4 py-2 font-semibold text-white disabled:opacity-60';
+  'inline-flex min-h-14 items-center justify-center gap-2 rounded-lg border-2 border-fg bg-accent px-5 py-2 text-lg font-bold text-accent-fg active:brightness-95 disabled:opacity-60';
 export const secondary =
-  'inline-flex min-h-12 items-center justify-center gap-2 rounded-xl border border-slate-300 bg-white px-4 py-2 font-semibold text-slate-900 disabled:opacity-60';
+  'inline-flex min-h-14 items-center justify-center gap-2 rounded-lg border-2 border-control bg-surface px-4 py-2 text-base font-semibold text-fg active:bg-sunken disabled:opacity-60';
 export const control =
-  'min-h-12 w-full rounded-xl border border-slate-400 bg-white px-3 py-2 text-base';
+  'min-h-14 w-full rounded-lg border-2 border-control bg-surface px-3 py-2 text-base text-fg';
 export const useField = () => useOutletContext();
 export const fieldTime = (value, locale) =>
   new Intl.DateTimeFormat(locale, {
@@ -29,7 +30,10 @@ export function ErrorMessage({ code }) {
     }),
   });
   return (
-    <p role="alert" className="rounded-lg bg-red-50 p-3 text-red-900">
+    <p
+      role="alert"
+      className="rounded-lg border-2 border-danger-line bg-danger-soft p-3 font-medium text-danger"
+    >
       {message}
     </p>
   );
@@ -69,7 +73,7 @@ export function Stepper({ name, value, min = 0, max = 1000, onChange }) {
     <div className="flex flex-none items-center gap-2">
       <button
         type="button"
-        className={secondary + ' size-12 px-0'}
+        className={secondary + ' size-14 px-0'}
         disabled={value <= min}
         onClick={() => onChange(value - 1)}
         aria-label={t('decrease', { name })}
@@ -81,7 +85,7 @@ export function Stepper({ name, value, min = 0, max = 1000, onChange }) {
       </output>
       <button
         type="button"
-        className={secondary + ' size-12 px-0'}
+        className={secondary + ' size-14 px-0'}
         disabled={value >= max}
         onClick={() => onChange(value + 1)}
         aria-label={t('increase', { name })}
@@ -128,7 +132,7 @@ export function PhotoPicker({ file, onChange, required = false, onProcessing, re
         {t('photo')}
         {required ? ' *' : ''}
         <input
-          className={control + ' file:me-3 file:rounded file:border-0 file:bg-slate-100 file:p-2'}
+          className={control + ' file:me-3 file:rounded file:border-0 file:bg-sunken file:p-2'}
           type="file"
           accept="image/*"
           capture={recover ? undefined : 'environment'}
@@ -155,7 +159,7 @@ export function PendingSubmission({ write, children }) {
     <>
       {write.problem && <ErrorMessage code={write.problem} />}
       {write.pending && !write.busy && (
-        <section className={card + ' border-amber-300 bg-amber-50'} aria-label={t('unsent')}>
+        <section className={card + ' border-warning-line bg-warning-soft'} aria-label={t('unsent')}>
           <p className="font-semibold">{t('unsent')}</p>
           {children}
           {write.needsAttachment && (

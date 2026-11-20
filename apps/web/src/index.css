@@ -1,11 +1,3 @@
 @import 'tailwindcss';
-
-@layer base {
-  html {
-    font-family: ui-sans-serif, system-ui, 'Segoe UI', Tahoma, 'Noto Sans Arabic', sans-serif;
-  }
-
-  body {
-    @apply bg-slate-50 text-slate-900 antialiased;
-  }
-}
+@import './ui/tokens.css';
+@import './ui/base.css';

@@ -135,7 +135,7 @@ export function Attendance() {
   };
   return (
     <>
-      <h1 className="text-2xl font-bold">{t('attendance')}</h1>
+      <h1 className="text-3xl font-bold tracking-tight">{t('attendance')}</h1>
       <PendingSubmission write={write}>
         {write.pending && (
           <p>

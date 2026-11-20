@@ -4,6 +4,7 @@ import { useTranslation } from 'react-i18next';
 import { Link } from 'react-router';
 import { useCommunication, useCommunicationWrite } from '../../features/notifications/api.js';
 import { NotificationList } from '../../features/notifications/NotificationList.jsx';
+import { IconButton } from '../../ui/controls.jsx';
 
 export function NotificationBell() {
   const { t } = useTranslation('common');
@@ -17,36 +18,42 @@ export function NotificationBell() {
   const count = unread.data?.data.count ?? 0;
   return (
     <div className="relative">
-      <button
-        type="button"
-        className="relative rounded-lg p-2 hover:bg-slate-100"
-        aria-label={t('notices.bell', { count })}
+      <IconButton
+        label={t('notices.bell', { count })}
         aria-expanded={open}
         onClick={() => setOpen(!open)}
       >
-        <Bell aria-hidden className="size-5" />
+        <Bell aria-hidden="true" size={16} strokeWidth={1.5} />
         {count > 0 && (
-          <span className="absolute -top-1 end-0 rounded-full bg-red-700 px-1 text-xs text-white">
+          <span className="tnum absolute -top-0.5 -end-0.5 min-w-4 rounded-full bg-accent px-1 text-center text-2xs leading-4 font-semibold text-accent-fg">
             {count > 99 ? '99+' : count}
           </span>
         )}
-      </button>
+      </IconButton>
       {open && (
-        <div className="fixed inset-x-3 top-16 z-30 max-h-[70vh] overflow-y-auto rounded-xl border bg-white p-3 shadow-lg sm:absolute sm:inset-x-auto sm:end-0 sm:top-full sm:w-80">
+        <div className="fixed inset-x-3 top-14 z-30 max-h-[70vh] overflow-y-auto rounded-xl border border-line bg-raised p-3 shadow-lg sm:absolute sm:inset-x-auto sm:end-0 sm:top-full sm:mt-1.5 sm:w-96">
           <div className="mb-2 flex flex-wrap justify-between gap-2 text-sm">
-            <Link className="underline" to="/app/notifications" onClick={() => setOpen(false)}>
+            <Link
+              className="font-medium text-accent-text underline-offset-4 hover:underline"
+              to="/app/notifications"
+              onClick={() => setOpen(false)}
+            >
               {t('admin.notifications')}
             </Link>
             <button
               type="button"
-              className="underline"
+              className="text-fg-2 underline-offset-4 hover:underline disabled:opacity-50"
               disabled={!count || mutation.isPending}
               onClick={() => mutation.mutate({ path: '/notifications/read-all' })}
             >
               {t('notices.readAll')}
             </button>
           </div>
-          {mutation.isError && <p role="alert">{t('errors.codes.INTERNAL_ERROR')}</p>}
+          {mutation.isError && (
+            <p role="alert" className="text-danger">
+              {t('errors.codes.INTERNAL_ERROR')}
+            </p>
+          )}
           <NotificationList query={latest} onNavigate={() => setOpen(false)} />
         </div>
       )}

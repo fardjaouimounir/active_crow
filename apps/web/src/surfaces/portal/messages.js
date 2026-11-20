@@ -1,5 +1,7 @@
 // [English, Arabic] pairs for the client portal (same pattern as features/reporting/messages.js).
 export const messages = {
+  switchCampaign: ['Campaign', 'الحملة'],
+  allCampaigns: ['All campaigns', 'كل الحملات'],
   campaigns: ['Your campaigns', 'حملاتكم'],
   noCampaigns: ['No campaign to show yet.', 'لا توجد حملات للعرض بعد.'],
   loading: ['Loading…', 'جارٍ التحميل…'],

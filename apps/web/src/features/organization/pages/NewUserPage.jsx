@@ -30,7 +30,7 @@ export function NewUserPage() {
           }}
         />
       ) : (
-        <div className="max-w-xl rounded-xl border border-slate-200 bg-white p-5">
+        <div className="max-w-xl rounded-xl border border-line bg-surface p-5">
           <UserForm onSuccess={setCreated} />
         </div>
       )}

@@ -93,7 +93,11 @@ export async function download(req, res, id) {
       width: index === 0 ? 32 : name === 'Summary' ? 94 : Math.max(18, header.length + 4),
     }));
     const heading = sheet.addRow(headers);
-    heading.font = { bold: true };
+    // ActiCrew brand: black header row, white bold text.
+    heading.eachCell((cell) => {
+      cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FF000000' } };
+      cell.font = { bold: true, color: { argb: 'FFFFFFFF' } };
+    });
     heading.commit();
     for (const values of rows) {
       const row = sheet.addRow(values);

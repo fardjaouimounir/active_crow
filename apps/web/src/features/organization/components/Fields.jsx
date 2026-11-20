@@ -1,12 +1,11 @@
 import { useTranslation } from 'react-i18next';
+import { buttonClass } from '../../../ui/primitives.jsx';
 import { FormField, Select, TextInput } from '../../../shared/ui/FormControls.jsx';
 import { Toast } from '../../../shared/ui/PageParts.jsx';
 import { useCommunes, useWilayas } from '../api.js';
 
-export const actionStyle =
-  'inline-flex items-center rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm font-medium hover:bg-slate-100 disabled:opacity-50';
-export const primaryStyle =
-  'inline-flex items-center rounded-lg bg-slate-900 px-3 py-2 text-sm font-medium text-white hover:bg-slate-700 disabled:opacity-50';
+export const actionStyle = buttonClass({ variant: 'secondary' });
+export const primaryStyle = buttonClass({ variant: 'primary' });
 
 export function InputField({ name, label = name, fields, value, onChange, ...props }) {
   const { t } = useTranslation('common');

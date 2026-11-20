@@ -38,7 +38,9 @@ function SaleResult({ row, close }) {
           <div
             key={status}
             className={
-              status === 'distributed' ? 'rounded-xl bg-teal-50 p-3' : 'rounded-xl bg-amber-100 p-3'
+              status === 'distributed'
+                ? 'rounded-xl bg-success-soft p-3'
+                : 'rounded-xl bg-warning-soft p-3'
             }
           >
             <h3 className="font-bold">
@@ -56,7 +58,7 @@ function SaleResult({ row, close }) {
       {row.tombolaEntries?.map((entry) => (
         <div key={entry.tombolaId ?? entry.tombola}>
           <h3 className="font-bold">{entry.tombola}</h3>
-          <p className="break-words text-3xl font-extrabold tabular-nums" dir="ltr">
+          <p className="break-words text-3xl font-bold tabular-nums" dir="ltr">
             {entry.numbers.join(' · ')}
           </p>
         </div>
@@ -127,7 +129,7 @@ function SaleForm({ field, write }) {
           <h2 className="text-lg font-bold">{t('products')}</h2>
           {field.products?.map((product) => (
             <div
-              className="flex items-center justify-between gap-2 rounded-xl bg-slate-100 p-2"
+              className="flex items-center justify-between gap-2 rounded-xl bg-sunken p-2"
               key={product.id}
             >
               <strong className="min-w-0 break-words">{product.name}</strong>
@@ -141,7 +143,7 @@ function SaleForm({ field, write }) {
           ))}
         </section>
         {gifts.length > 0 && (
-          <section className={card + ' bg-teal-50'}>
+          <section className={card + ' bg-success-soft'}>
             <h2 className="font-bold">{t('expectedGifts')}</h2>
             <p>{t('previewOnly')}</p>
             {gifts.map((gift) => (
@@ -171,7 +173,7 @@ function SaleForm({ field, write }) {
                   {...register('customer.' + name, { setValueAs: optional })}
                 />
                 {errors.customer?.[name] && (
-                  <span role="alert" className="text-red-900">
+                  <span role="alert" className="text-danger">
                     {t(
                       errors.customer[name].message === 'phoneInvalid'
                         ? 'phoneInvalid'
@@ -191,7 +193,7 @@ function SaleForm({ field, write }) {
             {required.consentRequired ? ' *' : ''}
           </label>
           {errors.customer?.consentTombola && (
-            <p role="alert" className="text-red-900">
+            <p role="alert" className="text-danger">
               {t('customerRequired')}
             </p>
           )}
@@ -269,7 +271,7 @@ export function Sale() {
   const counting = query.get('view') === 'interaction';
   return (
     <>
-      <h1 className="text-2xl font-bold">{t('sale')}</h1>
+      <h1 className="text-3xl font-bold tracking-tight">{t('sale')}</h1>
       <div className="grid grid-cols-2 gap-2">
         <button
           className={counting ? secondary : primary}

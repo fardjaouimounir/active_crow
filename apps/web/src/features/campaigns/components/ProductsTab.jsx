@@ -20,7 +20,7 @@ export function ProductsTab({ campaign, canEdit, canRemove = canEdit }) {
     <div className="grid gap-4">
       <Toast error message={message} />
       {!products.rows.length && <EmptyState />}
-      <ul className="grid gap-2 rounded-xl border border-slate-200 bg-white p-4 text-sm">
+      <ul className="grid gap-2 rounded-xl border border-line bg-surface p-4 text-sm">
         {products.rows.map((product) => (
           <li key={product.id}>
             <label className="flex items-center gap-2">
@@ -38,7 +38,7 @@ export function ProductsTab({ campaign, canEdit, canRemove = canEdit }) {
                 checked={linked.includes(product.id)}
                 onChange={() => toggle(product.id)}
               />
-              {product.name} <bdi className="text-slate-500">{product.sku}</bdi>
+              {product.name} <bdi className="text-fg-3">{product.sku}</bdi>
             </label>
           </li>
         ))}

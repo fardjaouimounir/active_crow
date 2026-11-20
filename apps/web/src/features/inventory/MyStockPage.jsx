@@ -34,7 +34,7 @@ function CancelButton({ movement }) {
 function ShipmentRow({ movement, children }) {
   const { t } = useTranslation('common');
   return (
-    <li className="flex flex-wrap items-center gap-3 rounded-lg border border-slate-200 bg-white p-3 text-sm">
+    <li className="flex flex-wrap items-center gap-3 rounded-lg border border-line bg-surface p-3 text-sm">
       <Link className="underline" to={`/app/campaigns/${movement.campaign.id}?tab=stock`}>
         {movement.campaign.name}
       </Link>
@@ -73,10 +73,7 @@ export function MyStockPage() {
             </h2>
             {!data.balances.length && <EmptyState />}
             {data.balances.map((entry) => (
-              <div
-                key={entry.locationId}
-                className="rounded-xl border border-slate-200 bg-white p-4"
-              >
+              <div key={entry.locationId} className="rounded-xl border border-line bg-surface p-4">
                 <div className="flex flex-wrap items-center justify-between gap-2">
                   <Link
                     className="font-medium underline"

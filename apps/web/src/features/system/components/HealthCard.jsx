@@ -42,21 +42,21 @@ export function HealthCard() {
       <div className="space-y-4">
         <p
           role="status"
-          className={`flex items-center gap-2 font-medium ${dbUp ? 'text-emerald-700' : 'text-amber-700'}`}
+          className={`flex items-center gap-2 font-medium ${dbUp ? 'text-success' : 'text-warning'}`}
         >
           <StatusIcon aria-hidden="true" className="size-5 shrink-0" />
           {dbUp ? t('health.healthy') : t('health.degraded')}
         </p>
         <dl className="grid grid-cols-[auto_1fr] gap-x-6 gap-y-1 text-sm">
-          <dt className="text-slate-500">{t('health.database')}</dt>
-          <dd className={dbUp ? 'text-emerald-700' : 'font-medium text-amber-700'}>
+          <dt className="text-fg-3">{t('health.database')}</dt>
+          <dd className={dbUp ? 'text-success' : 'font-medium text-warning'}>
             {dbUp ? t('health.dbUp') : t('health.dbDown')}
           </dd>
-          <dt className="text-slate-500">{t('health.version')}</dt>
+          <dt className="text-fg-3">{t('health.version')}</dt>
           <dd className="font-mono" dir="ltr">
             {data.version}
           </dd>
-          <dt className="text-slate-500">{t('health.uptime')}</dt>
+          <dt className="text-fg-3">{t('health.uptime')}</dt>
           <dd>{uptime}</dd>
         </dl>
       </div>

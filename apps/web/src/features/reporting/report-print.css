@@ -21,7 +21,28 @@
     break-before: page;
   }
 
+  /* Black and white safe: no fills, rules and text in black; the brand letterhead is the only graphic. */
+  .campaign-print-report,
+  .campaign-print-report * {
+    color: black !important;
+    background: none !important;
+    box-shadow: none !important;
+  }
+
   .campaign-print-report th {
+    border-bottom: 1.5pt solid black;
+    print-color-adjust: exact;
+  }
+
+  .campaign-print-report td {
+    border-bottom: 0.5pt solid black;
+  }
+
+  .campaign-print-report .print-brand {
+    margin-bottom: 6mm;
+  }
+
+  .campaign-print-report .print-brand img {
     print-color-adjust: exact;
   }
 

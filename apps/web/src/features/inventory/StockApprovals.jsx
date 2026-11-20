@@ -30,7 +30,7 @@ export function StockApprovals() {
         {rows.map(({ movement, kind }) => (
           <li
             key={movement.id}
-            className="flex flex-wrap items-center gap-3 rounded-lg border border-slate-200 bg-white p-3 text-sm"
+            className="flex flex-wrap items-center gap-3 rounded-lg border border-line bg-surface p-3 text-sm"
           >
             <Link className="underline" to={`/app/campaigns/${movement.campaign.id}?tab=stock`}>
               {movement.campaign.name}

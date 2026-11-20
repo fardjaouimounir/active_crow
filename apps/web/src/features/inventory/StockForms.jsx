@@ -92,7 +92,7 @@ export function LinesField({
               )}
             </FormField>
             {available !== undefined && (
-              <span className="pb-2 text-sm text-slate-600">
+              <span className="pb-2 text-sm text-fg-2">
                 {t('stock.available', { count: available })}
               </span>
             )}
@@ -105,7 +105,7 @@ export function LinesField({
         );
       })}
       {errors?.message && (
-        <p role="alert" className="text-sm text-red-700">
+        <p role="alert" className="text-sm text-danger">
           {t('admin.invalidField')}
         </p>
       )}
@@ -361,7 +361,7 @@ export function AdjustmentDialog({ campaign, onClose }) {
     >
       {({ form, file, setFile }) => (
         <>
-          <p className="text-sm text-slate-600">{t('stock.increaseNote')}</p>
+          <p className="text-sm text-fg-2">{t('stock.increaseNote')}</p>
           <FormField label={t('stock.reason')}>
             {(props) => (
               <Select {...props} {...form.register('reason')}>

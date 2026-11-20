@@ -127,7 +127,7 @@ function Rows({ ctx, name, empty, max, min = 0, title, addLabel, children }) {
   return (
     <div className="grid gap-3">
       {fields.map((item, index) => (
-        <fieldset key={item.id} className="grid gap-3 rounded-lg border border-slate-200 p-3">
+        <fieldset key={item.id} className="grid gap-3 rounded-lg border border-line p-3">
           <legend className="px-1 text-sm font-medium">{title(index + 1)}</legend>
           <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
             {children(`${name}.${index}`)}

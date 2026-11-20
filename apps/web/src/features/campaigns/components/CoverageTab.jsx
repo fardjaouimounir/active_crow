@@ -104,7 +104,7 @@ export function CoverageTab({ campaign, canEdit }) {
       {!campaign.wilayas.length && <EmptyState />}
       <ul className="grid gap-3">
         {campaign.wilayas.map((row) => (
-          <li key={row.wilayaId} className="rounded-xl border border-slate-200 bg-white p-4">
+          <li key={row.wilayaId} className="rounded-xl border border-line bg-surface p-4">
             <div className="flex flex-wrap items-center justify-between gap-3">
               <h3 className="font-semibold">{nameOf(row.wilayaId)}</h3>
               <div className="flex flex-wrap items-center gap-2">
@@ -115,7 +115,7 @@ export function CoverageTab({ campaign, canEdit }) {
                       type="number"
                       min={0}
                       max={500}
-                      className="w-24 rounded-lg border border-slate-300 px-2 py-1"
+                      className="w-24 rounded-lg border border-control px-2 py-1"
                       value={required[row.wilayaId] ?? row.requiredAnimateurs}
                       onChange={(event) =>
                         setRequired({ ...required, [row.wilayaId]: Number(event.target.value) })

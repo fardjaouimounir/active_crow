@@ -154,11 +154,11 @@ export function RegionsPage() {
       {query.isSuccess && !visible.length && <EmptyState />}
       <ul className="grid gap-3">
         {visible.map((region) => (
-          <li key={region.id} className="rounded-xl border border-slate-200 bg-white p-4">
+          <li key={region.id} className="rounded-xl border border-line bg-surface p-4">
             <div className="flex flex-wrap items-center justify-between gap-2">
               <div>
                 <h2 className="font-semibold">{region.name}</h2>
-                <bdi className="text-xs text-slate-500">{region.code}</bdi>
+                <bdi className="text-xs text-fg-3">{region.code}</bdi>
               </div>
               {manage && (
                 <div className="flex flex-wrap gap-2">
@@ -181,7 +181,7 @@ export function RegionsPage() {
                   region.wilayas.map(({ wilaya }) => wilaya),
                   i18n.resolvedLanguage,
                 ).map(({ value, label }) => (
-                  <li key={value} className="rounded-full bg-slate-100 px-3 py-1 text-xs">
+                  <li key={value} className="rounded-full bg-sunken px-3 py-1 text-xs">
                     {label}
                   </li>
                 ))}

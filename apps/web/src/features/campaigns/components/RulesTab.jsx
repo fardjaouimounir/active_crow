@@ -26,7 +26,7 @@ function RuleSection({ type, config, editable, ...form }) {
   if (!configured && !editable) return null;
   const path = `/campaigns/${form.campaignId}/rule-sets/${form.ruleSetId}/rules/${type}`;
   return (
-    <section className="grid gap-3 rounded-xl border border-slate-200 bg-white p-4">
+    <section className="grid gap-3 rounded-xl border border-line bg-surface p-4">
       <header className="flex flex-wrap items-center justify-between gap-2">
         <div className="flex flex-wrap items-center gap-2">
           <h3 className="font-semibold">{t('rules.types.' + type)}</h3>
@@ -100,21 +100,21 @@ function ApproveDialog({ campaign, ruleSet, onClose }) {
           <li>{t('rules.approve.promotions', { count: ruleSet.promotions.length })}</li>
         </ul>
         {missing.length > 0 && (
-          <p role="alert" className="text-red-800">
+          <p role="alert" className="text-danger">
             {t('rules.approve.missing', {
               types: missing.map((type) => t('rules.types.' + type)).join(', '),
             })}
           </p>
         )}
         {serverMissing.length > 0 && missing.length === 0 && (
-          <p role="alert" className="text-red-800">
+          <p role="alert" className="text-danger">
             {t('rules.approve.missing', {
               types: serverMissing.map((type) => t('rules.types.' + type)).join(', '),
             })}
           </p>
         )}
         {issues.length > 0 && (
-          <ul role="alert" className="list-disc ps-5 text-red-800">
+          <ul role="alert" className="list-disc ps-5 text-danger">
             {issues.map((issue, index) => (
               <li key={index}>
                 {issue.ruleType ? t('rules.types.' + issue.ruleType) : t('rules.promotions.title')}:{' '}
@@ -218,7 +218,7 @@ export function RulesTab({ campaign, canEdit }) {
           {t('rules.status.' + selected.status)}
         </StatusBadge>
         {selected.approvedBy && (
-          <span className="text-sm text-slate-600">
+          <span className="text-sm text-fg-2">
             {t('rules.approvedBy', {
               name: selected.approvedBy.fullName,
               date: date.format(new Date(selected.approvedAt)),
@@ -246,7 +246,7 @@ export function RulesTab({ campaign, canEdit }) {
       </div>
       {!actionError.message || dialog ? null : <Toast error message={actionError.message} />}
       {selected.status !== 'draft' && (
-        <p className="text-sm text-slate-600">{t('rules.readOnlyApproved')}</p>
+        <p className="text-sm text-fg-2">{t('rules.readOnlyApproved')}</p>
       )}
 
       {detail.isPending && <p role="status">{t('admin.loading')}</p>}

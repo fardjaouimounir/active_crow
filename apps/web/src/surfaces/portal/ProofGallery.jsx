@@ -9,7 +9,7 @@ function Thumb({ id, label, onOpen }) {
       type="button"
       onClick={onOpen}
       aria-label={label}
-      className="aspect-square overflow-hidden rounded-lg border border-slate-200 bg-slate-100 focus-visible:outline-2 focus-visible:outline-offset-2"
+      className="aspect-square overflow-hidden rounded-lg border border-line bg-sunken focus-visible:outline-2 focus-visible:outline-offset-2"
     >
       {file.url && <img src={file.url} alt="" className="size-full object-cover" />}
     </button>
@@ -41,7 +41,7 @@ function Lightbox({ items, index, setIndex, close }) {
         if (event.key === 'ArrowRight') move(rtl ? -1 : 1);
         if (event.key === 'ArrowLeft') move(rtl ? 1 : -1);
       }}
-      className="m-auto max-h-[92vh] w-[min(56rem,calc(100vw-1rem))] rounded-xl bg-white p-4 backdrop:bg-slate-900/70"
+      className="m-auto max-h-[92vh] w-[min(56rem,calc(100vw-1rem))] rounded-xl bg-surface p-4 backdrop:bg-scrim"
     >
       <div className="flex items-center justify-between gap-2 pb-2 text-sm">
         <p>
@@ -51,7 +51,7 @@ function Lightbox({ items, index, setIndex, close }) {
           {t('close')}
         </button>
       </div>
-      <div className="flex min-h-48 items-center justify-center bg-slate-100">
+      <div className="flex min-h-48 items-center justify-center bg-sunken">
         {file.url && (
           <img
             src={file.url}
@@ -88,7 +88,7 @@ export function ProofGallery({ campaignId }) {
       <h2 className="text-lg font-semibold">{t('proof')}</h2>
       {query.isPending && <p role="status">{t('loading')}</p>}
       {query.isError && <p role="alert">{t('error')}</p>}
-      {query.data && !items.length && <p className="text-sm text-slate-600">{t('noProof')}</p>}
+      {query.data && !items.length && <p className="text-sm text-fg-2">{t('noProof')}</p>}
       <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-4">
         {items.map((item, index) => (
           <Thumb

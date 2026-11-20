@@ -19,11 +19,11 @@ function Thumbnail({ document }) {
     document.hasThumbnail ? document.fileId : undefined,
     'thumbnail',
   );
-  if (!document.hasThumbnail) return <span className="text-xs text-slate-500">PDF</span>;
+  if (!document.hasThumbnail) return <span className="text-xs text-fg-3">PDF</span>;
   return url ? (
     <img src={url} alt="" className="h-10 w-10 rounded object-cover" />
   ) : (
-    <span className="block h-10 w-10 animate-pulse rounded bg-slate-100" />
+    <span className="block h-10 w-10 animate-pulse rounded bg-sunken" />
   );
 }
 
@@ -37,7 +37,7 @@ function UploadPanel({ campaignId }) {
   const validLabel = label.trim().length > 0 && label.trim().length <= 120;
   return (
     <form
-      className="grid gap-3 rounded-xl border border-slate-200 bg-white p-4"
+      className="grid gap-3 rounded-xl border border-line bg-surface p-4"
       onSubmit={(event) => {
         event.preventDefault();
         setProgress(0);

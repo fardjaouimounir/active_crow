@@ -24,7 +24,7 @@ function Overview({ client }) {
   const number = new Intl.NumberFormat(i18n.resolvedLanguage);
   return (
     <div className="grid gap-4 lg:grid-cols-3">
-      <section className="rounded-xl border border-slate-200 bg-white p-5 lg:col-span-2">
+      <section className="rounded-xl border border-line bg-surface p-5 lg:col-span-2">
         {saved && <Toast message={t('admin.saved')} />}
         <ClientForm
           key={client.updatedAt}
@@ -33,7 +33,7 @@ function Overview({ client }) {
           onSuccess={() => setSaved(true)}
         />
       </section>
-      <section className="rounded-xl border border-slate-200 bg-white p-5">
+      <section className="rounded-xl border border-line bg-surface p-5">
         <dl className="grid gap-3 text-sm">
           {Object.entries(client.counts).map(([key, value]) => (
             <div key={key} className="flex justify-between gap-3">
@@ -45,7 +45,7 @@ function Overview({ client }) {
         {manage && (
           <button
             type="button"
-            className={actionStyle + ' mt-4 text-red-700'}
+            className={actionStyle + ' mt-4 text-danger'}
             onClick={() => setDeleting(true)}
           >
             {t('catalog.deleteClient')}

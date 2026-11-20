@@ -1,5 +1,6 @@
 // [English, Arabic] pairs for the AI feature, same pattern as features/reporting/messages.js.
 export const messages = {
+  aiGenerated: ['AI-generated', 'مُولَّد بالذكاء الاصطناعي'],
   reviewTitle: ['AI review', 'مراجعة الذكاء الاصطناعي'],
   reviewIntro: [
     'AI suggestions are never applied automatically. Accept the ones that read well; the dashboards keep showing our own figures.',

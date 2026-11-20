@@ -5,9 +5,10 @@ import { useCan } from '../../shared/auth/hooks.js';
 import { EmptyState, PageHeader, StatusBadge, Toast } from '../../shared/ui/PageParts.jsx';
 import { useApiError } from '../../shared/ui/useApiError.js';
 import { useAiList, useAiSuggestion, useReview } from './api.js';
-import { AiOutput, useAiText } from './AiUi.jsx';
+import { AiBadge, AiOutput, useAiText } from './AiUi.jsx';
+import { buttonClass } from '../../ui/primitives.jsx';
 
-const field = 'min-h-10 w-full rounded-md border border-slate-300 bg-white px-2';
+const field = 'min-h-10 w-full rounded-md border border-control bg-surface px-2';
 const FILTERS = ['capability', 'status', 'from', 'to'];
 
 function Filters({ params, update }) {
@@ -71,15 +72,15 @@ function ReviewList() {
   return (
     <section className="space-y-4">
       <PageHeader title={t('reviewTitle')} />
-      <p className="text-sm text-slate-600">{t('reviewIntro')}</p>
+      <p className="text-sm text-fg-2">{t('reviewIntro')}</p>
       <Filters params={params} update={update} />
       {result.isPending && <p role="status">{t('loading')}</p>}
       {result.isError && <p role="alert">{t('loadError')}</p>}
       {result.data && !rows.length && <EmptyState message={t('none')} />}
       {rows.length > 0 && (
-        <div className="overflow-x-auto rounded-xl border border-slate-200 bg-white">
+        <div className="overflow-x-auto rounded-xl border border-line bg-surface">
           <table className="w-full text-start text-sm">
-            <thead className="bg-slate-50">
+            <thead className="bg-sunken">
               <tr>
                 {['capability', 'subject', 'status', 'confidence', 'received'].map((key) => (
                   <th key={key} className="p-3 text-start font-medium">
@@ -91,7 +92,7 @@ function ReviewList() {
             </thead>
             <tbody>
               {rows.map((row) => (
-                <tr key={row.id} className="border-t border-slate-100">
+                <tr key={row.id} className="border-t border-line">
                   <td className="p-3">{t('capabilityName.' + row.capability)}</td>
                   <td className="p-3" dir="auto">
                     {row.subjectName ?? '—'}
@@ -152,9 +153,9 @@ function Kpis({ kpis }) {
     ['kpi.gifts', percent(kpis.gifts?.distributionRate)],
   ];
   return (
-    <aside className="space-y-2 rounded-xl border border-slate-200 bg-white p-4">
+    <aside className="space-y-2 rounded-lg border border-line bg-surface p-4">
       <h2 className="font-semibold">{t('backendKpis')}</h2>
-      <p className="text-xs text-slate-600">
+      <p className="text-xs text-fg-2">
         {t('period')}:{' '}
         <bdi dir="ltr">
           {kpis.period?.from} – {kpis.period?.to}
@@ -164,7 +165,7 @@ function Kpis({ kpis }) {
         {rows.map(([key, value]) => (
           <div key={key} className="flex justify-between gap-3">
             <dt>{t(key)}</dt>
-            <dd className="font-medium">{value}</dd>
+            <dd className="tnum font-semibold">{value}</dd>
           </div>
         ))}
       </dl>
@@ -196,21 +197,24 @@ function ReviewDetail({ id }) {
       <PageHeader title={t('capabilityName.' + row.capability)}>
         <StatusBadge tone={tone[row.status]}>{t('suggestion.' + row.status)}</StatusBadge>
       </PageHeader>
-      <p className="text-sm text-slate-600">
+      <p className="text-sm text-fg-2">
         <bdi dir="auto">{row.subjectName ?? '—'}</bdi> · {t('received')} {dateTime(row.createdAt)} ·{' '}
         {t('model')}: <bdi dir="ltr">{row.modelVersion}</bdi>
         {row.fallback && ` (${t('fallback')})`} · {t('confidence')}: {percent(row.confidence)}
       </p>
       <Toast error message={message} />
       <div className="grid gap-4 lg:grid-cols-[2fr_1fr]">
-        <div className="space-y-3 rounded-xl border border-violet-200 bg-violet-50/40 p-4">
-          <h2 className="font-semibold">{t('aiText')}</h2>
+        <div className="space-y-3 rounded-lg border border-dashed border-accent-line bg-accent-soft/30 p-4">
+          <div className="flex flex-wrap items-center gap-2">
+            <AiBadge />
+            <h2 className="font-semibold tracking-tight">{t('aiText')}</h2>
+          </div>
           <AiOutput capability={row.capability} output={row.output} labels={row.labels} />
         </div>
         <Kpis kpis={row.kpis} />
       </div>
       {pending ? (
-        <div className="space-y-2 rounded-xl border border-slate-200 bg-white p-4">
+        <div className="space-y-2 rounded-xl border border-line bg-surface p-4">
           <label className="block space-y-1 text-sm">
             <span>{t('note')}</span>
             <textarea
@@ -222,7 +226,7 @@ function ReviewDetail({ id }) {
             />
           </label>
           {needNote && (
-            <p role="alert" className="text-sm text-red-700">
+            <p role="alert" className="text-sm text-danger">
               {t('noteRequired')}
             </p>
           )}
@@ -231,7 +235,7 @@ function ReviewDetail({ id }) {
               <button
                 type="button"
                 disabled={review.isPending}
-                className="min-h-10 rounded-md bg-slate-900 px-4 text-white disabled:opacity-50"
+                className={buttonClass({ variant: 'primary' })}
                 onClick={() => decide('accept')}
               >
                 {t('accept')}
@@ -240,7 +244,7 @@ function ReviewDetail({ id }) {
             <button
               type="button"
               disabled={review.isPending}
-              className="min-h-10 rounded-md border border-slate-300 px-4 disabled:opacity-50"
+              className={buttonClass({ variant: 'secondary' })}
               onClick={() => decide('reject')}
             >
               {t('reject')}
@@ -248,7 +252,7 @@ function ReviewDetail({ id }) {
           </div>
         </div>
       ) : (
-        <p className="text-sm text-slate-600">
+        <p className="text-sm text-fg-2">
           {t('decided')}: {row.reviewedBy?.name ?? '—'} ·{' '}
           {row.reviewedAt ? dateTime(row.reviewedAt) : '—'}
           {row.reviewNote && <bdi dir="auto"> · {row.reviewNote}</bdi>}

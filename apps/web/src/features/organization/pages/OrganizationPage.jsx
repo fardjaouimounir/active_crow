@@ -24,14 +24,11 @@ function Tree({ nodes }) {
           </span>
         );
         return (
-          <li
-            key={node.id}
-            className="rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm"
-          >
+          <li key={node.id} className="rounded-lg border border-line bg-surface px-3 py-2 text-sm">
             {node.children.length ? (
               <details open>
                 <summary className="cursor-pointer">{label}</summary>
-                <div className="mt-2 border-s border-slate-200 ps-3">
+                <div className="mt-2 border-s border-line ps-3">
                   <Tree nodes={node.children} />
                 </div>
               </details>

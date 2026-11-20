@@ -22,10 +22,10 @@ export function PromotionPreview({ promotions, products, gifts }) {
   return (
     <section
       aria-label={t('rules.preview.title')}
-      className="grid gap-3 rounded-xl border border-slate-200 bg-white p-4"
+      className="grid gap-3 rounded-xl border border-line bg-surface p-4"
     >
       <h3 className="font-semibold">{t('rules.preview.title')}</h3>
-      <p className="text-sm text-slate-600">{t('rules.preview.hint')}</p>
+      <p className="text-sm text-fg-2">{t('rules.preview.hint')}</p>
       <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
         {products.map((product) => (
           <label key={product.id} className="grid gap-1 text-sm">
@@ -45,7 +45,7 @@ export function PromotionPreview({ promotions, products, gifts }) {
       <div role="status" aria-live="polite">
         <h4 className="text-sm font-medium">{t('rules.preview.result')}</h4>
         {entitlements.length === 0 ? (
-          <p className="text-sm text-slate-600">{t('rules.preview.none')}</p>
+          <p className="text-sm text-fg-2">{t('rules.preview.none')}</p>
         ) : (
           <ul className="list-disc ps-5 text-sm">
             {entitlements.map((entitlement) => (

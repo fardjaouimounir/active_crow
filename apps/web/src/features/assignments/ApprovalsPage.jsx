@@ -48,7 +48,7 @@ export function ApprovalsPage() {
       {query.isSuccess && !rows.length && <EmptyState />}
       <div className="space-y-3">
         {Array.from(groups, ([key, group]) => (
-          <section key={key} className="rounded-xl border border-slate-200 bg-white p-4">
+          <section key={key} className="rounded-xl border border-line bg-surface p-4">
             <h2 className="font-semibold">
               <Link
                 className="underline"

@@ -4,7 +4,10 @@ import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { useTranslation } from 'react-i18next';
 import { Link } from 'react-router';
+import { Gift, PackageCheck, ShoppingBag, Ticket } from 'lucide-react';
 import { useCan } from '../../shared/auth/hooks.js';
+import { StatusBadge } from '../../shared/ui/PageParts.jsx';
+import { TableFrame, Timeline, TimelineStep, tableClass } from '../../ui/data.jsx';
 import { Modal } from '../../shared/ui/Dialogs.jsx';
 import { useFilters } from '../../shared/ui/FilterBar.jsx';
 import { useApiError } from '../../shared/ui/useApiError.js';
@@ -44,54 +47,80 @@ function SaleDetail({ id, close }) {
       <QueryState query={sale} />
       {row && (
         <div className="grid gap-4">
-          <p>
-            {row.workDate} · {row.animateur.fullName} · {row.pointOfSale.name}
-          </p>
-          <p>
-            {row.customer?.fullName} <bdi>{row.customer?.phone}</bdi>
-          </p>
-          <div>
-            <h3 className="font-semibold">{t('sales.products')}</h3>
-            <ul>
-              {row.items.map((item) => (
-                <li key={item.id}>
-                  {item.product.name} × {item.quantity}
-                </li>
-              ))}
-            </ul>
-          </div>
-          <div>
-            <h3 className="font-semibold">{t('sales.gifts')}</h3>
-            <ul>
-              {row.entitlements.map((gift) => (
-                <li key={gift.id} className="py-1">
-                  {gift.stockItem.name} × {gift.quantity} · {gift.promotion.name} ·{' '}
-                  {t('sales.status.' + gift.status)}
-                  {gift.deliveryMovementId && (
-                    <p className="break-all">
-                      {t('sales.movement')} <bdi>{gift.deliveryMovementId}</bdi>
-                    </p>
-                  )}
-                  {gift.shortageIssueId && (
-                    <Link className="underline" to={'/app/issues/' + gift.shortageIssueId}>
-                      {t('sales.issue')}
-                    </Link>
-                  )}
-                </li>
-              ))}
-            </ul>
-          </div>
-          <div>
-            <h3 className="font-semibold">{t('sales.tombola')}</h3>
-            <ul>
-              {row.tombolaEntries.map((entry) => (
-                <li key={entry.id}>
-                  {entry.tombola.name} · <bdi>{entry.entryNumber}</bdi> ·{' '}
-                  {t('sales.status.' + entry.status)}
-                </li>
-              ))}
-            </ul>
-          </div>
+          <header className="space-y-0.5 text-sm">
+            <p className="font-medium text-fg">
+              <bdi>{row.workDate}</bdi> · {row.animateur.fullName} · {row.pointOfSale.name}
+            </p>
+            <p className="text-fg-2">
+              {row.customer?.fullName} <bdi>{row.customer?.phone}</bdi>
+            </p>
+          </header>
+          <Timeline label={t('sales.detail')}>
+            <TimelineStep icon={ShoppingBag} title={t('sales.products')} tone="accent">
+              <ul>
+                {row.items.map((item) => (
+                  <li key={item.id}>
+                    {item.product.name} × {item.quantity}
+                  </li>
+                ))}
+              </ul>
+            </TimelineStep>
+            <TimelineStep icon={Gift} title={t('sales.gifts')} tone="good">
+              <ul className="space-y-1">
+                {row.entitlements.map((gift) => (
+                  <li key={gift.id}>
+                    {gift.stockItem.name} × {gift.quantity} · {gift.promotion.name} ·{' '}
+                    <StatusBadge tone={gift.status === 'delivered' ? 'good' : 'warn'}>
+                      {t('sales.status.' + gift.status)}
+                    </StatusBadge>
+                  </li>
+                ))}
+              </ul>
+            </TimelineStep>
+            <TimelineStep icon={PackageCheck} title={t('sales.movement')}>
+              {row.entitlements.some((gift) => gift.deliveryMovementId || gift.shortageIssueId) ? (
+                <ul className="space-y-1">
+                  {row.entitlements
+                    .filter((gift) => gift.deliveryMovementId || gift.shortageIssueId)
+                    .map((gift) => (
+                      <li key={gift.id} className="break-all">
+                        {gift.stockItem.name}
+                        {gift.deliveryMovementId && (
+                          <>
+                            {' · '}
+                            <bdi>{gift.deliveryMovementId}</bdi>
+                          </>
+                        )}
+                        {gift.shortageIssueId && (
+                          <Link
+                            className="ms-2 text-accent-text underline underline-offset-4"
+                            to={'/app/issues/' + gift.shortageIssueId}
+                          >
+                            {t('sales.issue')}
+                          </Link>
+                        )}
+                      </li>
+                    ))}
+                </ul>
+              ) : (
+                <span className="text-fg-3">—</span>
+              )}
+            </TimelineStep>
+            <TimelineStep icon={Ticket} title={t('sales.tombola')} last>
+              {row.tombolaEntries.length ? (
+                <ul>
+                  {row.tombolaEntries.map((entry) => (
+                    <li key={entry.id}>
+                      {entry.tombola.name} · <bdi>{entry.entryNumber}</bdi> ·{' '}
+                      {t('sales.status.' + entry.status)}
+                    </li>
+                  ))}
+                </ul>
+              ) : (
+                <span className="text-fg-3">—</span>
+              )}
+            </TimelineStep>
+          </Timeline>
           {row.proofFileId && (
             <Link className="underline" to={'/files/' + row.proofFileId}>
               {t('sales.proof')}
@@ -284,11 +313,14 @@ export function SalesTab({ campaign }) {
   const meta = query.data?.meta;
   return (
     <section className="grid gap-4">
-      <div className="flex flex-wrap gap-2">
+      <div className="flex flex-wrap gap-1">
         {['sales', ...Object.keys(resources)].map((key) => (
           <button
             key={key}
-            className={button}
+            className={
+              button +
+              ' aria-pressed:border-accent-line aria-pressed:bg-accent-soft aria-pressed:text-accent-text'
+            }
             aria-pressed={key === view}
             onClick={() => setFilters({ view: key })}
           >
@@ -305,10 +337,13 @@ export function SalesTab({ campaign }) {
             people={meta?.filters}
           />
           {meta?.counts && (
-            <div className="flex flex-wrap gap-3">
+            <div className="flex flex-wrap gap-2">
               {Object.entries(meta.counts).map(([key, value]) => (
-                <span key={key}>
-                  {t('sales.' + key)} <strong>{value}</strong>
+                <span
+                  key={key}
+                  className="inline-flex items-baseline gap-1.5 rounded-md border border-line bg-surface px-2.5 py-1 text-xs text-fg-2"
+                >
+                  {t('sales.' + key)} <strong className="tnum text-sm text-fg">{value}</strong>
                 </span>
               ))}
             </div>
@@ -332,40 +367,49 @@ export function SalesTab({ campaign }) {
                 ))}
               </ul>
             ) : (
-              <div className="overflow-x-auto">
-                <table className="w-full text-start text-sm">
-                  <thead>
-                    <tr>
-                      {['date', 'animateur', 'point', 'units', 'statusLabel'].map((key) => (
-                        <th className="p-2 text-start" key={key}>
-                          {t('sales.' + key)}
-                        </th>
-                      ))}
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {rows.map((row) => (
-                      <tr key={row.id} className="border-t">
-                        <td className="p-2">
-                          <button className="underline" onClick={() => select(row.id)}>
-                            {row.workDate}
-                          </button>
-                        </td>
-                        <td className="p-2">{row.animateur.fullName}</td>
-                        <td className="p-2">{row.pointOfSale.name}</td>
-                        <td className="p-2">{row.units}</td>
-                        <td className="p-2">{t('sales.status.' + row.status)}</td>
+              <TableFrame>
+                <div className="overflow-x-auto">
+                  <table className={tableClass.table}>
+                    <thead className={tableClass.head}>
+                      <tr>
+                        {['date', 'animateur', 'point', 'units', 'statusLabel'].map((key) => (
+                          <th className={tableClass.th(true, key === 'units')} key={key}>
+                            {t('sales.' + key)}
+                          </th>
+                        ))}
                       </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
+                    </thead>
+                    <tbody>
+                      {rows.map((row) => (
+                        <tr key={row.id} className={tableClass.row()}>
+                          <td className={tableClass.td()}>
+                            <button
+                              className="tnum underline underline-offset-4 hover:text-accent-text"
+                              onClick={() => select(row.id)}
+                            >
+                              {row.workDate}
+                            </button>
+                          </td>
+                          <td className={tableClass.td()}>{row.animateur.fullName}</td>
+                          <td className={tableClass.td()}>{row.pointOfSale.name}</td>
+                          <td className={tableClass.td(true, true)}>{row.units}</td>
+                          <td className={tableClass.td()}>
+                            <StatusBadge tone={row.status === 'voided' ? 'bad' : 'neutral'}>
+                              {t('sales.status.' + row.status)}
+                            </StatusBadge>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </TableFrame>
             ))}
         </>
       )}
       {view === 'sales' && <Pagination meta={meta} setPage={(page) => setFilters({ page })} />}
       {selected && <SaleDetail id={selected} close={() => select(null)} />}
-      <p className="text-sm text-slate-600">{t('sales.interactionHelp')}</p>
+      <p className="text-sm text-fg-2">{t('sales.interactionHelp')}</p>
     </section>
   );
 }

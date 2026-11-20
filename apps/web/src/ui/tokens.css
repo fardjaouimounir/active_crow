@@ -1,0 +1,269 @@
+/*
+ * ActiCrew design tokens — the ONLY file in apps/web/src that may contain raw color values
+ * (enforced by test/design-tokens.test.js, which also checks WCAG contrast of the pairs below).
+ * Components use the semantic Tailwind names mapped at the bottom (bg-surface, text-fg, border-line…).
+ */
+
+:root {
+  /* Brand */
+  --brand-black: #000000;
+  --spring: #3afb7c;
+  --aquamarine: #adfec8;
+  --lawn: #94fc48;
+  --brand-white: #ffffff;
+  /* Darker derived shade of spring: green TEXT or thin lines on light surfaces (≥ 4.5:1 on white). */
+  --spring-700: #0a7a37;
+
+  /* Neutral ramp, slightly cool */
+  --gray-50: #f6f7f9;
+  --gray-100: #eceef2;
+  --gray-200: #e0e3e9;
+  --gray-300: #c9ced7;
+  --gray-400: #9aa2b0;
+  --gray-500: #6b7482;
+  --gray-600: #4f5865;
+  --gray-700: #3a424e;
+  --gray-800: #252b34;
+  --gray-900: #14181e;
+  --gray-950: #0a0d11;
+
+  /* Type */
+  --font-sans-stack:
+    'Geist', 'IBM Plex Sans Arabic', ui-sans-serif, system-ui, 'Segoe UI', sans-serif;
+  --font-mono-stack: ui-monospace, 'Cascadia Mono', 'SF Mono', Consolas, monospace;
+
+  /* Motion */
+  --dur-fast: 120ms;
+  --dur-base: 160ms;
+  --dur-slow: 200ms;
+  --ease-out-expo: cubic-bezier(0.2, 0.8, 0.2, 1);
+
+  /* Layers */
+  --z-sticky: 20;
+  --z-popover: 30;
+  --z-modal: 40;
+  --z-toast: 50;
+
+  /* Layout */
+  --sidebar-w: 14.5rem;
+  --sidebar-w-collapsed: 3.5rem;
+  --topbar-h: 3.25rem;
+}
+
+/* ---- Dark (default for /app, /portal, /login) ---- */
+:root,
+[data-theme='dark'] {
+  color-scheme: dark;
+  --canvas: #000000;
+  --surface: #0a0d11;
+  --raised: #14181e;
+  --sunken: #10141a;
+  --fg: #f4f6f8;
+  --fg-2: #b4bbc7;
+  --fg-3: #8d96a5;
+  --line: #232932;
+  --line-strong: #394150;
+  --control: #6b7482;
+  --accent: #3afb7c;
+  --accent-hover: #6dfd9f;
+  --accent-fg: #000000;
+  --accent-soft: #0c2a19;
+  --accent-line: #1d6139;
+  --accent-text: #3afb7c;
+  --success: #94fc48;
+  --success-soft: #16280a;
+  --success-line: #36581a;
+  --warning: #fbbf24;
+  --warning-soft: #2a2007;
+  --warning-line: #5e4810;
+  --danger: #ff7a87;
+  --danger-solid: #d92d40;
+  --danger-fg: #ffffff;
+  --danger-soft: #2e1015;
+  --danger-line: #6e2833;
+  --info: #7cc4ff;
+  --info-soft: #0b2233;
+  --info-line: #1f4c6e;
+  --scrim: #000000b8;
+  --focus: #3afb7c;
+  --shadow-overlay: 0 12px 32px #000000cc, 0 0 0 1px #394150;
+  /* Charts */
+  --chart-1: #3afb7c;
+  --chart-2: #adfec8;
+  --chart-3: #94fc48;
+  --chart-4: #8d96a5;
+  --chart-5: #7cc4ff;
+  --chart-6: #fbbf24;
+  --chart-grid: #1b2028;
+  --chart-axis: #8d96a5;
+  /* Heat tint for matrices (low → high) */
+  --heat-0: #0a0d11;
+  --heat-1: #0c2a19;
+  --heat-2: #124a2a;
+  --heat-3: #1b7a43;
+}
+
+/* ---- Light ---- */
+[data-theme='light'] {
+  color-scheme: light;
+  --canvas: #f6f7f9;
+  --surface: #ffffff;
+  --raised: #ffffff;
+  --sunken: #f0f2f5;
+  --fg: #0a0d11;
+  --fg-2: #3a424e;
+  --fg-3: #566070;
+  --line: #e0e3e9;
+  --line-strong: #c3c9d3;
+  --control: #6b7482;
+  --accent: #3afb7c;
+  --accent-hover: #22e468;
+  --accent-fg: #000000;
+  --accent-soft: #adfec8;
+  --accent-line: #5bd98a;
+  --accent-text: #0a7a37;
+  --success: #12692d;
+  --success-soft: #e4f8ea;
+  --success-line: #9bdcb0;
+  --warning: #8a5500;
+  --warning-soft: #fff3d4;
+  --warning-line: #ecd089;
+  --danger: #b3202e;
+  --danger-solid: #b3202e;
+  --danger-fg: #ffffff;
+  --danger-soft: #fdeceb;
+  --danger-line: #efb3b6;
+  --info: #1a5c97;
+  --info-soft: #e5f1fb;
+  --info-line: #a6cbe8;
+  --scrim: #0a0d11a6;
+  --focus: #0a7a37;
+  --shadow-overlay: 0 12px 32px #0a0d1133, 0 0 0 1px #c3c9d3;
+  --chart-1: #0f9a47;
+  --chart-2: #2a9f5c;
+  --chart-3: #5f9f10;
+  --chart-4: #566070;
+  --chart-5: #1a5c97;
+  --chart-6: #8a5500;
+  --chart-grid: #e8ebf0;
+  --chart-axis: #566070;
+  --heat-0: #ffffff;
+  --heat-1: #e4f8ea;
+  --heat-2: #adfec8;
+  --heat-3: #5bd98a;
+}
+
+/* ---- Field: light, high contrast (outdoor sunlight) — only values that differ ---- */
+:root[data-theme='light'][data-surface='field'] {
+  --canvas: #ffffff;
+  --sunken: #eceef2;
+  --fg-2: #1f252d;
+  --fg-3: #3a424e;
+  --line: #c3c9d3;
+  --line-strong: #6b7482;
+}
+
+@theme {
+  --color-*: initial;
+  --color-transparent: transparent;
+  --color-current: currentColor;
+
+  /* Static brand colors */
+  --color-brand-black: var(--brand-black);
+  --color-brand-white: var(--brand-white);
+  --color-spring: var(--spring);
+  --color-spring-700: var(--spring-700);
+  --color-aquamarine: var(--aquamarine);
+  --color-lawn: var(--lawn);
+  --color-gray-50: var(--gray-50);
+  --color-gray-100: var(--gray-100);
+  --color-gray-200: var(--gray-200);
+  --color-gray-300: var(--gray-300);
+  --color-gray-400: var(--gray-400);
+  --color-gray-500: var(--gray-500);
+  --color-gray-600: var(--gray-600);
+  --color-gray-700: var(--gray-700);
+  --color-gray-800: var(--gray-800);
+  --color-gray-900: var(--gray-900);
+  --color-gray-950: var(--gray-950);
+
+  /* Typography scale (13–14 px UI text) */
+  --font-sans: var(--font-sans-stack);
+  --font-mono: var(--font-mono-stack);
+  --text-2xs: 0.6875rem;
+  --text-2xs--line-height: 1rem;
+  --text-xs: 0.75rem;
+  --text-xs--line-height: 1.0625rem;
+  --text-sm: 0.8125rem;
+  --text-sm--line-height: 1.25rem;
+  --text-base: 0.875rem;
+  --text-base--line-height: 1.375rem;
+  --text-lg: 1rem;
+  --text-lg--line-height: 1.5rem;
+  --text-xl: 1.125rem;
+  --text-xl--line-height: 1.625rem;
+  --text-2xl: 1.375rem;
+  --text-2xl--line-height: 1.75rem;
+  --text-3xl: 1.75rem;
+  --text-3xl--line-height: 2.125rem;
+  --text-4xl: 2.25rem;
+  --text-4xl--line-height: 2.5rem;
+
+  /* Radii: small, 6–10 px */
+  --radius-xs: 3px;
+  --radius-sm: 4px;
+  --radius-md: 6px;
+  --radius-lg: 8px;
+  --radius-xl: 10px;
+  --radius-2xl: 12px;
+
+  /* Shadows: overlays only */
+  --shadow-2xs: 0 0 #0000;
+  --shadow-xs: 0 0 #0000;
+  --shadow-sm: 0 0 #0000;
+  --shadow-md: var(--shadow-overlay);
+  --shadow-lg: var(--shadow-overlay);
+  --shadow-xl: var(--shadow-overlay);
+  --shadow-2xl: var(--shadow-overlay);
+
+  --ease-out: var(--ease-out-expo);
+}
+
+@theme inline {
+  --color-canvas: var(--canvas);
+  --color-surface: var(--surface);
+  --color-raised: var(--raised);
+  --color-sunken: var(--sunken);
+  --color-fg: var(--fg);
+  --color-fg-2: var(--fg-2);
+  --color-fg-3: var(--fg-3);
+  --color-line: var(--line);
+  --color-line-strong: var(--line-strong);
+  --color-control: var(--control);
+  --color-accent: var(--accent);
+  --color-accent-hover: var(--accent-hover);
+  --color-accent-fg: var(--accent-fg);
+  --color-accent-soft: var(--accent-soft);
+  --color-accent-line: var(--accent-line);
+  --color-accent-text: var(--accent-text);
+  --color-success: var(--success);
+  --color-success-soft: var(--success-soft);
+  --color-success-line: var(--success-line);
+  --color-warning: var(--warning);
+  --color-warning-soft: var(--warning-soft);
+  --color-warning-line: var(--warning-line);
+  --color-danger: var(--danger);
+  --color-danger-solid: var(--danger-solid);
+  --color-danger-fg: var(--danger-fg);
+  --color-danger-soft: var(--danger-soft);
+  --color-danger-line: var(--danger-line);
+  --color-info: var(--info);
+  --color-info-soft: var(--info-soft);
+  --color-info-line: var(--info-line);
+  --color-scrim: var(--scrim);
+  --color-focus: var(--focus);
+  --color-heat-0: var(--heat-0);
+  --color-heat-1: var(--heat-1);
+  --color-heat-2: var(--heat-2);
+  --color-heat-3: var(--heat-3);
+}

@@ -1,5 +1,5 @@
 import { Bell, Camera, CircleAlert, House, ShoppingBag } from 'lucide-react';
-import { useEffect, useState } from 'react';
+import { useEffect, useLayoutEffect, useState } from 'react';
 import { I18nextProvider, useTranslation } from 'react-i18next';
 import { Link, NavLink, Outlet } from 'react-router';
 import { logout } from '../../shared/auth/session.js';
@@ -8,6 +8,8 @@ import { useFieldQuery } from '../../surfaces/field/api.js';
 import ar from '../../surfaces/field/ar.json';
 import en from '../../surfaces/field/en.json';
 import { secondary } from '../../surfaces/field/ui.jsx';
+import { LogoMark } from '../../ui/brand.jsx';
+import { applySurface } from '../../ui/theme.js';
 
 const storage = 'fieldflow.field.language';
 const tabs = [
@@ -39,7 +41,7 @@ function BellMenu() {
     <div className="relative">
       <button
         type="button"
-        className={secondary + ' size-12 px-0'}
+        className={secondary + ' size-14 px-0'}
         aria-label={t('notifications')}
         aria-expanded={open}
         onClick={() => setOpen(!open)}
@@ -47,7 +49,7 @@ function BellMenu() {
         <Bell size={20} aria-hidden="true" />
       </button>
       {open && (
-        <div className="absolute end-0 top-14 z-30 grid max-h-72 w-64 gap-1 overflow-auto rounded-xl border bg-white p-2 shadow-xl">
+        <div className="absolute end-0 top-14 z-30 grid max-h-72 w-64 gap-1 overflow-auto rounded-xl border bg-surface p-2 shadow-xl">
           {items.length ? (
             items.map((item) => {
               const target = item.type?.startsWith('attendance.')
@@ -59,7 +61,7 @@ function BellMenu() {
                     : '/field/issue';
               return (
                 <Link
-                  className="flex min-h-12 items-center rounded-lg px-2 hover:bg-slate-100"
+                  className="flex min-h-12 items-center rounded-lg px-2 hover:bg-sunken"
                   to={target}
                   key={item.id}
                   onClick={() => setOpen(false)}
@@ -85,6 +87,9 @@ function Shell() {
   const [online, setOnline] = useState(connection);
   const [reachable, setReachable] = useState(true);
   const [install, setInstall] = useState(null);
+  useLayoutEffect(() => {
+    applySurface('field');
+  }, []);
   const sale = useFieldQuery('/me/sales/today');
   const attendance = useFieldQuery('/me/attendance/today');
   const field = sale.data?.data?.field;
@@ -136,16 +141,22 @@ function Shell() {
     <div
       lang={language}
       dir={locale.dir(language)}
-      className="min-h-dvh bg-slate-50 text-base text-slate-950"
+      className="min-h-dvh bg-canvas text-base text-fg"
     >
-      <header className="sticky top-0 z-20 border-b border-slate-200 bg-white [padding-top:env(safe-area-inset-top)]">
+      <header className="sticky top-0 z-20 border-b-2 border-line-strong bg-surface [padding-top:env(safe-area-inset-top)]">
         <div className="mx-auto grid max-w-xl grid-cols-[minmax(0,1fr)_auto] items-center gap-2 px-3 py-2">
           <div className="min-w-0">
-            <p className="truncate font-bold">{field?.campaignName ?? 'FieldFlow'}</p>
+            <p className="flex min-w-0 items-center gap-2 text-lg font-bold">
+              <LogoMark size={22} />
+              <span className="truncate">{field?.campaignName ?? 'ActiCrew'}</span>
+            </p>
             {field && <p className="truncate">{field.pointOfSale.name}</p>}
             <p
               role="status"
-              className={onlineStatus === 'online' ? 'text-teal-800' : 'text-red-800'}
+              className={
+                'flex items-center gap-1.5 font-medium ' +
+                (onlineStatus === 'online' ? 'text-success' : 'text-danger')
+              }
             >
               {t(onlineStatus)}
             </p>
@@ -153,7 +164,7 @@ function Shell() {
           <div className="flex gap-1">
             <BellMenu />
             <button
-              className={secondary + ' size-12 px-0'}
+              className={secondary + ' size-14 px-0'}
               onClick={switchLanguage}
               aria-label={t('language')}
             >
@@ -177,7 +188,7 @@ function Shell() {
           }}
         />
         <div className="flex flex-wrap items-center justify-between gap-2">
-          <p className="text-slate-700">{t('roles.animateur', { ns: 'common' })}</p>
+          <p className="text-fg-2">{t('roles.animateur', { ns: 'common' })}</p>
           <button className={secondary} onClick={() => void logout()}>
             {t('logout')}
           </button>
@@ -185,7 +196,7 @@ function Shell() {
       </main>
       <nav
         aria-label={t('navigation')}
-        className="fixed inset-x-0 bottom-0 z-20 border-t border-slate-200 bg-white [padding-bottom:env(safe-area-inset-bottom)]"
+        className="fixed inset-x-0 bottom-0 z-20 border-t-2 border-line-strong bg-surface [padding-bottom:env(safe-area-inset-bottom)]"
       >
         <div className="mx-auto grid max-w-xl grid-cols-4 gap-1 p-1">
           {tabs.map(([name, url, Icon]) => (
@@ -194,8 +205,8 @@ function Shell() {
               to={url}
               end
               className={({ isActive }) =>
-                'flex min-h-14 flex-col items-center justify-center gap-1 rounded-xl px-1 py-1 font-semibold ' +
-                (isActive ? 'bg-teal-800 text-white' : 'text-slate-800 hover:bg-slate-100')
+                'flex min-h-14 flex-col items-center justify-center gap-1 rounded-lg px-1 py-1 text-sm font-semibold ' +
+                (isActive ? 'bg-fg text-canvas' : 'text-fg active:bg-sunken')
               }
             >
               <Icon size={20} aria-hidden="true" />

@@ -108,7 +108,7 @@ function Configuration({ id, row, close }) {
             />
           </label>
         ))}
-        <p className="text-sm text-slate-600">{t('sales.purchaseRequired')}</p>
+        <p className="text-sm text-fg-2">{t('sales.purchaseRequired')}</p>
         {Object.keys(errors).length > 0 && <p role="alert">{t('sales.invalidConfiguration')}</p>}
         {write.isError && <p role="alert">{message}</p>}
         <button className={button} disabled={write.isPending}>

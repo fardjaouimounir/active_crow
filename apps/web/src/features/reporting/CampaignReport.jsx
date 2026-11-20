@@ -1,5 +1,6 @@
 import { useParams } from 'react-router';
 import { useTranslation } from 'react-i18next';
+import { PrintBrand, buttonClass } from '../../ui/primitives.jsx';
 import { useAuth } from '../../shared/auth/hooks.js';
 import { CampaignAiActions, CampaignAiCards } from '../ai/AiUi.jsx';
 import { useReport } from './api.js';
@@ -30,11 +31,12 @@ export function CampaignReport() {
   const { campaign, kpis, daily, wilayas, stores, reconciliation, issues } = data;
   return (
     <article className="campaign-print-report space-y-6">
+      <PrintBrand tagline={common('brand.tagline')} />
       <header className="space-y-2">
-        <p className="text-sm text-slate-600">
+        <p className="text-sm text-fg-2">
           {t('report')} · <bdi>{campaign.code}</bdi>
         </p>
-        <h1 className="text-3xl font-semibold">{campaign.name}</h1>
+        <h1 className="text-3xl font-semibold tracking-tight">{campaign.name}</h1>
         <p>
           <bdi>{campaign.client.name}</bdi> ·{' '}
           <bdi dir="ltr">
@@ -61,14 +63,14 @@ export function CampaignReport() {
           {t('generated')} <bdi dir="ltr">{date(data.generatedAt)}</bdi>
         </p>
         {campaign.status !== 'closed' && (
-          <p className="report-watermark w-fit rounded-md border border-amber-500 px-2 py-1 text-amber-800">
+          <p className="report-watermark w-fit rounded-md border border-warning-line px-2 py-1 text-warning">
             {t('provisional')}
           </p>
         )}
         <div className="report-actions flex flex-wrap gap-2">
           <button
             type="button"
-            className="rounded-md border px-4 py-2"
+            className={buttonClass({ variant: 'secondary' })}
             onClick={() => window.print()}
           >
             {t('print')}
@@ -89,12 +91,12 @@ export function CampaignReport() {
       <BreakdownTable rows={wilayas} title="byWilaya" />
       <BreakdownTable rows={stores} title="byStore" />
       <section className="report-section space-y-2">
-        <h2 className="text-lg font-semibold">{t('reconciliation')}</h2>
-        <dl>
+        <h2 className="text-lg font-semibold tracking-tight">{t('reconciliation')}</h2>
+        <dl className="max-w-md text-sm">
           {['stockIn', 'customers', 'losses', 'returnedToClient', 'physical'].map((key) => (
-            <div key={key} className="flex justify-between">
-              <dt>{t(key)}</dt>
-              <dd>{num(reconciliation?.[key])}</dd>
+            <div key={key} className="flex justify-between border-b border-line py-1">
+              <dt className="text-fg-2">{t(key)}</dt>
+              <dd className="tnum font-medium">{num(reconciliation?.[key])}</dd>
             </div>
           ))}
         </dl>

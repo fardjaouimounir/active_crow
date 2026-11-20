@@ -1,4 +1,6 @@
+import { ScanSearch } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
+import { buttonClass } from '../../ui/primitives.jsx';
 import { useCan } from '../../shared/auth/hooks.js';
 import { useApiError } from '../../shared/ui/useApiError.js';
 import { useAiCommentary, useAiRequests, useRequestSuggestion } from './api.js';
@@ -42,7 +44,18 @@ export function requestState(request) {
   return decided === 'accepted' || decided === 'rejected' ? decided : 'ready';
 }
 
-const toneOf = { failed: 'text-red-700', ready: 'text-emerald-700', accepted: 'text-emerald-700' };
+/** Marks anything the model wrote: icon + text, shown wherever an AI suggestion appears. */
+export function AiBadge() {
+  const { t } = useAiText();
+  return (
+    <span className="inline-flex h-5 items-center gap-1 rounded-md border border-accent-line bg-accent-soft px-1.5 text-xs font-medium text-accent-text">
+      <ScanSearch aria-hidden="true" size={12} strokeWidth={2} />
+      {t('aiGenerated')}
+    </span>
+  );
+}
+
+const toneOf = { failed: 'text-danger', ready: 'text-success', accepted: 'text-success' };
 
 /**
  * One AI button with its request status. Hidden when the AI module is off or the role cannot ask.
@@ -64,7 +77,7 @@ export function AiActionButton({ capability, subjectId, filters = {}, blockedRea
         type="button"
         title={blockedReason ?? undefined}
         disabled={Boolean(blockedReason) || inFlight || create.isPending}
-        className="min-h-10 rounded-md border border-slate-300 bg-white px-3 text-sm disabled:opacity-50"
+        className={buttonClass({ variant: 'secondary' })}
         onClick={() =>
           create.mutate({
             capability,
@@ -77,12 +90,12 @@ export function AiActionButton({ capability, subjectId, filters = {}, blockedRea
         {t('action.' + capability)}
       </button>
       {state && (
-        <span role="status" className={'text-sm ' + (toneOf[state] ?? 'text-slate-600')}>
+        <span role="status" className={'text-sm ' + (toneOf[state] ?? 'text-fg-2')}>
           {t('state.' + state)}
         </span>
       )}
       {message && (
-        <span role="alert" className="text-sm text-red-700">
+        <span role="alert" className="text-sm text-danger">
           {message}
         </span>
       )}
@@ -97,7 +110,7 @@ const text = (item) =>
 function Section({ title, children }) {
   return (
     <section className="space-y-1">
-      <h4 className="text-sm font-semibold text-slate-700">{title}</h4>
+      <h4 className="text-sm font-semibold text-fg-2">{title}</h4>
       {children}
     </section>
   );
@@ -119,9 +132,9 @@ function Bullets({ items }) {
 
 const SEVERITY_ORDER = { high: 0, medium: 1, low: 2 };
 const SEVERITY_TONE = {
-  high: 'bg-red-100 text-red-800',
-  medium: 'bg-amber-100 text-amber-900',
-  low: 'bg-slate-100 text-slate-700',
+  high: 'bg-danger-soft text-danger',
+  medium: 'bg-warning-soft text-warning',
+  low: 'bg-sunken text-fg-2',
 };
 
 /** Replaces the codes the AI service saw (A1, S2…) by the names kept on our side. */
@@ -138,7 +151,7 @@ export function AiOutput({ capability, output, labels }) {
   const name = useLabelName(labels);
   if (!output || output.error) {
     return (
-      <p role="alert" className="rounded-md bg-red-50 p-3 text-sm text-red-800">
+      <p role="alert" className="rounded-md bg-danger-soft p-3 text-sm text-danger">
         {t('failure.' + output?.error?.code)}
       </p>
     );
@@ -184,7 +197,7 @@ export function AiOutput({ capability, output, labels }) {
     return (
       <div className="space-y-3">
         {list(output.coaching).map((person, index) => (
-          <article key={index} className="space-y-2 rounded-md border border-slate-200 p-3">
+          <article key={index} className="space-y-2 rounded-md border border-line p-3">
             <h4 className="font-semibold" dir="auto">
               {name(person.label)}
             </h4>
@@ -254,23 +267,26 @@ export function AiCommentaryCard({ capability, subjectId, period }) {
   if (!period?.from || !period?.to || commentary.isPending) return null;
   if (!row || row.failure)
     return canRequest ? (
-      <p className="text-xs text-slate-500">
+      <p className="text-xs text-fg-3">
         {t('capabilityName.' + capability)}: {t('noneForPeriod')}
       </p>
     ) : null;
   return (
-    <section className="space-y-3 rounded-xl border border-violet-200 bg-violet-50/40 p-4">
+    <section className="space-y-3 rounded-lg border border-dashed border-accent-line bg-accent-soft/30 p-4">
       <header className="space-y-1">
-        <h2 className="font-semibold">
-          {t('commentary')} · {t('capabilityName.' + capability)}
-        </h2>
-        <p className="text-xs text-slate-600">
+        <div className="flex flex-wrap items-center gap-2">
+          <AiBadge />
+          <h2 className="font-semibold tracking-tight">
+            {t('commentary')} · {t('capabilityName.' + capability)}
+          </h2>
+        </div>
+        <p className="text-xs text-fg-2">
           {t('period')}:{' '}
           <bdi dir="ltr">
             {row.filters?.from} – {row.filters?.to}
           </bdi>
         </p>
-        <p className="text-xs text-slate-600">
+        <p className="text-xs text-fg-2">
           {t('reviewedBy', {
             name: row.reviewedBy?.name ?? '—',
             date: row.reviewedAt ? date(row.reviewedAt) : '—',

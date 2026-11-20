@@ -96,7 +96,7 @@ export function UserDetailPage() {
         ))}
       </div>
       <div className="grid gap-4 lg:grid-cols-2">
-        <section className="rounded-xl border border-slate-200 bg-white p-5">
+        <section className="rounded-xl border border-line bg-surface p-5">
           <h2 className="mb-3 font-semibold">{t('admin.details')}</h2>
           <dl className="grid gap-3 text-sm">
             <div>
@@ -156,12 +156,12 @@ export function UserDetailPage() {
               ))}
           </dl>
         </section>
-        <section className="rounded-xl border border-slate-200 bg-white p-5">
+        <section className="rounded-xl border border-line bg-surface p-5">
           <h2 className="mb-3 font-semibold">{t('admin.reportingLines')}</h2>
           {!reportingLines.length && <EmptyState />}
           <ol className="space-y-3">
             {reportingLines.map((line) => (
-              <li key={line.id} className="border-s-2 border-slate-200 ps-3 text-sm">
+              <li key={line.id} className="border-s-2 border-line ps-3 text-sm">
                 <p>
                   {dateFormat.format(new Date(line.validFrom))} –{' '}
                   {line.validTo ? dateFormat.format(new Date(line.validTo)) : t('admin.ongoing')}

@@ -22,7 +22,7 @@ export function FileViewerPage() {
   }
   if (!file.url) return <p role="status">{t('admin.loading')}</p>;
   return file.type?.startsWith('image/') ? (
-    <main className="flex min-h-screen items-center justify-center bg-slate-900 p-4">
+    <main className="flex min-h-screen items-center justify-center bg-brand-black p-4">
       <img src={file.url} alt="" className="max-h-[95vh] max-w-full" />
     </main>
   ) : (

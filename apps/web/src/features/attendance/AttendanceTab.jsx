@@ -3,7 +3,18 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { useState } from 'react';
 import { useForm, useWatch } from 'react-hook-form';
 import { useTranslation } from 'react-i18next';
+import {
+  CircleCheck,
+  CircleDashed,
+  CircleX,
+  Clock,
+  Flag,
+  UserRoundCheck,
+  UserRoundX,
+} from 'lucide-react';
 import { useCan } from '../../shared/auth/hooks.js';
+import { TableFrame, tableClass } from '../../ui/data.jsx';
+import { buttonClass, controlClass } from '../../ui/primitives.jsx';
 import { useApiError } from '../../shared/ui/useApiError.js';
 import { Modal } from '../../shared/ui/Dialogs.jsx';
 import { useFilters } from '../../shared/ui/FilterBar.jsx';
@@ -11,17 +22,26 @@ import { useFileObjectUrl } from '../files/api.js';
 import { useIdempotencyKey } from '../inventory/api.js';
 import { useBoard, useFieldWrite, useProof } from './api.js';
 
+/** Status → cell look. Icon + color + text: the status never relies on color alone. */
 const tones = {
-  not_sent: 'bg-slate-100 text-slate-800',
-  pending: 'bg-amber-100 text-amber-900',
-  verified: 'bg-green-100 text-green-900',
-  rejected: 'bg-red-100 text-red-900',
-  absent_justified: 'bg-blue-100 text-blue-900',
-  absent_unjustified: 'bg-rose-100 text-rose-900',
+  not_sent: 'border-line bg-sunken text-fg-2',
+  pending: 'border-warning-line bg-warning-soft text-warning',
+  verified: 'border-success-line bg-success-soft text-success',
+  rejected: 'border-danger-line bg-danger-soft text-danger',
+  absent_justified: 'border-info-line bg-info-soft text-info',
+  absent_unjustified: 'border-danger-line bg-danger-soft text-danger',
+};
+const STATUS_ICONS = {
+  not_sent: CircleDashed,
+  pending: Clock,
+  verified: CircleCheck,
+  rejected: CircleX,
+  absent_justified: UserRoundCheck,
+  absent_unjustified: UserRoundX,
 };
 const flags = ['late', 'far_from_pos', 'low_gps_accuracy', 'pos_without_location'];
-export const button = 'rounded border border-slate-300 px-3 py-1.5 text-sm disabled:opacity-50';
-export const field = 'rounded border border-slate-300 p-2';
+export const button = buttonClass({ variant: 'secondary', size: 'sm' });
+export const field = controlClass + ' h-auto py-1.5';
 
 export function QueryState({ query }) {
   const { t } = useTranslation('common');
@@ -357,120 +377,150 @@ export function AttendanceTab({ campaign }) {
       {query.isSuccess && (
         <>
           <div aria-label={t('attendance.legend')} className="flex flex-wrap gap-2">
-            {Object.entries(tones).map(([status, tone]) => (
-              <span key={status} className={tone + ' rounded px-2 py-1 text-sm'}>
-                {t('attendance.status.' + status)} {query.data.data.counters[status]}
-              </span>
-            ))}
-            <span className="rounded bg-amber-50 px-2 py-1 text-sm">
-              {t('attendance.flags.late')} {query.data.data.counters.late}
+            {Object.entries(tones).map(([status, tone]) => {
+              const Icon = STATUS_ICONS[status];
+              return (
+                <span
+                  key={status}
+                  className={
+                    tone + ' inline-flex items-center gap-1.5 rounded-md border px-2 py-1 text-xs'
+                  }
+                >
+                  <Icon aria-hidden="true" size={14} />
+                  {t('attendance.status.' + status)}{' '}
+                  <span className="tnum font-semibold">{query.data.data.counters[status]}</span>
+                </span>
+              );
+            })}
+            <span className="inline-flex items-center gap-1.5 rounded-md border border-warning-line bg-warning-soft px-2 py-1 text-xs text-warning">
+              <Flag aria-hidden="true" size={14} />
+              {t('attendance.flags.late')}{' '}
+              <span className="tnum font-semibold">{query.data.data.counters.late}</span>
             </span>
           </div>
           {rows.some((row) => row.checkpoints.some(matches)) ? (
-            <div className="overflow-x-auto">
-              <table className="w-full border-collapse text-start text-sm">
-                <thead>
-                  <tr>
-                    <th className="sticky start-0 bg-white p-2 text-start">
-                      {t('roles.animateur')}
-                    </th>
-                    {checkpoints.map((cell) => (
-                      <th key={cell.code} scope="col" className="p-2">
-                        {cell.label[i18n.language] ?? cell.label.en}
+            <TableFrame>
+              <div className="overflow-x-auto">
+                <table className={tableClass.table}>
+                  <thead className={tableClass.head}>
+                    <tr>
+                      <th className={tableClass.th() + ' sticky start-0 bg-sunken'}>
+                        {t('roles.animateur')}
                       </th>
-                    ))}
-                    <th scope="col">{t('attendance.absenceHistory')}</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {rows
-                    .filter((row) => row.checkpoints.some(matches))
-                    .map((row) => (
-                      <tr key={row.assignmentId} className="border-t border-slate-200">
-                        <th
-                          scope="row"
-                          className="sticky start-0 z-10 min-w-36 bg-white p-2 text-start"
-                        >
-                          {row.animateur.fullName}
-                          <span className="block font-normal">
-                            {row.pointOfSale.name} ·{' '}
-                            {row.pointOfSale.wilaya?.[i18n.language === 'ar' ? 'nameAr' : 'nameEn']}
-                          </span>
-                          <span className="block font-normal">{row.supervisor.fullName}</span>
+                      {checkpoints.map((cell) => (
+                        <th key={cell.code} scope="col" className={tableClass.th()}>
+                          {cell.label[i18n.language] ?? cell.label.en}
                         </th>
-                        {checkpoints
-                          .map(
-                            ({ code }) =>
-                              row.checkpoints.find((cell) => cell.code === code) ?? { code },
-                          )
-                          .map((cell) => (
-                            <td key={cell.code} className="min-w-32 p-2 align-top">
-                              {matches(cell) && (
-                                <div
-                                  className={
-                                    tones[cell.status] + ' flex items-start gap-2 rounded p-2'
-                                  }
-                                >
-                                  {canReview && cell.status === 'pending' && (
-                                    <input
-                                      type="checkbox"
-                                      checked={selected.includes(cell.record.id)}
-                                      aria-label={t('attendance.select', {
-                                        name: row.animateur.fullName,
-                                        checkpoint: cell.code,
-                                      })}
-                                      onChange={(event) =>
-                                        select((ids) =>
-                                          event.target.checked
-                                            ? [...ids, cell.record.id].slice(0, 200)
-                                            : ids.filter((id) => id !== cell.record.id),
-                                        )
-                                      }
-                                    />
-                                  )}
-                                  {cell.record ? (
-                                    <button
-                                      className="text-start underline"
-                                      onClick={() => openProof(cell.record.id)}
-                                    >
-                                      {t('attendance.status.' + cell.status)}
-                                      <br />
-                                      {time(cell.record.recordedAt, i18n.language)}
-                                    </button>
-                                  ) : (
-                                    <span>{t('attendance.status.' + cell.status)}</span>
-                                  )}
-                                  {cell.flags.map((flag) => (
-                                    <span
-                                      key={flag}
-                                      title={t('attendance.flags.' + flag)}
-                                      aria-label={t('attendance.flags.' + flag)}
-                                    >
-                                      ⚑
-                                    </span>
-                                  ))}
-                                </div>
-                              )}
-                            </td>
-                          ))}
-                        <td className="p-2">
-                          {row.absenceHistory?.length > 0 && (
-                            <button className={button} onClick={() => openAbsenceHistory(row)}>
-                              {t('attendance.absenceHistory')}
-                            </button>
-                          )}
-                          {canRecordAbsence &&
-                            !row.absenceHistory?.some((item) => !item.voidedAt) && (
-                              <button className={button} onClick={() => openAbsence(row)}>
-                                {t('attendance.absence')}
+                      ))}
+                      <th scope="col" className={tableClass.th()}>
+                        {t('attendance.absenceHistory')}
+                      </th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {rows
+                      .filter((row) => row.checkpoints.some(matches))
+                      .map((row) => (
+                        <tr key={row.assignmentId} className={tableClass.row()}>
+                          <th
+                            scope="row"
+                            className="sticky start-0 z-10 min-w-40 bg-surface px-3 py-1.5 text-start text-sm font-medium"
+                          >
+                            {row.animateur.fullName}
+                            <span className="block text-xs font-normal text-fg-3">
+                              {row.pointOfSale.name} ·{' '}
+                              {
+                                row.pointOfSale.wilaya?.[
+                                  i18n.language === 'ar' ? 'nameAr' : 'nameEn'
+                                ]
+                              }
+                            </span>
+                            <span className="block text-xs font-normal text-fg-3">
+                              {row.supervisor.fullName}
+                            </span>
+                          </th>
+                          {checkpoints
+                            .map(
+                              ({ code }) =>
+                                row.checkpoints.find((cell) => cell.code === code) ?? { code },
+                            )
+                            .map((cell) => (
+                              <td key={cell.code} className="min-w-36 px-2 py-1.5 align-top">
+                                {matches(cell) && (
+                                  <div
+                                    className={
+                                      tones[cell.status] +
+                                      ' flex items-center gap-1.5 rounded-md border px-2 py-1 text-xs'
+                                    }
+                                  >
+                                    {canReview && cell.status === 'pending' && (
+                                      <input
+                                        type="checkbox"
+                                        checked={selected.includes(cell.record.id)}
+                                        aria-label={t('attendance.select', {
+                                          name: row.animateur.fullName,
+                                          checkpoint: cell.code,
+                                        })}
+                                        onChange={(event) =>
+                                          select((ids) =>
+                                            event.target.checked
+                                              ? [...ids, cell.record.id].slice(0, 200)
+                                              : ids.filter((id) => id !== cell.record.id),
+                                          )
+                                        }
+                                      />
+                                    )}
+                                    {(() => {
+                                      const Icon = STATUS_ICONS[cell.status];
+                                      return (
+                                        <Icon aria-hidden="true" size={14} className="shrink-0" />
+                                      );
+                                    })()}
+                                    {cell.record ? (
+                                      <button
+                                        className="text-start underline-offset-2 hover:underline"
+                                        onClick={() => openProof(cell.record.id)}
+                                      >
+                                        {t('attendance.status.' + cell.status)}
+                                        <span className="tnum ms-1.5 opacity-80">
+                                          {time(cell.record.recordedAt, i18n.language)}
+                                        </span>
+                                      </button>
+                                    ) : (
+                                      <span>{t('attendance.status.' + cell.status)}</span>
+                                    )}
+                                    {cell.flags.map((flag) => (
+                                      <span
+                                        key={flag}
+                                        title={t('attendance.flags.' + flag)}
+                                        aria-label={t('attendance.flags.' + flag)}
+                                      >
+                                        <Flag aria-hidden="true" size={12} />
+                                      </span>
+                                    ))}
+                                  </div>
+                                )}
+                              </td>
+                            ))}
+                          <td className="px-3 py-1.5">
+                            {row.absenceHistory?.length > 0 && (
+                              <button className={button} onClick={() => openAbsenceHistory(row)}>
+                                {t('attendance.absenceHistory')}
                               </button>
                             )}
-                        </td>
-                      </tr>
-                    ))}
-                </tbody>
-              </table>
-            </div>
+                            {canRecordAbsence &&
+                              !row.absenceHistory?.some((item) => !item.voidedAt) && (
+                                <button className={button} onClick={() => openAbsence(row)}>
+                                  {t('attendance.absence')}
+                                </button>
+                              )}
+                          </td>
+                        </tr>
+                      ))}
+                  </tbody>
+                </table>
+              </div>
+            </TableFrame>
           ) : (
             <p>{t('attendance.empty')}</p>
           )}

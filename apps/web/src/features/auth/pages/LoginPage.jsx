@@ -4,6 +4,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { useForm } from 'react-hook-form';
 import { useTranslation } from 'react-i18next';
 import { TextField } from '../../../shared/ui/TextField.jsx';
+import { buttonClass } from '../../../ui/primitives.jsx';
 import { useLoginMutation } from '../api.js';
 import { AuthCard } from '../components/AuthCard.jsx';
 import { apiErrorMessage } from '../errorMessage.js';
@@ -28,9 +29,9 @@ export function LoginPage() {
         {login.isError && (
           <div
             role="alert"
-            className="flex items-start gap-2 rounded-lg bg-red-50 p-3 text-sm text-red-900"
+            className="flex items-start gap-2 rounded-lg bg-danger-soft p-3 text-sm text-danger"
           >
-            <CircleAlert aria-hidden="true" className="mt-0.5 size-4 shrink-0 text-red-600" />
+            <CircleAlert aria-hidden="true" className="mt-0.5 size-4 shrink-0 text-danger" />
             <span>{apiErrorMessage(t, login.error)}</span>
           </div>
         )}
@@ -62,7 +63,7 @@ export function LoginPage() {
         <button
           type="submit"
           disabled={login.isPending}
-          className="w-full rounded-lg bg-slate-900 px-4 py-2 font-medium text-white hover:bg-slate-800 disabled:cursor-not-allowed disabled:opacity-60"
+          className={buttonClass({ variant: 'primary', size: 'lg', className: 'w-full' })}
         >
           {login.isPending ? t('login.submitting') : t('login.submit')}
         </button>

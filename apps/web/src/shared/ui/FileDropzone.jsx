@@ -43,7 +43,7 @@ export function FileDropzone({ kind, onFile, disabled = false, file = null }) {
         }}
         className={
           'grid justify-items-center gap-2 rounded-xl border-2 border-dashed p-6 text-center text-sm ' +
-          (dragging ? 'border-slate-900 bg-slate-100' : 'border-slate-300 bg-white')
+          (dragging ? 'border-line-strong bg-sunken' : 'border-control bg-surface')
         }
       >
         <p>{file ? <bdi>{file.name}</bdi> : t('files.dropHere')}</p>
@@ -52,7 +52,7 @@ export function FileDropzone({ kind, onFile, disabled = false, file = null }) {
           disabled={disabled}
           aria-describedby={hint}
           onClick={() => input.current?.click()}
-          className="rounded-lg border border-slate-300 px-3 py-2 font-medium hover:bg-slate-100 disabled:opacity-50"
+          className="rounded-lg border border-control px-3 py-2 font-medium hover:bg-sunken disabled:opacity-50"
         >
           {t('files.browse')}
         </button>
@@ -69,7 +69,7 @@ export function FileDropzone({ kind, onFile, disabled = false, file = null }) {
             event.target.value = '';
           }}
         />
-        <p id={hint} className="text-xs text-slate-600">
+        <p id={hint} className="text-xs text-fg-2">
           {rules
             .map(
               (rule) =>
@@ -81,7 +81,7 @@ export function FileDropzone({ kind, onFile, disabled = false, file = null }) {
         </p>
       </div>
       {error && (
-        <p role="alert" className="text-sm text-red-700">
+        <p role="alert" className="text-sm text-danger">
           {t('errors.codes.' + error)}
         </p>
       )}

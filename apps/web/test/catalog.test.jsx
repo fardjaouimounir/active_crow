@@ -68,7 +68,9 @@ describe('client catalog', () => {
     const view = renderApp('/app/clients');
     const table = await screen.findByRole('table');
     expect(within(table).getByText('Karim')).toBeInTheDocument();
-    expect(within(screen.getByRole('navigation')).getByText('Clients')).toBeInTheDocument();
+    expect(
+      within(screen.getByRole('navigation', { name: 'Menu' })).getByText('Clients'),
+    ).toBeInTheDocument();
     await user.click(within(table).getByRole('link', { name: client.name }));
     const tabs = await screen.findAllByRole('tab');
     expect(tabs.map((tab) => tab.textContent)).toEqual([

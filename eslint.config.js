@@ -28,7 +28,7 @@ const restrictImports = (...patternLists) => ({
 
 export default [
   {
-    ignores: ['**/node_modules/', '**/dist/', '**/coverage/'],
+    ignores: ['**/node_modules/', '**/dist/', '**/coverage/', '.claude/'],
   },
 
   js.configs.recommended,

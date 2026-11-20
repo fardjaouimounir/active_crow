@@ -56,7 +56,7 @@ function AddPointsDialog({ campaign, wilayaNames, onClose }) {
                     checked={selected.includes(point.id)}
                     onChange={() => toggle(point.id)}
                   />
-                  {point.name} <bdi className="text-slate-500">{point.code}</bdi>
+                  {point.name} <bdi className="text-fg-3">{point.code}</bdi>
                 </label>
               </li>
             ))}

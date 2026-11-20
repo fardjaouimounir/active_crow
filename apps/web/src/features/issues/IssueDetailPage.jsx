@@ -108,7 +108,7 @@ function Comments({ id }) {
     timeStyle: 'short',
   });
   return (
-    <section className="grid gap-3 rounded-xl border bg-white p-4">
+    <section className="grid gap-3 rounded-xl border bg-surface p-4">
       <h2 className="font-semibold">{t('issues.comments')}</h2>
       {query.isPending && <p role="status">{t('admin.loading')}</p>}
       {query.isSuccess && !query.data.data.length && <EmptyState />}
@@ -192,7 +192,7 @@ export function IssueDetailPage() {
           {t('admin.back')}
         </Link>
       </PageHeader>
-      <section className="grid gap-3 rounded-xl border bg-white p-4">
+      <section className="grid gap-3 rounded-xl border bg-surface p-4">
         <div className="flex flex-wrap gap-2">
           <StatusBadge>{t('issues.status.' + issue.status)}</StatusBadge>
           <StatusBadge>{t('issues.categories.' + issue.category)}</StatusBadge>

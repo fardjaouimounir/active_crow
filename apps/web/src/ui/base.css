@@ -1,0 +1,139 @@
+@layer base {
+  *,
+  ::before,
+  ::after {
+    border-color: var(--line);
+  }
+
+  html {
+    font-family: var(--font-sans-stack);
+    background: var(--canvas);
+    -webkit-text-size-adjust: 100%;
+    text-rendering: optimizeLegibility;
+  }
+
+  body {
+    background: var(--canvas);
+    color: var(--fg);
+    font-size: var(--text-base);
+    line-height: var(--text-base--line-height);
+    -webkit-font-smoothing: antialiased;
+  }
+
+  /* Numbers that are compared line up. */
+  table,
+  .tnum {
+    font-variant-numeric: tabular-nums;
+  }
+
+  /* Field screens: larger type for one-handed outdoor use. */
+  [data-surface='field'] {
+    --text-xs: 0.875rem;
+    --text-sm: 1rem;
+    --text-base: 1.0625rem;
+    --text-lg: 1.1875rem;
+    --text-xl: 1.375rem;
+    --text-2xl: 1.625rem;
+    --text-3xl: 2rem;
+  }
+
+  button:not(:disabled),
+  [role='button']:not([aria-disabled='true']),
+  summary,
+  select {
+    cursor: pointer;
+  }
+
+  button,
+  a,
+  input,
+  select,
+  textarea {
+    touch-action: manipulation;
+  }
+
+  :focus-visible {
+    outline: 2px solid var(--focus);
+    outline-offset: 2px;
+  }
+
+  ::selection {
+    background: var(--accent);
+    color: var(--accent-fg);
+  }
+
+  dialog {
+    color: var(--fg);
+    background: var(--raised);
+  }
+
+  dialog::backdrop {
+    background: var(--scrim);
+  }
+
+  input::placeholder,
+  textarea::placeholder {
+    color: var(--fg-3);
+  }
+
+  * {
+    scrollbar-width: thin;
+    scrollbar-color: var(--line-strong) transparent;
+  }
+}
+
+@layer components {
+  /*
+   * Vertical light-stripe gradient from the brand board. Pure CSS (repeating gradients, no image).
+   * Used on the login panel, the portal header and empty/hero states only.
+   */
+  .brand-stripe {
+    position: relative;
+    isolation: isolate;
+    background-color: var(--brand-black);
+    background-image:
+      repeating-linear-gradient(
+        90deg,
+        transparent 0,
+        transparent 6px,
+        color-mix(in srgb, var(--spring) 16%, transparent) 7px,
+        color-mix(in srgb, var(--spring) 62%, transparent) 11px,
+        color-mix(in srgb, var(--spring) 16%, transparent) 15px,
+        transparent 16px
+      ),
+      radial-gradient(
+        120% 90% at 50% 100%,
+        color-mix(in srgb, var(--spring) 80%, var(--brand-black)) 0%,
+        transparent 70%
+      );
+  }
+
+  .brand-stripe::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    z-index: -1;
+    background: linear-gradient(180deg, var(--brand-black) 0%, transparent 62%);
+  }
+
+  @media print {
+    .brand-stripe {
+      background: none;
+    }
+    .brand-stripe::after {
+      display: none;
+    }
+  }
+}
+
+/* Reduced motion: state changes become instant, nothing animates decoratively. */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  ::before,
+  ::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+    scroll-behavior: auto !important;
+  }
+}

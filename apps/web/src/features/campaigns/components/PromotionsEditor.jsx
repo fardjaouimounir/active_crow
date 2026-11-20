@@ -38,7 +38,7 @@ const toForm = (promotion) => ({
 function Message({ children }) {
   if (!children) return null;
   return (
-    <p role="alert" className="text-sm text-red-700">
+    <p role="alert" className="text-sm text-danger">
       {children}
     </p>
   );
@@ -64,7 +64,7 @@ function PromotionCard({ index, ctx, products, gifts, readOnly, onRemove }) {
 
   const scope = [{ value: '', label: t('rules.promotions.allProducts') }, ...products];
   return (
-    <fieldset className="grid gap-3 rounded-xl border border-slate-200 bg-white p-4">
+    <fieldset className="grid gap-3 rounded-xl border border-line bg-surface p-4">
       <legend className="px-1 font-medium">
         {t('rules.promotions.promotion', { n: index + 1 })}
       </legend>
@@ -250,9 +250,7 @@ export function PromotionsEditor({ campaignId, ruleSetId, promotions, products, 
       aria-label={t('rules.promotions.title')}
     >
       <fieldset disabled={readOnly || mutation.isPending} className="grid gap-4">
-        {fields.length === 0 && (
-          <p className="text-sm text-slate-600">{t('rules.promotions.none')}</p>
-        )}
+        {fields.length === 0 && <p className="text-sm text-fg-2">{t('rules.promotions.none')}</p>}
         {fields.map((item, index) => (
           <PromotionCard
             key={item.id}

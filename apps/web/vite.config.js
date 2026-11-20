@@ -25,6 +25,8 @@ export default defineConfig(({ mode }) => {
       environment: 'jsdom',
       include: ['src/**/*.test.{js,jsx}', 'test/**/*.test.{js,jsx}'],
       setupFiles: ['./test/setup.js'],
+      // Lazy route chunks compile on first use; the whole suite runs in parallel.
+      testTimeout: 20_000,
     },
   };
 });

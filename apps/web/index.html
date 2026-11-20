@@ -1,9 +1,36 @@
 <!doctype html>
-<html lang="en" dir="ltr">
+<html lang="en" dir="ltr" data-theme="dark" data-surface="app">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
-    <title>FieldFlow</title>
+    <meta name="color-scheme" content="dark light" />
+    <title>ActiCrew</title>
+    <script>
+      // Resolve the theme before first paint (same rules as src/ui/theme.js): no flash of the wrong theme.
+      (function () {
+        try {
+          var path = location.pathname;
+          var surface =
+            path.indexOf('/field') === 0
+              ? 'field'
+              : path.indexOf('/portal') === 0
+                ? 'portal'
+                : 'app';
+          var stored = localStorage.getItem('acticrew.theme.' + surface);
+          var theme =
+            stored === 'light' || stored === 'dark'
+              ? stored
+              : surface === 'field'
+                ? 'light'
+                : 'dark';
+          var root = document.documentElement;
+          root.setAttribute('data-theme', theme);
+          root.setAttribute('data-surface', surface);
+        } catch (e) {
+          /* storage blocked: defaults from the markup */
+        }
+      })();
+    </script>
   </head>
   <body>
     <div id="root"></div>

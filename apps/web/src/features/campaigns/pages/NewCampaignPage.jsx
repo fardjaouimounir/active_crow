@@ -17,7 +17,7 @@ export function NewCampaignPage() {
           {t('admin.back')}
         </Link>
       </PageHeader>
-      <div className="max-w-xl rounded-xl border border-slate-200 bg-white p-5">
+      <div className="max-w-xl rounded-xl border border-line bg-surface p-5">
         <CampaignForm
           onSuccess={(campaign) => navigate('/app/campaigns/' + campaign.id, { replace: true })}
         />

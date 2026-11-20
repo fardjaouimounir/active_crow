@@ -324,7 +324,7 @@ describe('reconciliation view', () => {
     render(<ReconciliationTable report={{ ok: false, totals: null, rows: [row(), bad] }} />);
     const cells = document.querySelectorAll('[data-check]');
     expect([...cells].map((cell) => cell.dataset.check)).toEqual(['ok', 'failed']);
-    expect(cells[1].closest('tr')).toHaveClass('bg-red-50');
+    expect(cells[1].closest('tr')).toHaveClass('bg-danger-soft');
     expect(screen.getByRole('alert')).toHaveTextContent('Mismatch 1');
   });
 });
