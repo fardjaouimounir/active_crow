@@ -536,6 +536,6 @@ describe('distribution service (BR-32, E-02)', () => {
       run((tx) =>
         service.distribute(tx, { actor: other.actor, giftEntitlementId: entitlement.id }),
       ),
-    ).rejects.toMatchObject({ status: 404 });
+    ).rejects.toMatchObject({ status: 422, code: 'ENTITLEMENT_NOT_DISTRIBUTABLE' });
   });
 });

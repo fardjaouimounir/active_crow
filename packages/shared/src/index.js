@@ -17,3 +17,4 @@ export * from './communications.js';
 export * from './inventory.js';
 export * from './attendance.js';
 export * from './geo.js';
+export * from './sales.js';

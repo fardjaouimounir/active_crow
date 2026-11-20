@@ -17,6 +17,7 @@ import {
   getOrCreateHolderLocation,
   getOrCreateLocation,
   InsufficientStockError,
+  lockBalances,
   post,
 } from './ledger.js';
 import * as policies from './inventory.policies.js';
@@ -470,14 +471,34 @@ export async function decideAdjustment(tx, actor, movementId, decision, body) {
  * @returns {Promise<{ ok: true, movementId: string } | { ok: false, code: 'INSUFFICIENT_STOCK', details: object }>}
  */
 export async function distribute(tx, { actor, giftEntitlementId }) {
+  const lookup = await tx.giftEntitlement.findFirst({
+    where: { id: giftEntitlementId, agencyId: actor.agencyId },
+    select: { campaignId: true, saleId: true },
+  });
+  if (!lookup) throw new NotFoundError();
+  await tx.$queryRaw`SELECT id FROM campaigns WHERE id = ${lookup.campaignId}::uuid
+    AND agency_id = ${actor.agencyId}::uuid FOR SHARE`;
+  await tx.$queryRaw`SELECT id FROM sales WHERE id = ${lookup.saleId}::uuid
+    AND agency_id = ${actor.agencyId}::uuid FOR UPDATE`;
   await tx.$queryRaw`
     SELECT id FROM gift_entitlements
     WHERE id = ${giftEntitlementId}::uuid AND agency_id = ${actor.agencyId}::uuid FOR UPDATE`;
   const entitlement = await tx.giftEntitlement.findFirst({
     where: { id: giftEntitlementId, agencyId: actor.agencyId },
-    include: { sale: { select: { animateurId: true } } },
+    include: {
+      campaign: { select: { status: true } },
+      sale: { select: { status: true, assignment: { select: { animateurId: true } } } },
+    },
   });
-  if (!entitlement || entitlement.sale.animateurId !== actor.id) throw new NotFoundError();
+  if (!entitlement) throw new NotFoundError();
+  if (
+    actor.role !== 'animateur' ||
+    entitlement.sale.assignment.animateurId !== actor.id ||
+    entitlement.campaign.status !== 'active' ||
+    entitlement.sale.status !== 'recorded'
+  ) {
+    throw rule(ERROR_CODES.ENTITLEMENT_NOT_DISTRIBUTABLE, undefined, 422);
+  }
   if (!['pending', 'undelivered'].includes(entitlement.status))
     throw rule(ERROR_CODES.ENTITLEMENT_NOT_DISTRIBUTABLE, { status: entitlement.status }, 409);
   const campaign = { id: entitlement.campaignId, agencyId: entitlement.agencyId };
@@ -486,9 +507,7 @@ export async function distribute(tx, { actor, giftEntitlementId }) {
   const line = { stockItemId: entitlement.stockItemId, quantity: entitlement.quantity };
   // Checked under the balance row's lock and before anything is written, so a refusal leaves no
   // half-made movement behind and a concurrent drain cannot slip in between check and posting.
-  await tx.$queryRaw`
-    SELECT 1 FROM stock_balances
-    WHERE location_id = ${from.id}::uuid AND stock_item_id = ${line.stockItemId}::uuid FOR UPDATE`;
+  await lockDistributionBalances(tx, actor, campaign, [line]);
   try {
     await assertAvailable(tx, from, [line]);
   } catch (err) {
@@ -511,4 +530,20 @@ export async function distribute(tx, { actor, giftEntitlementId }) {
   });
   await record(tx, actor, 'inventory.distribution', movement, { giftEntitlementId });
   return { ok: true, movementId: movement.id };
+}
+
+export async function lockDistributionBalances(tx, actor, campaign, gifts) {
+  if (!gifts.length) return;
+  const from = await holder(tx, campaign, actor.id);
+  const customers = await fixed(tx, campaign, 'customers');
+  await lockBalances(
+    tx,
+    { agencyId: campaign.agencyId, campaignId: campaign.id },
+    gifts.map(({ stockItemId, quantity }) => ({
+      fromLocationId: from.id,
+      toLocationId: customers.id,
+      stockItemId,
+      quantity,
+    })),
+  );
 }

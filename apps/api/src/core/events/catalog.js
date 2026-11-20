@@ -19,6 +19,16 @@ export const eventCatalog = Object.freeze({
   'assignment.cancelled': assignment,
   'assignment.ended': assignment,
   'assignment.replaced': assignment,
+  'sale.recorded': z.strictObject({ ...base, campaignId: id, saleId: id }),
+  'sale.voided': z.strictObject({ ...base, campaignId: id, saleId: id }),
+  'entitlement.undelivered': z.strictObject({
+    ...base,
+    campaignId: id,
+    saleId: id,
+    entitlementId: id,
+    supervisorId: id,
+    issueId: id,
+  }),
   'attendance.recorded': z.strictObject({
     ...base,
     campaignId: id,

@@ -4,3 +4,4 @@ import './modules/announcements/subscriptions.js';
 import './modules/issues/subscriptions.js';
 import './modules/inventory/subscriptions.js';
 import './modules/attendance/subscriptions.js';
+import './modules/sales/subscriptions.js';

@@ -38,8 +38,8 @@ const CATALOG = `
 | \`visit.record\` | ✓ | | ✓ | ✓ | | |
 | \`sale.read\` | ✓ | ✓ | ✓ | ✓ | ✓ | |
 | \`sale.record\` | | | | | ✓ | |
-| \`sale.void\` | ✓ | | | ✓ | | |
-| \`customer.read_personal\` | ✓ | | | ✓ | | |
+| \`sale.void\` | ✓ | | ✓ | ✓ | | |
+| \`customer.read_personal\` | ✓ | ✓ | | | | |
 | \`inventory.read\` | ✓ | ✓ | ✓ | ✓ | ✓ | |
 | \`inventory.stock_in\` | ✓ | | | | | |
 | \`inventory.transfer\` | ✓ | | ✓ | ✓ | | |

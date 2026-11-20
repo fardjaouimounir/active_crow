@@ -79,7 +79,7 @@ const compare = (a, b) => (a < b ? -1 : a > b ? 1 : 0);
  * @param {Array<{ lineId: string, stockItemId: string, fromLocationId: string, toLocationId: string, quantity: number }>} legs
  * @throws {InsufficientStockError} a non-bookkeeping location would go below zero
  */
-export async function post(tx, movement, legs) {
+export async function lockBalances(tx, movement, legs) {
   checkLegs(legs);
   const changes = netChanges(legs);
   const locationIds = [...new Set(changes.map((change) => change.locationId))];
@@ -116,7 +116,15 @@ export async function post(tx, movement, legs) {
   const available = new Map(
     locked.map((row) => [pairKey(row.location_id, row.stock_item_id), row.quantity]),
   );
+  return { changes, byId, available, locationColumn, itemColumn };
+}
 
+export async function post(tx, movement, legs) {
+  const { changes, byId, available, locationColumn, itemColumn } = await lockBalances(
+    tx,
+    movement,
+    legs,
+  );
   for (const { locationId, stockItemId, delta } of changes) {
     const location = byId.get(locationId);
     const balance = available.get(pairKey(locationId, stockItemId)) ?? 0;

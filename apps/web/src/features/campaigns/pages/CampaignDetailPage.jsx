@@ -1,6 +1,8 @@
 import { IssuesPage } from '../../issues/IssuesPage.jsx';
 import { AttendanceTab } from '../../attendance/AttendanceTab.jsx';
 import { VisitsTab } from '../../attendance/VisitsTab.jsx';
+import { SalesTab } from '../../sales/SalesTab.jsx';
+import { TombolaTab } from '../../sales/TombolaTab.jsx';
 import { canEdit as canEditArea } from '@fieldflow/shared';
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
@@ -34,6 +36,8 @@ const TABS = [
   'assignments',
   'attendance',
   'visits',
+  'sales',
+  'tombola',
   'issues',
   'stock',
   'documents',
@@ -113,6 +117,8 @@ export function CampaignDetailPage() {
   const showStock = useCan('inventory.read');
   const showAttendance = useCan('attendance.read');
   const showVisits = useCan('visit.read');
+  const showSales = useCan('sale.read');
+  const showTombola = useCan('tombola.read');
   const { filters, setFilters } = useFilters();
   const query = useCampaign(id);
   const { message } = useApiError(query.error);
@@ -122,6 +128,8 @@ export function CampaignDetailPage() {
       (showIssues || item !== 'issues') &&
       (showAttendance || item !== 'attendance') &&
       (showVisits || item !== 'visits') &&
+      (showSales || item !== 'sales') &&
+      (showTombola || item !== 'tombola') &&
       (showStock || item !== 'stock'),
   );
   const tab = tabs.includes(filters.tab) ? filters.tab : 'overview';
@@ -179,6 +187,8 @@ export function CampaignDetailPage() {
         {tab === 'assignments' && <AssignmentsTab campaign={campaign} />}
         {tab === 'attendance' && <AttendanceTab campaign={campaign} />}
         {tab === 'visits' && <VisitsTab campaign={campaign} />}
+        {tab === 'sales' && <SalesTab campaign={campaign} />}
+        {tab === 'tombola' && <TombolaTab campaign={campaign} />}
         {tab === 'history' && <HistoryTab campaignId={campaign.id} />}
       </Tabs>
     </>

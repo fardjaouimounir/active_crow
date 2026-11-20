@@ -98,6 +98,15 @@ const FOREIGN_KEYS = {
     'promotion_id>promotions',
     'promotion_tier_id>promotion_tiers',
     'stock_item_id>stock_items',
+    'shortage_issue_id>issues',
+  ],
+  field_interactions: [
+    'agency_id>agencies',
+    'campaign_id>campaigns',
+    'assignment_id>assignments',
+    'animateur_id>users',
+    'point_of_sale_id>points_of_sale',
+    'created_by>users',
   ],
   stock_locations: ['agency_id>agencies', 'campaign_id>campaigns', 'user_id>users'],
   stock_movements: [
@@ -145,6 +154,7 @@ const FOREIGN_KEYS = {
     'campaign_id>campaigns',
     'point_of_sale_id>points_of_sale',
     'stock_item_id>stock_items',
+    'assignment_id>assignments',
     'visit_id>supervisor_visits',
     'reported_by>users',
     'assigned_to>users',
@@ -175,6 +185,7 @@ const TABLES = Object.keys(FOREIGN_KEYS);
 const REFERENCE_TABLES = ['agencies', 'wilayas', 'communes'];
 /** Append-only / insert-only tables: no updated_at. */
 const IMMUTABLE_TABLES = [
+  'field_interactions',
   'region_wilayas',
   'campaign_status_history',
   'campaign_points_of_sale',
@@ -247,6 +258,10 @@ const UNIQUES = [
 ];
 
 const INDEXES = [
+  'field_interactions(campaign_id,work_date)',
+  'field_interactions(animateur_id,work_date)',
+  'issues(assignment_id)',
+  'gift_entitlements(shortage_issue_id)',
   'users(agency_id,role,status)',
   'users(agency_id,wilaya_id)',
   'refresh_tokens(family_id)',
@@ -281,6 +296,10 @@ const INDEXES = [
 
 /** Hand-written partial / expression / NULLS NOT DISTINCT indexes: name → [unique, predicate or flag]. */
 const NAMED_INDEXES = {
+  issues_one_open_shortage_per_assignment_item: {
+    unique: true,
+    where: /stock_shortage.*assignment_id IS NOT NULL/,
+  },
   reporting_lines_one_open: { unique: true, where: /valid_to IS NULL/ },
   rule_sets_one_draft: { unique: true, where: /status = 'draft'/ },
   customers_campaign_phone: { unique: true, where: /phone IS NOT NULL/ },
@@ -299,6 +318,8 @@ const NAMED_INDEXES = {
 };
 
 const CHECKS = [
+  'field_interactions_kind_check',
+  'field_interactions_count_check',
   'absences_void_consistent',
   'agencies_code_format',
   'users_client_role',
@@ -332,6 +353,8 @@ const CHECKS = [
 const EXCLUSIONS = ['reporting_lines_no_overlap', 'assignments_no_overlap'];
 
 const TRIGGERS = [
+  'gift_entitlements.gift_entitlements_shortage_issue_immutable',
+  'field_interactions.field_interactions_append_only',
   'stock_ledger_entries.stock_ledger_append_only',
   'audit_logs.audit_logs_append_only',
   'stock_ledger_entries.ledger_balanced',
@@ -431,8 +454,8 @@ beforeAll(async () => {
 });
 
 describe('database schema matches docs/04-database-design.md', () => {
-  it('has exactly the 52 designed tables', () => {
-    expect(TABLES).toHaveLength(52);
+  it('has the original tables and field interactions', () => {
+    expect(TABLES).toHaveLength(53);
     expect(actual.tables).toEqual([...TABLES].sort());
   });
 
@@ -445,7 +468,9 @@ describe('database schema matches docs/04-database-design.md', () => {
   it('applies the shared column conventions', () => {
     for (const table of TABLES) {
       const cols = actual.columnsOf(table);
-      expect(cols, `${table}.created_at`).toContain('created_at');
+      expect(cols, `${table}.creation timestamp`).toContain(
+        table === 'field_interactions' ? 'recorded_at' : 'created_at',
+      );
       expect(cols.includes('agency_id'), `${table}.agency_id`).toBe(
         !REFERENCE_TABLES.includes(table),
       );

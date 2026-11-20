@@ -217,11 +217,67 @@ function comment(actor, id, input, files) {
   });
 }
 
+async function openShortage(tx, actor, assignment, stockItemId) {
+  const { agencyId } = actor;
+  for (;;) {
+    const [inserted] = await tx.$queryRaw`
+      INSERT INTO issues (agency_id, campaign_id, assignment_id, point_of_sale_id, stock_item_id,
+        category, title, reported_by, assigned_to)
+      VALUES (${agencyId}::uuid, ${assignment.campaignId}::uuid, ${assignment.id}::uuid,
+        ${assignment.pointOfSaleId}::uuid, ${stockItemId}::uuid,
+        'stock_shortage', 'Gift stock shortage', ${actor.id}::uuid, ${assignment.supervisorId}::uuid)
+      ON CONFLICT (assignment_id, stock_item_id)
+      WHERE category = 'stock_shortage' AND status IN ('open','in_progress') AND assignment_id IS NOT NULL
+      DO NOTHING RETURNING id`;
+    if (inserted) {
+      await audit(tx, actor, 'created', 'issue', inserted.id, undefined, {
+        assignmentId: assignment.id,
+        stockItemId,
+      });
+      notify(tx, actor, 'created', inserted.id, { assigneeId: assignment.supervisorId });
+      return inserted.id;
+    }
+    const [existing] = await tx.$queryRaw`
+      SELECT id FROM issues WHERE agency_id = ${agencyId}::uuid
+        AND assignment_id = ${assignment.id}::uuid AND stock_item_id = ${stockItemId}::uuid
+        AND category = 'stock_shortage' AND status IN ('open','in_progress') FOR UPDATE`;
+    if (existing) return existing.id;
+  }
+}
+
+async function recordCompletedDelivery(tx, actor, issueId) {
+  const [issue] = await tx.$queryRaw`
+    SELECT id, assigned_to AS "assignedToId" FROM issues
+    WHERE id = ${issueId}::uuid AND agency_id = ${actor.agencyId}::uuid FOR UPDATE`;
+  if (
+    !issue ||
+    (await tx.giftEntitlement.count({
+      where: { agencyId: actor.agencyId, shortageIssueId: issueId, status: 'undelivered' },
+    }))
+  )
+    return;
+  const row = await tx.issueComment.create({
+    data: {
+      issueId,
+      agencyId: actor.agencyId,
+      authorId: actor.id,
+      body: 'All gifts linked to this shortage have now been delivered.',
+    },
+  });
+  await audit(tx, actor, 'commented', 'issue_comment', row.id, undefined, { issueId });
+  notify(tx, actor, 'commented', issueId, {
+    assigneeId: issue.assignedToId,
+    commentAt: row.createdAt.toISOString(),
+  });
+}
+
 export const issueService = {
   list,
   detail,
   create,
   createInTransaction,
+  openShortage,
+  recordCompletedDelivery,
   change,
   comments,
   comment,

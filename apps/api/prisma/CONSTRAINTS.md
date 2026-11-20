@@ -122,3 +122,9 @@ Migration `20261120050000_issue_comment_attachments` adds the nullable UUID `iss
 ### Absence voiding migration
 
 `absences_void_consistent` requires the timestamp, actor and reason to be present together. The unique index `absences_one_active_per_day` covers `(assignment_id, work_date)` where `voided_at IS NULL`. This preserves voided rows and permits a corrected absence on the same day.
+
+### Sales migrations
+
+`field_interactions_kind_check` and `field_interactions_count_check` constrain counted batches. The `field_interactions_append_only` trigger uses the existing `forbid_mutation` function for updates and deletes.
+
+`issues_one_open_shortage_per_assignment_item` enforces one open or in-progress stock shortage issue per assignment and stock item. The `gift_entitlements_shortage_issue_immutable` trigger preserves the original nullable `shortage_issue_id` once assigned, including after delivery or void.

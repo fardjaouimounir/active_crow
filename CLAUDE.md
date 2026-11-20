@@ -220,3 +220,4 @@ temporary directory removed after the run) and `STORAGE_DRIVER` (`local`).
 | 2026-11-20 | Idempotency (`core/http/idempotency.js`): `Idempotency-Key` UUID required on stock writes; the key row and the stored response are written in the business transaction; same key + other body/endpoint ⇒ 422 `IDEMPOTENCY_KEY_REUSED`; keys live 48 h (daily cleanup job). Sales and attendance reuse `requireIdempotencyKey` + `runIdempotent`. |
 | 2026-11-20 | `inventoryService.distribute(tx, { actor, giftEntitlementId })` returns `{ ok:false, code:'INSUFFICIENT_STOCK' }` instead of throwing, so the sales transaction can mark the entitlement `undelivered`. |
 | 2026-11-20 | absences voidable via voided_at (P11), partial unique on active rows |
+| 2026-11-20 | P12: Stock shortage issues are unique per assignment and item while open or in progress. Undelivered entitlements keep their original shortage issue link after delivery or void. |

@@ -13,6 +13,7 @@ export const FILE_KIND_RULES = Object.freeze({
   ]),
   attendance_proof: Object.freeze([{ mimeTypes: IMAGE_MIME_TYPES, maxBytes: 5 * MB }]),
   attendance_photo: Object.freeze([{ mimeTypes: IMAGE_MIME_TYPES, maxBytes: 8 * MB }]),
+  sale_proof: Object.freeze([{ mimeTypes: [...IMAGE_MIME_TYPES, ...PDF], maxBytes: 8 * MB }]),
   visit_photo: Object.freeze([{ mimeTypes: IMAGE_MIME_TYPES, maxBytes: 8 * MB }]),
   issue_attachment: Object.freeze([
     { mimeTypes: IMAGE_MIME_TYPES, maxBytes: 5 * MB },

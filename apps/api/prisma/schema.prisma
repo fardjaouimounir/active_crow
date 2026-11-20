@@ -217,6 +217,7 @@ enum AiSuggestionStatus {
 // ─── 1. Identity, structure and geography (10) ────────────────────────────────
 
 model Agency {
+  fieldInteractions FieldInteraction[]
   id        String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
   name      String
   code      String   @unique
@@ -278,6 +279,8 @@ model Agency {
 }
 
 model User {
+  fieldInteractions FieldInteraction[] @relation("InteractionAnimateur")
+  createdInteractions FieldInteraction[] @relation("InteractionCreator")
   id                 String     @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
   agencyId           String     @map("agency_id") @db.Uuid
   role               UserRole
@@ -473,6 +476,7 @@ model ReportingLine {
 }
 
 model PointOfSale {
+  fieldInteractions FieldInteraction[]
   id           String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
   agencyId     String    @map("agency_id") @db.Uuid
   code         String
@@ -583,6 +587,7 @@ model StockItem {
 }
 
 model Campaign {
+  fieldInteractions FieldInteraction[]
   id                     String         @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
   agencyId               String         @map("agency_id") @db.Uuid
   clientId               String         @map("client_id") @db.Uuid
@@ -819,6 +824,7 @@ model PromotionTier {
 
 /// No overlapping proposed/approved assignments per Animateur: `assignments_no_overlap` (hand-written, BR-13).
 model Assignment {
+  fieldInteractions FieldInteraction[]
   id                   String           @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
   agencyId             String           @map("agency_id") @db.Uuid
   campaignId           String           @map("campaign_id") @db.Uuid
@@ -855,6 +861,7 @@ model Assignment {
   absences            Absence[]          @relation("AbsenceAssignment")
   replacementAbsences Absence[]          @relation("AbsenceReplacement")
   sales               Sale[]
+  shortageIssues      Issue[]
 
   @@index([campaignId, status])
   @@index([supervisorId, startDate, endDate])
@@ -1000,6 +1007,31 @@ model Customer {
   @@map("customers")
 }
 
+model FieldInteraction {
+  id String @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  agencyId String @map("agency_id") @db.Uuid
+  campaignId String @map("campaign_id") @db.Uuid
+  assignmentId String @map("assignment_id") @db.Uuid
+  animateurId String @map("animateur_id") @db.Uuid
+  pointOfSaleId String @map("point_of_sale_id") @db.Uuid
+  workDate DateTime @map("work_date") @db.Date
+  kind String
+  count Int
+  recordedAt DateTime @default(now()) @map("recorded_at") @db.Timestamptz(6)
+  createdById String @map("created_by") @db.Uuid
+
+  agency Agency @relation(fields: [agencyId], references: [id], onDelete: Restrict)
+  campaign Campaign @relation(fields: [campaignId], references: [id], onDelete: Restrict)
+  assignment Assignment @relation(fields: [assignmentId], references: [id], onDelete: Restrict)
+  animateur User @relation("InteractionAnimateur", fields: [animateurId], references: [id], onDelete: Restrict)
+  pointOfSale PointOfSale @relation(fields: [pointOfSaleId], references: [id], onDelete: Restrict)
+  createdBy User @relation("InteractionCreator", fields: [createdById], references: [id], onDelete: Restrict)
+
+  @@index([campaignId, workDate])
+  @@index([animateurId, workDate])
+  @@map("field_interactions")
+}
+
 model Sale {
   id            String     @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
   agencyId      String     @map("agency_id") @db.Uuid
@@ -1072,6 +1104,7 @@ model GiftEntitlement {
   promotionId     String            @map("promotion_id") @db.Uuid
   promotionTierId String            @map("promotion_tier_id") @db.Uuid
   stockItemId     String            @map("stock_item_id") @db.Uuid
+  shortageIssueId String?           @map("shortage_issue_id") @db.Uuid
   quantity        Int
   status          EntitlementStatus @default(pending)
   createdAt       DateTime          @default(now()) @map("created_at") @db.Timestamptz(6)
@@ -1086,8 +1119,10 @@ model GiftEntitlement {
 
   /// The distribution movement that delivered this entitlement (at most one).
   distributionMovement StockMovement?
+  shortageIssue Issue? @relation(fields: [shortageIssueId], references: [id], onDelete: Restrict)
 
   @@unique([saleId, promotionId])
+  @@index([shortageIssueId])
   @@map("gift_entitlements")
 }
 
@@ -1331,6 +1366,7 @@ model Issue {
   campaignId     String      @map("campaign_id") @db.Uuid
   pointOfSaleId  String?     @map("point_of_sale_id") @db.Uuid
   stockItemId    String?     @map("stock_item_id") @db.Uuid
+  assignmentId   String?     @map("assignment_id") @db.Uuid
   visitId        String?     @map("visit_id") @db.Uuid
   /// stock_shortage | pos_problem | absence | equipment | other (validated with Zod)
   category       String
@@ -1358,9 +1394,14 @@ model Issue {
   comments       IssueComment[]
   attachments    IssueAttachment[]
   stockMovements StockMovement[]
+  assignment Assignment? @relation(fields: [assignmentId], references: [id], onDelete: Restrict)
+  shortageEntitlements GiftEntitlement[]
 
   @@index([campaignId, status])
   @@index([assignedToId, status])
+  @@index([assignmentId])
+  /// The SQL migration limits this uniqueness to active shortage issues.
+  @@unique([assignmentId, stockItemId], map: "issues_one_open_shortage_per_assignment_item")
   @@map("issues")
 }
 

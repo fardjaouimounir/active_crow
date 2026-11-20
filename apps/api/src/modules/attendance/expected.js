@@ -1,5 +1,6 @@
 import { NotFoundError } from '../../core/errors/index.js';
 import { businessDate, clock } from '../../core/time/clock.js';
+import { coversDay } from '../../core/time/fieldEntry.js';
 import { ruleSetsService } from '../campaigns/ruleSets.service.js';
 import * as repository from './attendance.repository.js';
 
@@ -13,15 +14,7 @@ export function attendanceRuleOf(ruleSet) {
     : rules?.attendance;
 }
 
-export function coversDay(assignment, date) {
-  const day = asDate(date);
-  const weekday = day.getUTCDay() || 7;
-  return (
-    assignment.startDate <= day &&
-    assignment.endDate >= day &&
-    (!assignment.workDays?.length || assignment.workDays.includes(weekday))
-  );
-}
+export { coversDay };
 
 export async function activeAssignments(db, scope, date, where = {}) {
   const day = asDate(date);

@@ -398,7 +398,7 @@ const decorate = (row) => ({ ...repo.serializeMovement(row), campaign: row.campa
  * The actor's balances across campaigns, shipments waiting for their confirmation, their own
  * pending shipments (cancellable) and, for approvers, adjustments and disputes awaiting a decision.
  */
-export async function mine(actor) {
+export async function mine(actor, stockKind) {
   const scope = ScopeService.resolve(actor);
   const agencyWide = policies.isAgencyWide(actor);
   const live = { status: { notIn: ['closed', 'cancelled'] } };
@@ -409,7 +409,11 @@ export async function mine(actor) {
   };
   const [stock, awaiting, outgoing] = await Promise.all([
     prisma.stockBalance.findMany({
-      where: { quantity: { not: 0 }, location: ownLocations },
+      where: {
+        quantity: { not: 0 },
+        location: ownLocations,
+        stockItem: stockKind ? { kind: stockKind } : undefined,
+      },
       select: {
         quantity: true,
         stockItem: { select: { id: true, sku: true, name: true, unitLabel: true } },

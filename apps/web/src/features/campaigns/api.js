@@ -9,6 +9,8 @@ export function useCampaignResource(path, params, options = {}) {
     queryFn: async ({ signal }) => (await apiClient.get(path, { params, signal })).data,
     placeholderData: options.keepPrevious ? keepPreviousData : undefined,
     enabled: options.enabled,
+    gcTime: options.gcTime,
+    staleTime: options.staleTime,
   });
 }
 

@@ -10,6 +10,7 @@ import {
 import { events } from '../../core/events/index.js';
 import { runIdempotent } from '../../core/http/idempotency.js';
 import { businessDate, clock } from '../../core/time/clock.js';
+import { assertFieldEntry } from '../../core/time/fieldEntry.js';
 import { prisma } from '../../db/client.js';
 import { withTransaction } from '../../db/transaction.js';
 import { ruleSetsService } from '../campaigns/ruleSets.service.js';
@@ -83,9 +84,7 @@ export async function recordCheckpoint(req) {
         }
         await repository.lockCampaign(tx, scope, assignment.campaignId);
         const row = required(await repository.lockAssignment(tx, scope, params.id));
-        if (row.status !== 'approved') assertEntry('assignment_not_approved');
-        if (!coversDay(row, date)) assertEntry('outside_assignment_work_days');
-        if (row.campaign.status !== 'active') assertEntry('campaign_not_active');
+        assertFieldEntry(row, date);
         const version = await ruleSetsService.effective(
           { level: 'agency', agencyId: scope.agencyId },
           row.campaignId,
