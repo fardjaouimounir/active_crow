@@ -134,6 +134,8 @@
     "unexpected": "حدث خطأ ما",
     "reference": "المرجع: {{requestId}}",
     "codes": {
+      "EXPORT_TOO_LARGE": "ضيّق مرشحات التقرير وحاول مجددًا.",
+      "INVALID_DIMENSION": "اختر طريقة تجميع صالحة للتقرير.",
       "CUSTOMER_FIELDS_REQUIRED": "أكمل حقول الزبون المطلوبة.",
       "INVALID_PHONE": "أدخل رقم هاتف محمول جزائريًا صالحًا.",
       "CUSTOMER_LIMIT_REACHED": "بلغ الزبون حد العرض.",
@@ -271,6 +273,8 @@
     "label": "المستخدم الحالي"
   },
   "admin": {
+    "campaignReport": "تقرير الحملة",
+    "dashboard": "لوحة الأداء",
     "attendance": "الحضور",
     "menu": "القائمة",
     "users": "المستخدمون",

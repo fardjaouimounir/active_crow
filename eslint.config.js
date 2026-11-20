@@ -46,6 +46,10 @@ export default [
     },
     rules: {
       'no-console': 'error',
+      'no-restricted-properties': [
+        'error',
+        { property: '$queryRawUnsafe', message: 'Use a parameterized Prisma tagged template.' },
+      ],
       'no-unused-vars': ['error', { argsIgnorePattern: '^_', caughtErrors: 'none' }],
       'import-x/no-cycle': 'error',
       'import-x/no-unresolved': 'error',

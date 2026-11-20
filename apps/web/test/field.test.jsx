@@ -108,8 +108,11 @@ it(
     const user = start('/field', {
       'POST /entitlements/gift-entitlement/deliver': reply({ status: 'distributed' }),
       'POST /stock/transfers/transfer/confirm': reply({ status: 'disputed' }),
+      'GET /reports/kpis': reply({ attendance: { rate: 0.75 }, sales: { units: 19 } }),
     });
     expect(await screen.findByText('Algiers')).toBeVisible();
+    const week = (await screen.findByRole('heading', { name: 'My week' })).closest('section');
+    expect(within(week).getByText('75.0%')).toBeVisible();
     await user.click(await screen.findByRole('button', { name: 'Deliver' }));
     expect(await screen.findByText('Gift delivered')).toBeVisible();
     await user.click(await screen.findByRole('button', { name: /Review receipt/ }));

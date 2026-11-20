@@ -134,6 +134,8 @@
     "unexpected": "Something went wrong",
     "reference": "Reference: {{requestId}}",
     "codes": {
+      "EXPORT_TOO_LARGE": "Narrow the report filters and try again.",
+      "INVALID_DIMENSION": "Choose a valid reporting breakdown.",
       "CUSTOMER_FIELDS_REQUIRED": "Complete the required customer fields.",
       "INVALID_PHONE": "Enter a valid Algerian mobile number.",
       "CUSTOMER_LIMIT_REACHED": "The customer has reached the promotion limit.",
@@ -271,6 +273,8 @@
     "label": "Signed-in user"
   },
   "admin": {
+    "campaignReport": "Campaign report",
+    "dashboard": "Dashboard",
     "attendance": "Attendance",
     "menu": "Menu",
     "users": "Users",

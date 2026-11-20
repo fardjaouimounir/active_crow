@@ -15,7 +15,8 @@
     "openapi": "node scripts/openapi.js",
     "db:seed": "node prisma/seed/index.js",
     "db:studio": "prisma studio",
-    "db:bootstrap": "node scripts/bootstrapDirector.js"
+    "db:bootstrap": "node scripts/bootstrapDirector.js",
+    "perf:reporting": "node scripts/perfReporting.js"
   },
   "dependencies": {
     "@fieldflow/shared": "^0.1.0",
@@ -25,6 +26,7 @@
     "cookie-parser": "^1.4.7",
     "cors": "^2.8.6",
     "dotenv": "^18.0.10",
+    "exceljs": "^4.4.0",
     "express": "^5.3.0",
     "express-rate-limit": "^8.7.5",
     "file-type": "^22.3.0",

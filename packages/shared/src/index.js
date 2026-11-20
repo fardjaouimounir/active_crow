@@ -18,3 +18,4 @@ export * from './inventory.js';
 export * from './attendance.js';
 export * from './geo.js';
 export * from './sales.js';
+export * from './kpi.js';

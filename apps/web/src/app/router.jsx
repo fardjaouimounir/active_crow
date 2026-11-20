@@ -190,6 +190,19 @@ export const routes = [
                 }),
               },
               {
+                path: 'dashboard',
+                lazy: async () => ({
+                  Component: (await import('../features/reporting/Dashboard.jsx')).Dashboard,
+                }),
+              },
+              {
+                path: 'campaigns/:id/report',
+                lazy: async () => ({
+                  Component: (await import('../features/reporting/CampaignReport.jsx'))
+                    .CampaignReport,
+                }),
+              },
+              {
                 path: 'campaigns/:id',
                 lazy: async () => ({
                   Component: (await import('../features/campaigns/pages/CampaignDetailPage.jsx'))

@@ -7,7 +7,7 @@ import { canEdit as canEditArea } from '@fieldflow/shared';
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Link, useLocation, useParams } from 'react-router';
-import { useCan } from '../../../shared/auth/hooks.js';
+import { useAuth, useCan } from '../../../shared/auth/hooks.js';
 import { useFilters } from '../../../shared/ui/FilterBar.jsx';
 import { PageHeader, Toast } from '../../../shared/ui/PageParts.jsx';
 import { Tabs } from '../../../shared/ui/Tabs.jsx';
@@ -110,6 +110,7 @@ function Overview({ campaign, canManage }) {
 export function CampaignDetailPage() {
   const { id } = useParams();
   const location = useLocation();
+  const { user } = useAuth();
   const { t } = useTranslation('common');
   const canManage = useCan('campaign.manage');
   const showIssues = useCan('issue.read');
@@ -153,6 +154,13 @@ export function CampaignDetailPage() {
             {campaign.code}
           </bdi>
           <CampaignStatus status={campaign.status} />
+          {['director', 'general_manager'].includes(user?.role) &&
+            ['active', 'completed', 'closed'].includes(campaign.status) && (
+              <Link className={actionStyle} to={`/app/campaigns/${id}/report`}>
+                {t('admin.campaignReport')}
+              </Link>
+            )}
+
           <Link
             className={actionStyle}
             to={{ pathname: '/app/campaigns', search: location.state?.listSearch ?? '' }}

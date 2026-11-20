@@ -1,0 +1,38 @@
+@media print {
+  @page {
+    size: A4;
+    margin: 14mm;
+  }
+
+  body:has(.campaign-print-report),
+  body:has(.campaign-print-report) #root > div {
+    background: white;
+  }
+
+  body:has(.campaign-print-report) header:not(.campaign-print-report header),
+  body:has(.campaign-print-report) nav,
+  body:has(.campaign-print-report) aside,
+  .campaign-print-report .report-actions,
+  .campaign-print-report details {
+    display: none !important;
+  }
+
+  .campaign-print-report .report-section {
+    break-before: page;
+  }
+
+  .campaign-print-report th {
+    print-color-adjust: exact;
+  }
+
+  .campaign-print-report tr {
+    break-inside: avoid;
+  }
+
+  .campaign-print-report .report-watermark {
+    position: fixed;
+    inset-block-end: 8mm;
+    inset-inline-end: 8mm;
+    opacity: 0.6;
+  }
+}

@@ -161,6 +161,7 @@ describe('organization administration', () => {
         ],
         "heading": "المستخدمون",
         "navigation": [
+          "لوحة الأداء",
           "المستخدمون",
           "الهيكل التنظيمي",
           "العملاء",

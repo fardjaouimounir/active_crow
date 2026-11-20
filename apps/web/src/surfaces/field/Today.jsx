@@ -1,4 +1,4 @@
-import { confirmBody } from '@fieldflow/shared';
+import { confirmBody, today } from '@fieldflow/shared';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useEffect, useState } from 'react';
 import { useForm, useWatch } from 'react-hook-form';
@@ -75,6 +75,12 @@ export function Today() {
   const { t, i18n } = useTranslation('field');
   const { sale, field, attendance, current, install, installApp } = useField();
   const stock = useFieldQuery('/me/stock');
+  const to = today();
+  const weekStart = new Date(to);
+  weekStart.setUTCDate(weekStart.getUTCDate() - ((weekStart.getUTCDay() + 6) % 7));
+  const week = useFieldQuery('/reports/kpis', { from: weekStart.toISOString().slice(0, 10), to });
+  const weeklyStats = week.data?.data;
+  const rate = weeklyStats?.attendance.rate;
   const { hash } = useLocation();
   const [selected, select] = useState(null);
   const [notice, setNotice] = useState(null);
@@ -178,6 +184,29 @@ export function Today() {
               {t('newSale')}
             </Link>
           )}
+        </section>
+      )}
+      {weeklyStats && (
+        <section className={card}>
+          <h2 className="text-lg font-bold">{t('myWeek')}</h2>
+          <dl className="grid grid-cols-2 gap-3">
+            <div>
+              <dt>{t('units')}</dt>
+              <dd className="font-semibold">{weeklyStats.sales.units}</dd>
+            </div>
+            <div>
+              <dt>{t('attendance')}</dt>
+              <dd className="font-semibold">
+                {rate == null
+                  ? '—'
+                  : new Intl.NumberFormat(`${i18n.resolvedLanguage}-u-nu-latn`, {
+                      style: 'percent',
+                      minimumFractionDigits: 1,
+                      maximumFractionDigits: 1,
+                    }).format(rate)}
+              </dd>
+            </div>
+          </dl>
         </section>
       )}
       <section className={card} id="stock">

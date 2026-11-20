@@ -26,7 +26,7 @@ export function AppShell({ title, topBar, items, children }) {
   const { t } = useTranslation('common');
   return (
     <div className="min-h-screen bg-slate-50">
-      <header className="flex min-h-16 items-center justify-between gap-3 border-b border-slate-200 bg-white px-4 lg:px-6">
+      <header className="flex min-h-16 flex-wrap items-center justify-between gap-x-3 gap-y-2 border-b border-slate-200 bg-white px-4 py-2 sm:flex-nowrap lg:px-6">
         <div className="flex items-center gap-3">
           <button
             type="button"

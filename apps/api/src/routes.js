@@ -4,6 +4,7 @@ import { createSalesRouter } from './modules/sales/sales.routes.js';
 import { createNotificationsRouter } from './modules/notifications/notifications.routes.js';
 import { createIssuesRouter } from './modules/issues/issues.routes.js';
 import { createAnnouncementsRouter } from './modules/announcements/announcements.routes.js';
+import { createReportingRouter } from './modules/reporting/reporting.routes.js';
 import { Router } from 'express';
 import { API_PREFIX, APP_VERSION } from './config/constants.js';
 import { publicRoute } from './core/authz/index.js';
@@ -40,6 +41,7 @@ export function createRoutes({ checkDatabase }) {
     });
   });
 
+  api.use('/reports', createReportingRouter());
   api.use('/auth', createAuthRouter());
   api.use('/reference', createReferenceRouter());
   api.use('/organization', createOrganizationRouter());

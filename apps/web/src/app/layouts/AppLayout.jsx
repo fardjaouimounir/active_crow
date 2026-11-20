@@ -7,6 +7,7 @@ import { AppShell } from '../../shared/ui/AppShell.jsx';
 import { UserMenu } from './SurfaceLayout.jsx';
 
 const navigation = [
+  { key: 'dashboard', to: '/app/dashboard', permission: 'reports.read' },
   { key: 'users', to: '/app/users', permission: 'org.user.read' },
   { key: 'organization', to: '/app/organization', permission: 'org.user.read' },
   { key: 'regions', to: '/app/regions', permission: 'org.pos.read', hiddenFor: 'supervisor' },

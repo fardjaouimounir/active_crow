@@ -18,6 +18,8 @@ export const fieldPwa = {
   },
   workbox: {
     globPatterns: ['**/*.{js,css,html,png,woff2}'],
+    // The field installer must not download office-only reporting pages or chart code.
+    globIgnores: ['**/Dashboard-*', '**/CampaignReport-*', '**/ReportingUi-*'],
     navigateFallback: '/index.html',
     navigateFallbackAllowlist: [/^\/field(?:[/?]|$)/],
     navigateFallbackDenylist: [/^\/api(?:[/?]|$)/],

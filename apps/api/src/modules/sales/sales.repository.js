@@ -1,3 +1,4 @@
+import { countBuyers } from '@fieldflow/shared';
 import { assertScope, campaignWhere, scoped, userWhere } from '../../core/authz/scopeFilters.js';
 import { Prisma } from '../../db/client.js';
 
@@ -128,8 +129,9 @@ export async function salePage(db, scope, campaignId, filters) {
     SELECT (SELECT count(*) FROM matched) AS total,
       (SELECT count(*) FROM recorded) AS sales,
       (SELECT coalesce(sum(i.quantity), 0) FROM sale_items i JOIN recorded r ON r.id = i.sale_id) AS units,
-      (SELECT count(DISTINCT customer_id) FROM recorded) AS buyers,
-      (SELECT count(*) FROM gift_entitlements g JOIN recorded r ON r.id = g.sale_id
+      (SELECT count(DISTINCT customer_id) FROM recorded) AS "identifiedBuyers",
+      (SELECT count(*) FROM recorded WHERE customer_id IS NULL) AS "anonymousSales",
+      (SELECT coalesce(sum(g.quantity), 0) FROM gift_entitlements g JOIN recorded r ON r.id = g.sale_id
         WHERE g.status = 'undelivered') AS undelivered,
       (SELECT coalesce(jsonb_agg(jsonb_build_object('id', u.id, 'fullName',u.full_name)
         ORDER BY u.full_name, u.id), '[]'::jsonb) FROM users u WHERE u.id IN
@@ -138,11 +140,17 @@ export async function salePage(db, scope, campaignId, filters) {
         ORDER BY u.full_name, u.id), '[]'::jsonb) FROM users u WHERE u.id IN
         (SELECT DISTINCT supervisor_id FROM matched)) AS supervisors`;
   const rows = new Map((await sales(db, scope, { id: { in: ids } })).map((row) => [row.id, row]));
-  const { total, animateurs, supervisors, ...counts } = aggregate;
+  const { total, animateurs, supervisors, identifiedBuyers, anonymousSales, undelivered, units } =
+    aggregate;
   return {
     rows: ids.map((id) => rows.get(id)).filter(Boolean),
     total: Number(total),
-    counts: Object.fromEntries(Object.entries(counts).map(([key, value]) => [key, Number(value)])),
+    counts: {
+      sales: Number(aggregate.sales),
+      units: Number(units),
+      buyers: countBuyers(identifiedBuyers, anonymousSales),
+      undelivered: Number(undelivered),
+    },
     filters: { animateurs, supervisors },
   };
 }

@@ -56,6 +56,8 @@ const CATALOG = `
 | \`issue.manage\` | ✓ | ✓ | ✓ | ✓ | | |
 | \`announcement.read\` | ✓ | ✓ | ✓ | ✓ | ✓ | |
 | \`announcement.publish\` | ✓ | ✓ | ✓ | ✓ | | |
+| \`reports.read\` | ✓ | ✓ | ✓ | ✓ | ✓ | |
+| \`reports.export\` | ✓ | ✓ | ✓ | ✓ | | |
 | \`report.read\` | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ |
 | \`report.export\` | ✓ | ✓ | ✓ | | | ✓ |
 | \`file.upload\` | ✓ | ✓ | ✓ | ✓ | ✓ | |

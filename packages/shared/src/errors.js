@@ -1,6 +1,8 @@
 // Error codes returned by the API in `{ error: { code } }`. The web app translates them.
 
 export const ERROR_CODES = Object.freeze({
+  EXPORT_TOO_LARGE: 'EXPORT_TOO_LARGE',
+  INVALID_DIMENSION: 'INVALID_DIMENSION',
   CUSTOMER_FIELDS_REQUIRED: 'CUSTOMER_FIELDS_REQUIRED',
   INVALID_PHONE: 'INVALID_PHONE',
   CUSTOMER_LIMIT_REACHED: 'CUSTOMER_LIMIT_REACHED',
