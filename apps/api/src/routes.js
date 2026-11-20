@@ -1,5 +1,7 @@
 import { createInventoryRouter } from './modules/inventory/inventory.routes.js';
 import { createAttendanceRouter } from './modules/attendance/attendance.routes.js';
+import { createDrawRouter } from './modules/sales/draw.routes.js';
+import { createPortalRouter } from './modules/portal/portal.routes.js';
 import { createSalesRouter } from './modules/sales/sales.routes.js';
 import { createNotificationsRouter } from './modules/notifications/notifications.routes.js';
 import { createIssuesRouter } from './modules/issues/issues.routes.js';
@@ -44,6 +46,7 @@ export function createRoutes({ checkDatabase }) {
 
   api.use('/reports', createReportingRouter());
   api.use('/ai', createAiRouter());
+  api.use('/portal', createPortalRouter());
   api.use('/auth', createAuthRouter());
   api.use('/reference', createReferenceRouter());
   api.use('/organization', createOrganizationRouter());
@@ -54,6 +57,7 @@ export function createRoutes({ checkDatabase }) {
   api.use(createInventoryRouter());
   api.use(createAttendanceRouter());
   api.use(createSalesRouter());
+  api.use(createDrawRouter());
   api.use('/campaigns', createCampaignsRouter());
   api.use(createNotificationsRouter());
   api.use(createIssuesRouter());

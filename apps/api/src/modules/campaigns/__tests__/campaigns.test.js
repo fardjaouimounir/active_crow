@@ -499,7 +499,8 @@ describe('scope', () => {
     expect(await visibleIds('supervisor')).toEqual([staffed.id]);
     expect(await visibleIds('supervisorTwo')).toEqual([]);
     expect(await visibleIds('animateur')).toEqual([staffed.id]);
-    expect(await visibleIds('clientUser')).toEqual([staffed.id]);
+    // Clients read their campaigns through /portal (aggregates only), never through these routes.
+    await rejected(send('get', '/campaigns', 'clientUser'), 404, 'NOT_FOUND');
     await rejected(send('get', '/campaigns/' + unstaffed.id, 'regional'), 404, 'NOT_FOUND');
     await rejected(send('get', '/campaigns/' + unstaffed.id, 'clientUser'), 404, 'NOT_FOUND');
     await rejected(
@@ -515,15 +516,13 @@ describe('scope', () => {
     );
   });
 
-  it('hides the budget and internal coverage from client users', async () => {
-    const [listed] = await ok(send('get', '/campaigns?q=Scope', 'clientUser'), 200);
-    const detail = await ok(send('get', '/campaigns/' + staffed.id, 'clientUser'), 200);
-    for (const campaign of [listed, detail]) {
-      expect(Object.keys(campaign).sort()).toEqual(
-        ['client', 'code', 'description', 'endDate', 'id', 'name', 'startDate', 'status'].sort(),
-      );
-      expect(JSON.stringify(campaign)).not.toContain('2500000');
-    }
+  it('keeps the budget and internal coverage away from client users', async () => {
+    await rejected(send('get', '/campaigns/' + staffed.id, 'clientUser'), 404, 'NOT_FOUND');
+    await rejected(
+      send('get', '/campaigns/' + staffed.id + '/status-history', 'clientUser'),
+      404,
+      'NOT_FOUND',
+    );
   });
 
   it('filters by status, client, wilaya and period', async () => {

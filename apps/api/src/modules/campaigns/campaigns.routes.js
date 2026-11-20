@@ -1,6 +1,7 @@
 import { Router } from 'express';
 import { authenticate } from '../../core/auth/index.js';
 import { requirePermission } from '../../core/authz/index.js';
+import { NotFoundError } from '../../core/errors/index.js';
 import { validate } from '../../core/http/index.js';
 import { registerFileAccessPolicy } from '../files/fileAccessPolicies.js';
 import { uploadFile } from '../files/upload.js';
@@ -13,7 +14,10 @@ import { addRuleSetRoutes } from './ruleSets.routes.js';
 export function createCampaignsRouter() {
   registerFileAccessPolicy('campaign_document', campaignDocumentPolicy);
   const router = Router();
-  const read = requirePermission('campaign.read');
+  // Clients read their campaigns through /portal (aggregates only), never through these routes.
+  const staffOnly = (req, _res, next) =>
+    next(req.actor.role === 'client' ? new NotFoundError() : undefined);
+  const read = [requirePermission('campaign.read'), staffOnly];
   const manage = requirePermission('campaign.manage');
   const query = input.empty;
   const params = input.params;

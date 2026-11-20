@@ -50,7 +50,8 @@ const CATALOG = `
 | \`inventory.adjust.approve\` (policy: higher level than holder) | ✓ | ✓ | ✓ | | | |
 | \`tombola.read\` | ✓ | ✓ | ✓ | ✓ | | ✓ |
 | \`tombola.manage\` | ✓ | | | | | |
-| \`tombola.draw\` | | | | | | ✓ |
+| \`tombola.draw\` | ✓ | | | | | ✓ |
+| \`tombola.deliver\` | ✓ | ✓ | | | | |
 | \`issue.read\` | ✓ | ✓ | ✓ | ✓ | ✓ | |
 | \`issue.create\` | ✓ | ✓ | ✓ | ✓ | ✓ | |
 | \`issue.manage\` | ✓ | ✓ | ✓ | ✓ | | |
@@ -61,7 +62,7 @@ const CATALOG = `
 | \`report.read\` | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ |
 | \`report.export\` | ✓ | ✓ | ✓ | | | ✓ |
 | \`file.upload\` | ✓ | ✓ | ✓ | ✓ | ✓ | |
-| \`file.share_with_client\` | ✓ | | | | | |
+| \`file.share_with_client\` | ✓ | ✓ | | | | |
 | \`audit.read\` | ✓ | | | | | |
 | \`ai.request\` | ✓ | ✓ | ✓ | ✓ | | |
 | \`ai.review\` | ✓ | ✓ | ✓ | | | |

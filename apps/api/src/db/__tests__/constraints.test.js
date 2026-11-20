@@ -345,14 +345,19 @@ describe('BR-51: tombola entries and winners are frozen after the draw', () => {
   /** The draw service's order: draw + winners first, status = 'drawn' last, in one transaction. */
   async function runDraw() {
     return withTransaction(async (tx) => {
+      // Closing registration commits to the list (trigger); the draw must use exactly that commitment.
+      const closed = await tx.tombola.update({
+        where: { id: tombola.id },
+        data: { status: 'closed' },
+      });
       draw = await tx.tombolaDraw.create({
         data: {
           agencyId: ctx.agency.id,
           tombolaId: tombola.id,
           seed: 'seed',
-          algorithm: 'sha256-fisher-yates',
-          eligibleCount: 1,
-          entriesHash: 'hash',
+          algorithm: 'hmac-sha256-fisher-yates-v1',
+          eligibleCount: closed.eligibleCount,
+          entriesHash: closed.entriesHash,
           drawnById: ctx.manager.id,
           drawnAt: new Date(),
         },

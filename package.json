@@ -27,7 +27,8 @@
     "db:reset": "npm run db:reset -w @fieldflow/api",
     "db:seed": "npm run db:seed -w @fieldflow/api --",
     "db:bootstrap": "npm run db:bootstrap -w @fieldflow/api --",
-    "db:studio": "npm run db:studio -w @fieldflow/api"
+    "db:studio": "npm run db:studio -w @fieldflow/api",
+    "tombola:verify": "node scripts/tombolaVerify.js"
   },
   "devDependencies": {
     "@eslint/js": "^10.0.1",

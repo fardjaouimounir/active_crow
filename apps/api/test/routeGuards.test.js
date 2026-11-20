@@ -6,7 +6,8 @@ import express, { Router } from 'express';
 import { describe, expect, it } from 'vitest';
 import { createApp } from '../src/app.js';
 import { authenticate } from '../src/core/auth/index.js';
-import { GUARD, guardOf, publicRoute, requirePermission } from '../src/core/authz/index.js';
+import { GUARD, publicRoute, requirePermission } from '../src/core/authz/index.js';
+import { listRoutes } from './helpers/routes.js';
 import { openApiDocument } from '../src/openapi.js';
 import { createRoutes } from '../src/routes.js';
 
@@ -16,39 +17,6 @@ const PUBLIC_ROUTES = [
   'POST /api/v1/auth/login',
   'POST /api/v1/auth/refresh',
 ];
-
-const joinPath = (prefix, path) =>
-  `${prefix}/${path ?? ''}`.replace(/\/+/g, '/').replace(/(.)\/$/, '$1');
-
-/**
- * Every route of an app with the guards that run before its handler, in order (router-level
- * `use()` guards included).
- * @param {import('express').Express} app
- * @returns {Array<{ route: string, guards: string[] }>}
- */
-export function listRoutes(app) {
-  const routes = [];
-  const walk = (stack, prefix, inherited) => {
-    let active = inherited;
-    for (const layer of stack) {
-      if (layer.route) {
-        const path = joinPath(prefix, layer.route.path);
-        const guards = [...active, ...layer.route.stack.map((l) => guardOf(l.handle))].filter(
-          Boolean,
-        );
-        for (const method of Object.keys(layer.route.methods)) {
-          routes.push({ route: `${method.toUpperCase()} ${path}`, guards });
-        }
-      } else if (Array.isArray(layer.handle?.stack)) {
-        walk(layer.handle.stack, joinPath(prefix, layer.rawPath), active);
-      } else if (guardOf(layer.handle)) {
-        active = [...active, guardOf(layer.handle)];
-      }
-    }
-  };
-  walk(app.router.stack, '', []);
-  return routes;
-}
 
 /** @returns {string[]} one message per route that breaks the rule */
 export function findUnguardedRoutes(app) {

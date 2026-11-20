@@ -46,6 +46,7 @@ export const messages = {
   bySupervisor: ['By Superviseur', 'حسب المشرف'],
   byAnimateur: ['By Animateur', 'حسب المنشط'],
   byWilaya: ['By wilaya', 'حسب الولاية'],
+  byProduct: ['By product', 'حسب المنتج'],
   byStore: ['By Point de Vente', 'حسب نقاط البيع'],
   topStores: ['Top 10 Points de Vente', 'أفضل 10 نقاط بيع'],
   bottomStores: ['Bottom 10 Points de Vente', 'أقل 10 نقاط بيع'],

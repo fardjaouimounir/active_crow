@@ -54,7 +54,10 @@ const statuses = [
 ];
 const colors = ['#147a59', '#986311', '#ae2b39', '#526174', '#325a99', '#775a96'];
 
-export function Cards({ values, supervisor = false }) {
+/** What a client may see: no attendance, no visits (staff work), only results. */
+const CLIENT_CARDS = new Set(['sales', 'buyers', 'conversion', 'gifts', 'completion', 'target']);
+
+export function Cards({ values, supervisor = false, view = 'staff' }) {
   const { t, num } = useReportingText();
   const cards = supervisor
     ? [
@@ -62,7 +65,9 @@ export function Cards({ values, supervisor = false }) {
         indicators.at(-1),
         ...statuses.map((status) => [status, 'attendance', status]),
       ]
-    : indicators;
+    : view === 'client'
+      ? indicators.filter(([title]) => CLIENT_CARDS.has(title))
+      : indicators;
   return (
     <dl className="grid grid-cols-2 gap-3 lg:grid-cols-4">
       {cards.map(([title, group, field, percent]) => (
@@ -119,7 +124,7 @@ export function ReportTable({ rows, title, columns }) {
   );
 }
 
-export function BreakdownTable({ rows, title }) {
+export function BreakdownTable({ rows, title, view = 'staff' }) {
   const { t, num, rtl } = useReportingText();
   return (
     <ReportTable
@@ -128,9 +133,9 @@ export function BreakdownTable({ rows, title }) {
       columns={[
         ['label', (row) => (rtl && row.labelAr) || row.label || row.id || '—'],
         ['sales', (row) => num(row.sales.units)],
-        ['attendance', (row) => num(row.attendance.rate, true)],
+        ...(view === 'client' ? [] : [['attendance', (row) => num(row.attendance.rate, true)]]),
         ['buyers', (row) => num(row.customers.buyers)],
-        ['visits', (row) => num(row.visits.count)],
+        ...(view === 'client' ? [] : [['visits', (row) => num(row.visits.count)]]),
       ]}
     />
   );

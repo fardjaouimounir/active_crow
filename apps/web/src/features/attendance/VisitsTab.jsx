@@ -9,7 +9,9 @@ import { useApiError } from '../../shared/ui/useApiError.js';
 import { useCan } from '../../shared/auth/hooks.js';
 import { Modal } from '../../shared/ui/Dialogs.jsx';
 import { useFilters } from '../../shared/ui/FilterBar.jsx';
+import { useCampaignWrite } from '../campaigns/api.js';
 import { useIdempotencyKey } from '../inventory/api.js';
+import { usePortalText } from '../../surfaces/portal/api.js';
 import { Photo, QueryState, button, field, time } from './AttendanceTab.jsx';
 import { useFieldWrite, useVisit, useVisitOptions, useVisits } from './api.js';
 
@@ -162,6 +164,15 @@ function VisitDetail({ id, close }) {
   const { t, i18n } = useTranslation('common');
   const query = useVisit(id);
   const row = query.data?.data;
+  const { t: portal } = usePortalText();
+  const canShare = useCan('file.share_with_client');
+  const share = useCampaignWrite();
+  const setVisibility = (fileId, shared) =>
+    share.mutate({
+      method: 'patch',
+      path: '/files/' + fileId + '/visibility',
+      body: { visibility: shared ? 'client_visible' : 'internal' },
+    });
   return (
     <Modal drawer title={t('attendance.visitDetail')} onClose={close}>
       <QueryState query={query} />
@@ -176,9 +187,32 @@ function VisitDetail({ id, close }) {
             {t('attendance.observed')}{' '}
             {row.observedAnimateurs.map((person) => person.fullName).join(' · ')}
           </p>
-          {row.photos.map(({ fileId }) => (
-            <Photo key={fileId} id={fileId} />
+          {row.photos.map(({ fileId, file }) => (
+            <div key={fileId} className="grid gap-1">
+              <Photo id={fileId} />
+              {canShare && (
+                <label className="flex items-center gap-2 text-sm">
+                  <input
+                    type="checkbox"
+                    checked={file?.visibility === 'client_visible'}
+                    disabled={share.isPending}
+                    onChange={(event) => setVisibility(fileId, event.target.checked)}
+                  />
+                  {portal('share')}
+                </label>
+              )}
+            </div>
           ))}
+          {canShare && row.photos.length > 1 && (
+            <button
+              type="button"
+              className={button}
+              disabled={share.isPending}
+              onClick={() => row.photos.forEach(({ fileId }) => setVisibility(fileId, true))}
+            >
+              {portal('shareAll')}
+            </button>
+          )}
           {row.issues.map((issue) => (
             <Link key={issue.id} to={`/app/issues/${issue.id}`}>
               {issue.title}

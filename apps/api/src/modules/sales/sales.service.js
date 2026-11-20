@@ -236,8 +236,13 @@ export function voidSale(actor, id, reason) {
     const ids = [...new Set(sale.tombolaEntries.map((entry) => entry.tombolaId))];
     await tombolas.lock(tx, scope, ids);
     for (const tombolaId of ids) {
-      if ((await tombolas.tombola(tx, scope, tombolaId)).status === 'drawn') {
+      const { status } = await tombolas.tombola(tx, scope, tombolaId);
+      if (status === 'drawn') {
         throw problem('TOMBOLA_ALREADY_DRAWN', 409, 'An entry belongs to a drawn Tombola');
+      }
+      if (status === 'closed') {
+        // Registration closed: the entry list is committed and can no longer change.
+        throw problem('TOMBOLA_ENTRIES_FROZEN', 409, 'An entry belongs to a closed Tombola');
       }
     }
     const data = {

@@ -143,7 +143,7 @@
       "ENTITLEMENT_NOT_UNDELIVERED": "الهدية ليست بانتظار التسليم.",
       "TOMBOLA_LOCKED": "إعدادات القرعة مقفلة.",
       "TOMBOLA_NOT_OPEN": "التسجيل مغلق.",
-      "TOMBOLA_ALREADY_DRAWN": "لهذا البيع مشاركة في قرعة تم سحبها.",
+      "TOMBOLA_ALREADY_DRAWN": "تم السحب على هذه التومبولا مسبقًا ولا يمكن تكراره أو تغييره.",
       "NOT_ASSIGNMENT_OWNER": "التعيين غير موجود.",
       "FIELD_ENTRY_NOT_ALLOWED": "الإدخال الميداني غير متاح لهذا التعيين أو لهذه الحملة.",
       "UNKNOWN_CHECKPOINT": "نقطة الحضور غير موجودة.",
@@ -264,6 +264,13 @@
       "AI_CAPABILITY_MISMATCH": "نتيجة الذكاء الاصطناعي لا تطابق طلبها.",
       "AI_SUGGESTION_NOT_PENDING": "تمت مراجعة هذا الاقتراح من قبل.",
       "AI_SUBJECT_NOT_ALLOWED": "يمكنك طلب ملخصك اليومي فقط.",
+      "TOMBOLA_NOT_CLOSED": "التسجيل ما يزال مفتوحًا. يمكن السحب بعد إغلاقه.",
+      "TOMBOLA_NOT_DRAWN": "لم يُجرَ السحب على هذه التومبولا بعد.",
+      "NOT_ENOUGH_ENTRIES": "عدد المشاركات المؤهلة أقل من عدد الفائزين.",
+      "NO_RESERVE_LEFT": "لا يوجد فائز احتياطي ليأخذ هذه المرتبة.",
+      "WINNER_ALREADY_FINAL": "تم تسليم هذا الفائز أو تعذّر الوصول إليه من قبل.",
+      "VISIBILITY_NOT_ALLOWED_FOR_KIND": "لا يمكن مشاركة هذا النوع من الملفات مع العميل أبدًا.",
+      "TOMBOLA_ENTRIES_FROZEN": "التسجيل مغلق: قائمة المشاركات مثبّتة ولا يمكن تغييرها.",
       "AI_DAILY_LIMIT_REACHED": "بلغت الحد اليومي لطلبات الذكاء الاصطناعي.",
       "AI_TARGET_REQUIRED": "حدّد هدف مبيعات في قواعد الحملة قبل هذا الطلب."
     }

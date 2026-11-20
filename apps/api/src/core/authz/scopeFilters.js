@@ -4,6 +4,7 @@
 //
 // Pattern for later modules: add `<resource>Where(scope, options)` here, start with
 // `assertScope(scope)`, return `{}` only for SYSTEM_SCOPE and always include `agencyId` otherwise.
+import { CLIENT_CAMPAIGN_STATUSES } from '@fieldflow/shared';
 import { descendantIds } from '../../modules/organization/hierarchy.repository.js';
 import { prisma } from '../../db/client.js';
 import { businessDate } from '../time/clock.js';
@@ -85,7 +86,7 @@ export function campaignWhere(scope) {
         assignments: { some: { animateurId: scope.userId, status: 'approved' } },
       };
     case 'client':
-      return { agencyId, clientId: scope.clientId };
+      return { agencyId, clientId: scope.clientId, status: { in: [...CLIENT_CAMPAIGN_STATUSES] } };
   }
 }
 

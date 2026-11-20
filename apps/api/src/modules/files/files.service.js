@@ -151,7 +151,7 @@ function setVisibility(scope, actor, id, visibility) {
     if (visibility === 'client_visible' && !SHAREABLE_FILE_KINDS.includes(before.kind)) {
       throw new AppError({
         status: 422,
-        code: ERROR_CODES.FILE_NOT_SHAREABLE,
+        code: ERROR_CODES.VISIBILITY_NOT_ALLOWED_FOR_KIND,
         message: 'This kind of file can never be shared with the client',
       });
     }

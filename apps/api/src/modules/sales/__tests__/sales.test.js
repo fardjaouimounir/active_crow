@@ -397,6 +397,9 @@ describe('Prompt 12 sales', () => {
     const send = (actor, path = endpoint) =>
       world.call(actor, 'post', path, { reason: 'Wrong transaction' });
     await world.refused(send(context.animateurAuth), 403, 'FORBIDDEN');
+    // A closed Tombola has committed its list: the entries can no longer be voided.
+    await prisma.tombola.update({ where: { id: context.tombola.id }, data: { status: 'closed' } });
+    await world.refused(send('director'), 409, 'TOMBOLA_ENTRIES_FROZEN');
     await prisma.tombola.update({ where: { id: context.tombola.id }, data: { status: 'drawn' } });
     await world.refused(send('director'), 409, 'TOMBOLA_ALREADY_DRAWN');
     expect((await get('director', '/sales/' + first.id)).tombolaEntries[0].status).toBe('valid');

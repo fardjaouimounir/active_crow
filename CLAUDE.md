@@ -182,6 +182,7 @@ npm run db:seed             # reference data: 1 agency, 69 wilayas, 1,541 commun
 npm run db:seed -- --demo   # demo organization; requires an active director and DEMO_PASSWORD
 npm run db:bootstrap -- --email <e> --name "<n>"  # first director of the seeded agency (once; prints a temporary password)
 npm run db:studio           # Prisma Studio
+npm run tombola:verify -- <draw.json>  # recompute a Tombola draw from its published data
 ```
 
 API env for files: `UPLOAD_DIR` (default `./var/uploads` under `apps/api`, git-ignored; tests use a
@@ -222,3 +223,4 @@ temporary directory removed after the run) and `STORAGE_DRIVER` (`local`).
 | 2026-11-20 | absences voidable via voided_at (P11), partial unique on active rows |
 | 2026-11-20 | P12: Stock shortage issues are unique per assignment and item while open or in progress. Undelivered entitlements keep their original shortage issue link after delivery or void. |
 | 2026-11-20 | AI integration (Prompt 14b, `docs/ai-integration.md`): suggestion-only. `ai_requests` is ours (ids only in `label_map`); `ai_suggestions` is append-only except the review fields (trigger). Callback `/api/v1/internal/ai/results` is mounted in `app.js` before the JSON parser, service-key only (`GUARD.SERVICE`), 256 KB, 60/min, unknown `requestId` or capability mismatch ⇒ 422. Empty `AI_SERVICE_BASE_URL` disables the module. Missing target ⇒ omitted from payloads, 422 `AI_TARGET_REQUIRED`. |
+| 2026-11-20 | Client portal and Tombola draw (Prompt 15, `docs/portal-and-tombola.md`): clients read only `/portal/*` (aggregates, no staff or customer data) plus the Tombola draw endpoints; the staff `/campaigns` read routes answer 404 to clients. Registration closing commits to the entry list in the database (`entries_hash`, `eligible_count`, `committed_at` by trigger); entries then freeze (`tombola_entries_frozen`). The draw is `hmac-sha256-fisher-yates-v1` in `packages/shared/src/tombolaDraw.js`, run once (unique `tombola_id`), the client or the director draws, the server random is revealed with the result. An unreachable winner gives the rank to the next reserve through `serves_rank`; voiding a sale with entries in a closed Tombola is refused. |

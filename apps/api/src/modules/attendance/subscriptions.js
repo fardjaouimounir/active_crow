@@ -1,4 +1,5 @@
 import { ScopeService } from '../../core/authz/scopeService.js';
+import { campaignWhere } from '../../core/authz/scopeFilters.js';
 import { can } from '@fieldflow/shared';
 import { registerFileAccessPolicy } from '../files/fileAccessPolicies.js';
 import { subscribe } from '../notifications/subscriptions.js';
@@ -16,6 +17,16 @@ registerFileAccessPolicy('attendance_photo', async (actor, file, db) => {
 });
 
 registerFileAccessPolicy('visit_photo', async (actor, file, db) => {
+  if (actor.role === 'client') {
+    // Only photos the agency chose to share, of a campaign in the client scope.
+    if (file.visibility !== 'client_visible') return null;
+    const scope = ScopeService.resolve(actor);
+    const link = await db.visitPhoto.findFirst({
+      where: { fileId: file.id, visit: { campaign: campaignWhere(scope) } },
+      select: { fileId: true },
+    });
+    return link ? {} : null;
+  }
   if (!can(actor.role, 'visit.read')) return null;
   const scope = ScopeService.resolve(actor);
   const [row] = await repository.visits(db, scope, { photos: { some: { fileId: file.id } } });

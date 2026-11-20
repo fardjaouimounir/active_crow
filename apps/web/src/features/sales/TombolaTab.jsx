@@ -3,7 +3,9 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { useTranslation } from 'react-i18next';
+import { Link } from 'react-router';
 import { useCan } from '../../shared/auth/hooks.js';
+import { usePortalText } from '../../surfaces/portal/api.js';
 import { ConfirmDialog, Modal } from '../../shared/ui/Dialogs.jsx';
 import { useApiError } from '../../shared/ui/useApiError.js';
 import { useFilters } from '../../shared/ui/FilterBar.jsx';
@@ -177,6 +179,8 @@ function Entries({ tombola, close }) {
 export function TombolaTab({ campaign }) {
   const { t } = useTranslation('common');
   const canManage = useCan('tombola.manage');
+  const canPreview = useCan('file.share_with_client');
+  const { t: portal } = usePortalText();
   const query = useSalesView(campaign.id, 'tombolas', true);
   const [config, setConfig] = useState(null);
   const [entries, setEntries] = useState(null);
@@ -187,6 +191,13 @@ export function TombolaTab({ campaign }) {
   const rows = query.data?.data ?? [];
   return (
     <section className="grid gap-3">
+      {canPreview && (
+        <div>
+          <Link className="underline" to={`/app/campaigns/${campaign.id}/client-preview`}>
+            {portal('openPreview')}
+          </Link>
+        </div>
+      )}
       {editable && (
         <div>
           <button className={button} onClick={() => setConfig({})}>
@@ -212,6 +223,11 @@ export function TombolaTab({ campaign }) {
                     <button className={button} onClick={() => setConfig({ row })}>
                       {t('sales.editTombola')}
                     </button>
+                  )}
+                  {['closed', 'drawn'].includes(row.status) && (
+                    <Link className={button} to={'/app/tombolas/' + row.id}>
+                      {portal(row.status === 'drawn' ? 'winnersFollowUp' : 'drawOnBehalf')}
+                    </Link>
                   )}
                   {canManage && row.status === 'open' && (
                     <button

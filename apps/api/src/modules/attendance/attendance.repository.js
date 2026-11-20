@@ -170,7 +170,7 @@ export function visitPoints(db, scope, campaignId) {
 const visitInclude = {
   pointOfSale: place,
   supervisor: person,
-  photos: true,
+  photos: { include: { file: { select: { visibility: true } } } },
   issues: { select: { id: true, category: true, title: true, status: true, description: true } },
 };
 

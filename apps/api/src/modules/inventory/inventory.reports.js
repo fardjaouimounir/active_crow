@@ -389,6 +389,18 @@ export async function reconciliation(actor, campaignId) {
   };
 }
 
+/** Campaign-wide stock totals for the client portal: no holders, no per-item detail. */
+export async function clientStockTotals(campaign) {
+  const { all } = await campaignTotals(campaign);
+  return {
+    stockIn: all.stockIn,
+    customers: all.customers,
+    losses: all.losses,
+    returnedToClient: all.returnedToClient,
+    physical: all.physical,
+  };
+}
+
 // ── My stock ────────────────────────────────────────────────────────────────────────────────
 
 const withCampaign = { campaign: { select: { id: true, code: true, name: true, status: true } } };

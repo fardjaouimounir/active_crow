@@ -29,7 +29,7 @@ export const FILE_KIND_RULES = Object.freeze({
 export const FILE_KINDS = Object.freeze(Object.keys(FILE_KIND_RULES));
 
 /** Only these kinds may become `client_visible` (Module 11: attendance photos stay internal). */
-export const SHAREABLE_FILE_KINDS = Object.freeze(['campaign_document']);
+export const SHAREABLE_FILE_KINDS = Object.freeze(['campaign_document', 'visit_photo']);
 
 /** @param {string} kind @param {string} mimeType @returns {{ mimeTypes: readonly string[], maxBytes: number } | undefined} */
 export function fileRuleFor(kind, mimeType) {

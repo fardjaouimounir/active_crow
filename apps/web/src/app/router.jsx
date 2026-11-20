@@ -169,6 +169,33 @@ export const routes = [
                 }),
               },
               {
+                path: 'campaigns/:id/client-preview',
+                lazy: async () => ({
+                  Component: (await import('../surfaces/portal/PortalCampaign.jsx'))
+                    .PortalCampaignPreview,
+                }),
+              },
+              {
+                path: 'campaigns/:id/client-preview/report',
+                lazy: async () => ({
+                  Component: (await import('../surfaces/portal/PortalCampaign.jsx'))
+                    .PortalCampaignPreviewReport,
+                }),
+              },
+              {
+                path: 'tombolas/:id',
+                lazy: async () => ({
+                  Component: (await import('../surfaces/portal/PortalTombola.jsx')).StaffTombola,
+                }),
+              },
+              {
+                path: 'tombolas/:id/record',
+                lazy: async () => ({
+                  Component: (await import('../surfaces/portal/TombolaRecord.jsx'))
+                    .StaffTombolaRecord,
+                }),
+              },
+              {
                 path: 'ai-review',
                 lazy: async () => ({
                   Component: (await import('../features/ai/AiReviewPage.jsx')).AiReviewPage,
@@ -274,10 +301,43 @@ export const routes = [
         element: <RequireSurface surface="portal" />,
         children: [
           {
-            index: true,
             lazy: async () => ({
               Component: (await import('./layouts/PortalLayout.jsx')).PortalLayout,
             }),
+            children: [
+              {
+                index: true,
+                lazy: async () => ({
+                  Component: (await import('../surfaces/portal/PortalCampaigns.jsx'))
+                    .PortalCampaigns,
+                }),
+              },
+              {
+                path: 'campaigns/:id',
+                lazy: async () => ({
+                  Component: (await import('../surfaces/portal/PortalCampaign.jsx')).PortalCampaign,
+                }),
+              },
+              {
+                path: 'campaigns/:id/report',
+                lazy: async () => ({
+                  Component: (await import('../surfaces/portal/PortalCampaign.jsx'))
+                    .PortalCampaignReport,
+                }),
+              },
+              {
+                path: 'tombolas/:id',
+                lazy: async () => ({
+                  Component: (await import('../surfaces/portal/PortalTombola.jsx')).PortalTombola,
+                }),
+              },
+              {
+                path: 'tombolas/:id/record',
+                lazy: async () => ({
+                  Component: (await import('../surfaces/portal/TombolaRecord.jsx')).TombolaRecord,
+                }),
+              },
+            ],
           },
         ],
       },

@@ -355,6 +355,10 @@ const CHECKS = [
 const EXCLUSIONS = ['reporting_lines_no_overlap', 'assignments_no_overlap'];
 
 const TRIGGERS = [
+  'tombola_draws.tombola_draws_append_only',
+  'tombolas.tombola_commitment',
+  'tombola_entries.tombola_entries_frozen',
+  'tombola_draws.tombola_draw_matches_commitment',
   'ai_suggestions.ai_suggestions_review_only',
   'ai_suggestions.ai_suggestions_no_delete',
   'gift_entitlements.gift_entitlements_shortage_issue_immutable',

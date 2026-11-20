@@ -132,3 +132,11 @@ Migration `20261120050000_issue_comment_attachments` adds the nullable UUID `iss
 ### AI integration migration
 
 `ai_requests` (ours, never sent to the AI service) has `ai_requests_status_check` (`queued`, `sent`, `send_failed`, `completed`) and `ai_requests_capability_check` (the four capability ids). `ai_suggestions.request_id` becomes `uuid` with the foreign key `ai_suggestions_request_id_fkey` to `ai_requests(request_id)`, so a suggestion exists only for a request we made. The trigger `ai_suggestions_review_only` allows an update only while the row is `pending_review`, only to `accepted` or `rejected`, and only on `status`, `reviewed_by`, `reviewed_at`, `review_note` (and the housekeeping `updated_at`); `ai_suggestions_no_delete` forbids deletes.
+
+### Tombola commitment migrations
+
+`tombola_commitment()` (BEFORE UPDATE on `tombolas`) sets `entries_hash` (SHA-256 of `"<n>\n"` per valid entry, ascending), `eligible_count` and `committed_at` when the status goes `open` → `closed`, rejects any later change of these columns and any reopening. `tombola_entries_frozen()` rejects INSERT, UPDATE and DELETE on `tombola_entries` while the Tombola is `closed` (when `drawn`, `tombola_locked` answers as before). `tombola_draw_matches_commitment()` (BEFORE INSERT on `tombola_draws`) requires a `closed` Tombola whose commitment equals the draw's `entries_hash` and `eligible_count` and the current list. `tombola_locked()` now also lets `unreachable_reason` and `serves_rank` change after the draw. Checks `tombola_winners_serves_rank_reserve` (only a reserve serves a rank) and `tombola_winners_unreachable_reason` (a reason iff `unreachable`). New columns: `tombolas.entries_hash/eligible_count/committed_at`, `tombola_draws.server_random/client_nonce`, `tombola_winners.unreachable_reason/serves_rank`.
+
+### Tombola hardening migration
+
+`tombola_draws_append_only` (BEFORE UPDATE OR DELETE on `tombola_draws`, `forbid_mutation()`): a draw never changes. `tombola_commitment()` now allows only `open → closed` (commitment set) and `closed → drawn`. `files_client_visible_kinds` (CHECK on `files`): `client_visible` only for `visit_photo` and `campaign_document`.

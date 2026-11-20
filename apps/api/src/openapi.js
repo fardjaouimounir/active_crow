@@ -1,5 +1,7 @@
 import { registerInventoryOpenApi } from './modules/inventory/inventory.openapi.js';
 import { registerAttendanceOpenApi } from './modules/attendance/attendance.openapi.js';
+import { registerDrawOpenApi } from './modules/sales/draw.openapi.js';
+import { registerPortalOpenApi } from './modules/portal/portal.openapi.js';
 import { registerAiOpenApi } from './modules/ai/ai.openapi.js';
 import { registerReportingOpenApi } from './modules/reporting/reporting.openapi.js';
 import { registerSalesOpenApi } from './modules/sales/sales.openapi.js';
@@ -35,5 +37,7 @@ export function openApiDocument() {
   registerIssuesOpenApi(registry);
   registerAnnouncementsOpenApi(registry);
   registerAiOpenApi(registry);
+  registerDrawOpenApi(registry);
+  registerPortalOpenApi(registry);
   return registry.document();
 }

@@ -1273,6 +1273,10 @@ model Tombola {
   requiresPurchase      Boolean       @map("requires_purchase")
   registrationEndsAt    DateTime      @map("registration_ends_at") @db.Timestamptz(6)
   drawScheduledAt       DateTime      @map("draw_scheduled_at") @db.Timestamptz(6)
+  /// Commitment set by the trigger tombola_commitment when registration closes.
+  entriesHash           String?       @map("entries_hash")
+  eligibleCount         Int?          @map("eligible_count")
+  committedAt           DateTime?     @map("committed_at") @db.Timestamptz(6)
   winnersCount          Int           @map("winners_count")
   reservesCount         Int           @map("reserves_count")
   status                TombolaStatus @default(open)
@@ -1324,6 +1328,9 @@ model TombolaDraw {
   eligibleCount Int      @map("eligible_count")
   /// SHA-256 of the sorted entry numbers.
   entriesHash   String   @map("entries_hash")
+  /// 32 random bytes (hex), stored with the draw and so revealed only after it.
+  serverRandom  String   @default("") @map("server_random")
+  clientNonce   String   @default("") @map("client_nonce")
   drawnById     String   @map("drawn_by") @db.Uuid
   drawnAt       DateTime @map("drawn_at") @db.Timestamptz(6)
   createdAt     DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
@@ -1348,6 +1355,9 @@ model TombolaWinner {
   prizeLabel     String?             @map("prize_label")
   deliveryStatus PrizeDeliveryStatus @default(pending) @map("delivery_status")
   deliveredAt    DateTime?           @map("delivered_at") @db.Timestamptz(6)
+  unreachableReason String?          @map("unreachable_reason")
+  /// The rank of the unreachable winner this reserve now serves (E-15).
+  servesRank     Int?                @map("serves_rank")
   createdAt      DateTime            @default(now()) @map("created_at") @db.Timestamptz(6)
   updatedAt      DateTime            @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(6)
 

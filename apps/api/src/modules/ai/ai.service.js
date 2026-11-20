@@ -656,20 +656,38 @@ async function commentary(actor, { capability, subjectId, from, to }) {
     AND: [
       await repository.visibility(scope, 'suggestion'),
       { capability, subjectId },
-      // Only a suggestion generated for exactly this period may be shown for it.
-      {
-        request: {
-          is: {
-            AND: [
-              { filters: { path: ['from'], equals: from } },
-              { filters: { path: ['to'], equals: to } },
-            ],
-          },
-        },
-      },
+      periodFilter({ from, to }),
     ],
   });
   return row ? detail(actor, row) : null;
+}
+
+/** Only a suggestion generated for exactly this period may be shown for it. */
+const periodFilter = ({ from, to }) => ({
+  request: {
+    is: {
+      AND: [
+        { filters: { path: ['from'], equals: from } },
+        { filters: { path: ['to'], equals: to } },
+      ],
+    },
+  },
+});
+
+/**
+ * The accepted campaign insights for the client portal: the text only (no reviewer name, no
+ * labels). The caller has already proven the campaign belongs to the client.
+ */
+async function portalCommentary(agencyId, campaignId, period) {
+  const row = await repository.latestAccepted(prisma, {
+    AND: [
+      { agencyId },
+      { capability: 'campaign_insights', subjectId: campaignId },
+      periodFilter(period),
+    ],
+  });
+  if (!row || failureOf(row.output)) return null;
+  return { output: row.output, reviewedAt: row.reviewedAt, period };
 }
 
 const textOf = (value) => (typeof value === 'string' ? value : (value?.text ?? ''));
@@ -705,6 +723,7 @@ async function acceptedNarrative(actor, campaignId, { from, to }) {
 
 export const aiService = Object.freeze({
   acceptedNarrative,
+  portalCommentary,
   requestSuggestion,
   scheduleDailySummaries,
   processRequest,

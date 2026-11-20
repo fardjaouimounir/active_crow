@@ -246,6 +246,8 @@ describe('FR-032 upload pipeline', () => {
 describe('file access (delegated policies)', () => {
   it('Q-16 serves shared documents to their client only, everything else is 404', async () => {
     const own = await campaignFor(clientX);
+    // Clients never see a draft campaign: the portal starts at `assigned`.
+    await prisma.campaign.update({ where: { id: own.id }, data: { status: 'active' } });
     const other = await campaignFor(clientY);
     const shared = (await ok(upload(own.id, PDF, 'm.pdf', 'Shared'), 201)).body.data;
     const internal = (await ok(upload(own.id, PDF, 'i.pdf', 'Internal'), 201)).body.data;
@@ -261,7 +263,16 @@ describe('file access (delegated policies)', () => {
     await ok(send('get', '/files/' + shared.fileId, 'clientUser'), 200);
     await rejected(send('get', '/files/' + internal.fileId, 'clientUser'), 404, 'NOT_FOUND');
     await rejected(send('get', '/files/' + foreign.fileId, 'clientUser'), 404, 'NOT_FOUND');
-    const listed = await ok(send('get', '/campaigns/' + own.id + '/documents', 'clientUser'), 200);
+    // The staff list is closed to clients; they read the shared documents through the portal.
+    await rejected(
+      send('get', '/campaigns/' + own.id + '/documents', 'clientUser'),
+      404,
+      'NOT_FOUND',
+    );
+    const listed = await ok(
+      send('get', '/portal/campaigns/' + own.id + '/documents', 'clientUser'),
+      200,
+    );
     expect(listed.body.data.map(({ fileId }) => fileId)).toEqual([shared.fileId]);
     expect(listed.body.data[0].uploadedBy).toBeUndefined();
     await ok(
@@ -321,7 +332,7 @@ describe('file access (delegated policies)', () => {
     await rejected(
       send('patch', '/files/' + proof.id + '/visibility').send({ visibility: 'client_visible' }),
       422,
-      'FILE_NOT_SHAREABLE',
+      'VISIBILITY_NOT_ALLOWED_FOR_KIND',
     );
     const campaign = await campaignFor(clientX);
     const document = (await ok(upload(campaign.id, PDF, 'm.pdf'), 201)).body.data;

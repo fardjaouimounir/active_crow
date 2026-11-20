@@ -4,7 +4,7 @@ import { campaignWhere, scoped, userWhere } from '../../core/authz/scopeFilters.
 import { AppError, NotFoundError } from '../../core/errors/index.js';
 import { businessDate, clock } from '../../core/time/clock.js';
 import { prisma } from '../../db/client.js';
-import { reconciliation } from '../inventory/inventory.reports.js';
+import { clientStockTotals, reconciliation } from '../inventory/inventory.reports.js';
 import * as repository from './reporting.repository.js';
 
 const DAY = 86400000;
@@ -351,4 +351,42 @@ export async function aggregates(actor, filters, dimension) {
   return calculateKpis(period(ctx.filters), totals(await read(ctx)));
 }
 
-export const reportingService = { kpis, breakdown, summary, exportData, aggregates };
+const PORTAL_DIMENSIONS = ['day', 'wilaya', 'point_of_sale', 'product'];
+
+/**
+ * Totals, or one of the dimensions a client may see, of a campaign for the client portal. The
+ * caller has already proven the campaign belongs to the client; the numbers are agency-wide for
+ * that campaign. Never Animateur or supervisor breakdowns, never anything personal.
+ */
+export async function portalAggregates(campaign, dimension) {
+  const ctx = {
+    scope: { level: 'agency', agencyId: campaign.agencyId },
+    instant: clock.now(),
+    filters: {
+      campaignIds: [campaign.id],
+      from: dateText(campaign.startDate),
+      to: dateText(campaign.endDate),
+    },
+  };
+  if (dimension) {
+    if (!PORTAL_DIMENSIONS.includes(dimension)) throw new Error('Dimension not allowed');
+    return grouped(ctx, dimension);
+  }
+  const kpis = calculateKpis(
+    period(ctx.filters),
+    totals(await read(ctx)),
+    await clientStockTotals(campaign),
+  );
+  // Internal review counters are not part of the client view.
+  delete kpis.gifts.toReview;
+  return kpis;
+}
+
+export const reportingService = {
+  kpis,
+  breakdown,
+  summary,
+  exportData,
+  aggregates,
+  portalAggregates,
+};

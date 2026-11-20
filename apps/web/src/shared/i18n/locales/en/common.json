@@ -143,7 +143,7 @@
       "ENTITLEMENT_NOT_UNDELIVERED": "This gift is not awaiting delivery.",
       "TOMBOLA_LOCKED": "Tombola configuration is locked.",
       "TOMBOLA_NOT_OPEN": "Registration is closed.",
-      "TOMBOLA_ALREADY_DRAWN": "This sale belongs to a completed draw.",
+      "TOMBOLA_ALREADY_DRAWN": "This Tombola was already drawn. The draw cannot be repeated or changed.",
       "NOT_ASSIGNMENT_OWNER": "Assignment not found.",
       "FIELD_ENTRY_NOT_ALLOWED": "Field entry is unavailable for this assignment or campaign.",
       "UNKNOWN_CHECKPOINT": "This checkpoint does not exist.",
@@ -264,6 +264,13 @@
       "AI_CAPABILITY_MISMATCH": "The AI result does not match its request.",
       "AI_SUGGESTION_NOT_PENDING": "This suggestion was already reviewed.",
       "AI_SUBJECT_NOT_ALLOWED": "You can only request your own daily summary.",
+      "TOMBOLA_NOT_CLOSED": "Registration is still open. The draw is possible once it closes.",
+      "TOMBOLA_NOT_DRAWN": "This Tombola has not been drawn yet.",
+      "NOT_ENOUGH_ENTRIES": "There are fewer eligible entries than winners.",
+      "NO_RESERVE_LEFT": "There is no reserve left to take this rank.",
+      "WINNER_ALREADY_FINAL": "This winner is already delivered or unreachable.",
+      "VISIBILITY_NOT_ALLOWED_FOR_KIND": "This kind of file can never be shared with the client.",
+      "TOMBOLA_ENTRIES_FROZEN": "Registration is closed: the entry list is committed and cannot change.",
       "AI_DAILY_LIMIT_REACHED": "You reached the daily limit of AI requests.",
       "AI_TARGET_REQUIRED": "Set a sales target in the campaign rules before requesting this."
     }
