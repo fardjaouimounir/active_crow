@@ -157,6 +157,12 @@ export const routes = [
                 }),
               },
               {
+                path: 'attendance',
+                lazy: async () => ({
+                  Component: (await import('../features/attendance/ReviewPage.jsx')).ReviewPage,
+                }),
+              },
+              {
                 path: 'my-stock',
                 lazy: async () => ({
                   Component: (await import('../features/inventory/MyStockPage.jsx')).MyStockPage,

@@ -118,3 +118,7 @@ The organization migration adds `is_demo BOOLEAN NOT NULL DEFAULT false` to `reg
 ### Issue comment attachments migration
 
 Migration `20261120050000_issue_comment_attachments` adds the nullable UUID `issue_attachments.comment_id`. The composite foreign key `issue_attachments_issue_id_comment_id_fkey` references `issue_comments(issue_id, id)` and prevents attaching a file to a comment from a different issue. `issue_comments_issue_id_id_key` supplies the referenced unique pair, and `issue_attachments_issue_id_comment_id_idx` supports lookups by issue and comment. Existing rows with a null comment remain direct issue attachments.
+
+### Absence voiding migration
+
+`absences_void_consistent` requires the timestamp, actor and reason to be present together. The unique index `absences_one_active_per_day` covers `(assignment_id, work_date)` where `voided_at IS NULL`. This preserves voided rows and permits a corrected absence on the same day.

@@ -118,12 +118,20 @@ function create(actor, input, files) {
       }))
     )
       throw new NotFoundError();
-    const row = await tx.issue.create({ data: { ...input, agencyId, reportedById: actor.id } });
-    await attach(tx, actor, row.id, files);
-    await audit(tx, actor, 'created', 'issue', row.id, undefined, row);
-    notify(tx, actor, 'created', row.id);
+    const row = await createInTransaction(tx, actor, input, files);
     return serialize(await required(tx, actor, row.id));
   });
+}
+
+// The visit service supplies the campaign, point and visit from its scoped, validated visit.
+async function createInTransaction(tx, actor, input, files) {
+  const row = await tx.issue.create({
+    data: { ...input, agencyId: actor.agencyId, reportedById: actor.id },
+  });
+  if (files?.length) await attach(tx, actor, row.id, files);
+  await audit(tx, actor, 'created', 'issue', row.id, undefined, row);
+  notify(tx, actor, 'created', row.id);
+  return row;
 }
 
 function change(actor, id, action, input) {
@@ -209,4 +217,12 @@ function comment(actor, id, input, files) {
   });
 }
 
-export const issueService = { list, detail, create, change, comments, comment };
+export const issueService = {
+  list,
+  detail,
+  create,
+  createInTransaction,
+  change,
+  comments,
+  comment,
+};

@@ -30,10 +30,12 @@ const CATALOG = `
 | \`assignment.approve\` (policy also checks campaign approver role) | ✓ | ✓ | ✓ | | | |
 | \`attendance.read\` | ✓ | ✓ | ✓ | ✓ | ✓ | |
 | \`attendance.record\` | | | | | ✓ | |
-| \`attendance.review\` | ✓ | | | ✓ | | |
+| \`attendance.review\` | ✓ | | ✓ | ✓ | | |
+| \`attendance.override\` | ✓ | | | | | |
 | \`absence.record\` | ✓ | | ✓ | ✓ | | |
+| \`absence.void\` | ✓ | | | | | |
 | \`visit.read\` | ✓ | ✓ | ✓ | ✓ | | |
-| \`visit.record\` | | | | ✓ | | |
+| \`visit.record\` | ✓ | | ✓ | ✓ | | |
 | \`sale.read\` | ✓ | ✓ | ✓ | ✓ | ✓ | |
 | \`sale.record\` | | | | | ✓ | |
 | \`sale.void\` | ✓ | | | ✓ | | |

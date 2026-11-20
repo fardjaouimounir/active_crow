@@ -13,6 +13,7 @@ const navigation = [
   { key: 'points', to: '/app/points-of-sale', permission: 'org.pos.read', hiddenFor: 'supervisor' },
   { key: 'clients', to: '/app/clients', permission: 'catalog.read' },
   { key: 'campaigns', to: '/app/campaigns', permission: 'campaign.read' },
+  { key: 'attendance', to: '/app/attendance', permission: 'attendance.review' },
   { key: 'issues', to: '/app/issues', permission: 'issue.read' },
   { key: 'announcements', to: '/app/announcements', permission: 'announcement.read' },
   { key: 'myStock', to: '/app/my-stock', permission: 'inventory.transfer' },

@@ -2,7 +2,7 @@ import { useEffect, useId, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
 
 /** Native modal with keyboard dismissal and focus restoration. */
-export function Modal({ title, onClose, children }) {
+export function Modal({ title, onClose, children, drawer = false }) {
   const dialog = useRef(null);
   const heading = useId();
   const { t } = useTranslation('common');
@@ -19,7 +19,11 @@ export function Modal({ title, onClose, children }) {
         event.preventDefault();
         onClose();
       }}
-      className="m-auto max-h-[85vh] w-[min(32rem,calc(100vw-2rem))] rounded-xl bg-white p-6 shadow-xl backdrop:bg-slate-900/50"
+      className={
+        drawer
+          ? 'm-0 ms-auto h-dvh max-h-none w-[min(32rem,100vw)] bg-white p-6 shadow-xl backdrop:bg-slate-900/50'
+          : 'm-auto max-h-[85vh] w-[min(32rem,calc(100vw-2rem))] rounded-xl bg-white p-6 shadow-xl backdrop:bg-slate-900/50'
+      }
     >
       <div className="mb-4 flex items-start justify-between gap-4">
         <h2 id={heading} className="text-lg font-semibold">

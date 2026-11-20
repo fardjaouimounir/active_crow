@@ -68,6 +68,7 @@ const FOREIGN_KEYS = {
     'animateur_id>users',
     'recorded_by>users',
     'replacement_assignment_id>assignments',
+    'voided_by>users',
   ],
   supervisor_visits: [
     'agency_id>agencies',
@@ -294,9 +295,11 @@ const NAMED_INDEXES = {
   promotion_tiers_unique: { unique: true, nullsNotDistinct: true },
   stock_locations_unique: { unique: true, nullsNotDistinct: true },
   stock_movements_one_per_entitlement: { unique: true, where: /gift_entitlement_id IS NOT NULL/ },
+  absences_one_active_per_day: { unique: true, where: /voided_at IS NULL/ },
 };
 
 const CHECKS = [
+  'absences_void_consistent',
   'agencies_code_format',
   'users_client_role',
   'wilayas_id_range',

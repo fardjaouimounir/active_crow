@@ -94,9 +94,9 @@ async function detail(scope, campaignId, ruleSetId) {
 }
 
 /** The version in force at `at` (default now); 404 when none was approved by then. */
-async function effective(scope, campaignId, at = clock.now()) {
-  await readableCampaign(prisma, scope, campaignId, { effectiveOnly: true });
-  return required(repository.findEffective(prisma, scope, campaignId, at));
+async function effective(scope, campaignId, at = clock.now(), db = prisma) {
+  await readableCampaign(db, scope, campaignId, { effectiveOnly: true });
+  return required(repository.findEffective(db, scope, campaignId, at));
 }
 
 /** Saves one rule config of a draft: shape (400 with the field path) then references (422). */

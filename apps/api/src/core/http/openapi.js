@@ -19,10 +19,12 @@ export const operation = (
     cookie = false,
     multipart,
     binary,
+    idempotent = false,
   } = {},
 ) => ({
   multipart,
   binary,
+  idempotent,
   method,
   path,
   summary,
@@ -102,7 +104,13 @@ function response({ list, array, dataSchema, password, status, binary }) {
 }
 
 /** `multipart/form-data` with one binary `file` part plus the given Zod-described text fields. */
-function multipartBody({ fields, multiple }) {
+function multipartBody({
+  fields,
+  multiple,
+  name = multiple ? 'files' : 'file',
+  maxItems = 3,
+  required = !multiple,
+}) {
   const schema = fields ? inputSchema(fields) : { type: 'object', properties: {}, required: [] };
   return {
     required: true,
@@ -110,17 +118,17 @@ function multipartBody({ fields, multiple }) {
       'multipart/form-data': {
         schema: {
           type: 'object',
-          required: [...(multiple ? [] : ['file']), ...(schema.required ?? [])],
+          required: [...(required ? [name] : []), ...(schema.required ?? [])],
           properties: {
             ...(multiple
               ? {
-                  files: {
+                  [name]: {
                     type: 'array',
-                    maxItems: 3,
+                    maxItems,
                     items: { type: 'string', format: 'binary' },
                   },
                 }
-              : { file: { type: 'string', format: 'binary' } }),
+              : { [name]: { type: 'string', format: 'binary' } }),
             ...schema.properties,
           },
         },
@@ -152,7 +160,20 @@ function operationDocument(config) {
       : config.publicRoute
         ? []
         : [{ bearerAuth: [] }],
-    parameters: [...parameters('path', params), ...parameters('query', query)],
+    parameters: [
+      ...parameters('path', params),
+      ...parameters('query', query),
+      ...(config.idempotent
+        ? [
+            {
+              in: 'header',
+              name: 'Idempotency-Key',
+              required: true,
+              schema: { type: 'string', format: 'uuid' },
+            },
+          ]
+        : []),
+    ],
     ...(body ? { requestBody: { required: true, content: jsonContent(inputSchema(body)) } } : {}),
     ...(config.multipart
       ? {

@@ -316,6 +316,7 @@ model User {
   reviewedAttendance      AttendanceRecord[]      @relation("AttendanceReviewedBy")
   absences                Absence[]               @relation("AbsenceAnimateur")
   recordedAbsences        Absence[]               @relation("AbsenceRecordedBy")
+  voidedAbsences          Absence[]               @relation("AbsenceVoidedBy")
   supervisorVisits        SupervisorVisit[]
   createdCustomers        Customer[]
   animateurSales          Sale[]                  @relation("SaleAnimateur")
@@ -913,6 +914,9 @@ model Absence {
   reason                  String?
   recordedById            String      @map("recorded_by") @db.Uuid
   replacementAssignmentId String?     @map("replacement_assignment_id") @db.Uuid
+  voidedAt                DateTime?   @map("voided_at") @db.Timestamptz(6)
+  voidedById              String?     @map("voided_by") @db.Uuid
+  voidReason              String?     @map("void_reason")
   createdAt               DateTime    @default(now()) @map("created_at") @db.Timestamptz(6)
   updatedAt               DateTime    @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(6)
 
@@ -920,9 +924,11 @@ model Absence {
   assignment            Assignment  @relation("AbsenceAssignment", fields: [assignmentId], references: [id], onDelete: Restrict)
   animateur             User        @relation("AbsenceAnimateur", fields: [animateurId], references: [id], onDelete: Restrict)
   recordedBy            User        @relation("AbsenceRecordedBy", fields: [recordedById], references: [id], onDelete: Restrict)
+  voidedBy              User?       @relation("AbsenceVoidedBy", fields: [voidedById], references: [id], onDelete: Restrict)
   replacementAssignment Assignment? @relation("AbsenceReplacement", fields: [replacementAssignmentId], references: [id], onDelete: Restrict)
 
-  @@unique([assignmentId, workDate])
+  // The SQL migration restricts this index to active rows. Use findFirst for absence history.
+  @@unique([assignmentId, workDate], map: "absences_one_active_per_day")
   @@map("absences")
 }
 

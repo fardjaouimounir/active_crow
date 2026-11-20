@@ -37,7 +37,11 @@ export function requireIdempotencyKey(req, _res, next) {
   }
   const hash = createHash('sha256')
     .update(req.method + ' ' + req.originalUrl.split('?')[0] + '\n' + canonical(req.body ?? {}))
-    .update(req.file ? createHash('sha256').update(req.file.buffer).digest('hex') : '')
+    .update(
+      (req.files ?? (req.file ? [req.file] : []))
+        .map((file) => createHash('sha256').update(file.buffer).digest('hex'))
+        .join(''),
+    )
     .digest('hex');
   req.idempotency = {
     key: parsed.data.toLowerCase(),
