@@ -1,0 +1,9 @@
+node_modules/
+dist/
+coverage/
+package-lock.json
+
+# Authored reference material: not reformatted by tooling
+docs/
+prompts/
+CLAUDE.md

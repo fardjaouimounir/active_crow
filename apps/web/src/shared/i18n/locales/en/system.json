@@ -1,0 +1,10 @@
+{
+  "health": {
+    "title": "System status",
+    "checking": "Checking the API…",
+    "healthy": "API healthy",
+    "unreachable": "API unavailable",
+    "version": "Version",
+    "uptime": "Uptime"
+  }
+}

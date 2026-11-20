@@ -1,0 +1,35 @@
+{
+  "appName": "FieldFlow",
+  "surfaces": {
+    "app": "Agency workspace",
+    "field": "Field app",
+    "portal": "Client portal"
+  },
+  "language": {
+    "label": "Language",
+    "en": "EN",
+    "ar": "العربية"
+  },
+  "actions": {
+    "retry": "Try again"
+  },
+  "status": {
+    "loading": "Loading…"
+  },
+  "errors": {
+    "pageNotFound": "Page not found",
+    "unexpected": "Something went wrong",
+    "reference": "Reference: {{requestId}}",
+    "codes": {
+      "VALIDATION_FAILED": "Some of the information sent is not valid.",
+      "UNAUTHENTICATED": "Please sign in to continue.",
+      "FORBIDDEN": "You are not allowed to do this.",
+      "NOT_FOUND": "What you are looking for does not exist.",
+      "CONFLICT": "This was changed by someone else or conflicts with an existing record.",
+      "BUSINESS_RULE_VIOLATION": "This action breaks one of the campaign rules.",
+      "RATE_LIMITED": "Too many requests. Please wait a moment and try again.",
+      "INTERNAL_ERROR": "The server ran into a problem. Please try again later.",
+      "NETWORK_ERROR": "Cannot reach the server. Check your connection."
+    }
+  }
+}

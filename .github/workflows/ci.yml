@@ -1,0 +1,52 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  lint-and-test:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    services:
+      # Not used by the code yet; ready for the migrations added in Prompt 02.
+      postgres:
+        image: postgres:17-alpine
+        env:
+          POSTGRES_USER: fieldflow
+          POSTGRES_PASSWORD: fieldflow
+          POSTGRES_DB: fieldflow_test
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U fieldflow -d fieldflow_test"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+
+    env:
+      DATABASE_URL: postgresql://fieldflow:fieldflow@localhost:5432/fieldflow_test
+      DATABASE_URL_TEST: postgresql://fieldflow:fieldflow@localhost:5432/fieldflow_test
+
+    steps:
+      - uses: actions/checkout@v5
+
+      - uses: actions/setup-node@v5
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+
+      - run: npm ci
+
+      - run: npm run lint
+
+      - run: npm test
