@@ -16,7 +16,8 @@
     "db:seed": "node prisma/seed/index.js",
     "db:studio": "prisma studio",
     "db:bootstrap": "node scripts/bootstrapDirector.js",
-    "perf:reporting": "node scripts/perfReporting.js"
+    "perf:reporting": "node scripts/perfReporting.js",
+    "db:seed:showcase": "node prisma/seed/showcase.js"
   },
   "dependencies": {
     "@fieldflow/shared": "^0.1.0",

@@ -182,6 +182,8 @@ npm run db:seed             # reference data: 1 agency, 69 wilayas, 1,541 commun
 npm run db:seed -- --demo   # demo organization; requires an active director and DEMO_PASSWORD
 npm run db:bootstrap -- --email <e> --name "<n>"  # first director of the seeded agency (once; prints a temporary password)
 npm run db:studio           # Prisma Studio
+npm run db:seed:showcase    # demo campaign running for 10 days (attendance, sales, stock, visits, Tombola); needs DEMO_PASSWORD
+npm run ai:start            # start ../fieldflow-ai with its own .env (port 4100)
 npm run tombola:verify -- <draw.json>  # recompute a Tombola draw from its published data
 ```
 

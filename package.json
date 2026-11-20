@@ -28,7 +28,9 @@
     "db:seed": "npm run db:seed -w @fieldflow/api --",
     "db:bootstrap": "npm run db:bootstrap -w @fieldflow/api --",
     "db:studio": "npm run db:studio -w @fieldflow/api",
-    "tombola:verify": "node scripts/tombolaVerify.js"
+    "tombola:verify": "node scripts/tombolaVerify.js",
+    "db:seed:showcase": "npm run db:seed:showcase -w @fieldflow/api",
+    "ai:start": "node scripts/aiService.js"
   },
   "devDependencies": {
     "@eslint/js": "^10.0.1",

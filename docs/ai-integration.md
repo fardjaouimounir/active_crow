@@ -98,6 +98,13 @@ With an empty `AI_SERVICE_BASE_URL` the module is disabled: `POST /ai/requests` 
 3. Sign in as a supervisor, open the dashboard and press "Generate AI summary". The suggestion appears in
    `/app/ai-review` for the director within a minute; accepting it shows the card on the dashboard.
 
+### Starting the AI service from this repository
+
+`npm run ai:start` (script `scripts/aiService.js`) loads `../fieldflow-ai/.env` and starts the service. Use it
+when `npm start` in `fieldflow-ai` exits silently: that service only starts by itself when its path has
+no spaces or special characters, and it does not read `.env` files. The model must be one the LLM key
+may use (`LLM_MODEL` in the service `.env`).
+
 ## Docker note (Prompt 16)
 
 Run the AI service as its own container on the internal Compose network, **not published** to the host and
