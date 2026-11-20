@@ -5,20 +5,22 @@ import { LanguageSwitcher } from '../../shared/i18n/LanguageSwitcher.jsx';
 import { AppShell } from '../../shared/ui/AppShell.jsx';
 import { UserMenu } from './SurfaceLayout.jsx';
 
-const organizationNavigation = [
+const navigation = [
   { key: 'users', to: '/app/users', permission: 'org.user.read' },
   { key: 'organization', to: '/app/organization', permission: 'org.user.read' },
-  { key: 'regions', to: '/app/regions', permission: 'org.pos.read' },
-  { key: 'points', to: '/app/points-of-sale', permission: 'org.pos.read' },
+  { key: 'regions', to: '/app/regions', permission: 'org.pos.read', hiddenFor: 'supervisor' },
+  { key: 'points', to: '/app/points-of-sale', permission: 'org.pos.read', hiddenFor: 'supervisor' },
+  { key: 'clients', to: '/app/clients', permission: 'catalog.read' },
+  { key: 'campaigns', to: '/app/campaigns', permission: 'campaign.read' },
 ];
 
-/** Agency staff surface with organization navigation. */
+/** Agency staff surface with organization and catalog navigation. */
 export function AppLayout() {
   const { t } = useTranslation('common');
   const { user } = useAuth();
-  const items = (
-    user?.role === 'supervisor' ? organizationNavigation.slice(0, 2) : organizationNavigation
-  ).map((item) => ({ ...item, label: t('admin.' + item.key) }));
+  const items = navigation
+    .filter((item) => item.hiddenFor !== user?.role)
+    .map(({ hiddenFor: _hiddenFor, ...item }) => ({ ...item, label: t('admin.' + item.key) }));
   return (
     <AppShell
       title={t('appName')}

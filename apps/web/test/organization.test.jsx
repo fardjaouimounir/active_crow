@@ -163,6 +163,8 @@ describe('organization administration', () => {
         "navigation": [
           "المستخدمون",
           "الهيكل التنظيمي",
+          "العملاء",
+          "الحملات",
         ],
       }
     `);

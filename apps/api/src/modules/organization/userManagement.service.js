@@ -3,10 +3,16 @@ import { ERROR_CODES } from '@fieldflow/shared';
 import { auditService } from '../../core/audit/index.js';
 import { hashPassword, revokeAllSessions } from '../../core/auth/index.js';
 import { userWhere } from '../../core/authz/index.js';
-import { AppError, ConflictError, NotFoundError } from '../../core/errors/index.js';
+import {
+  AppError,
+  ConflictError,
+  NotFoundError,
+  ValidationError,
+} from '../../core/errors/index.js';
 import { businessDate } from '../../core/time/clock.js';
 import { prisma } from '../../db/client.js';
 import { withTransaction } from '../../db/transaction.js';
+import { clientReadService } from '../catalog/clientReadService.js';
 import {
   closeLine,
   currentLine,
@@ -69,11 +75,43 @@ function audit(tx, actor, action, id, before, after) {
   });
 }
 
+async function ensureActiveClient(tx, scope, clientId) {
+  if (!(await clientReadService.isActiveClient(tx, scope, clientId))) {
+    throw error(ERROR_CODES.CLIENT_INACTIVE, 'Choose an active client of the agency');
+  }
+}
+
+/** Client portal accounts (Q-16): bound to an active client, no manager, no reporting line. */
+function checkClientFields({ role, clientId }, managerId) {
+  const issues = [];
+  if (role === 'client' && !clientId) issues.push(['clientId', 'Required for client accounts']);
+  if (role === 'client' && managerId) issues.push(['managerId', 'Client accounts have no manager']);
+  if (role !== 'client' && clientId) issues.push(['clientId', 'Only client accounts have one']);
+  if (issues.length) {
+    throw new ValidationError(
+      issues.map(([field, message]) => ({ path: 'body.' + field, message })),
+    );
+  }
+}
+
+async function createClientUser(scope, actor, data) {
+  const { temporaryPassword, passwordHash } = await password();
+  return write(async (tx) => {
+    await ensureActiveClient(tx, scope, data.clientId);
+    await validateCommune(tx, data.wilayaId, data.communeId);
+    const user = await repository.createUser(tx, scope, { ...data, passwordHash });
+    await audit(tx, actor, 'org.user_created', user.id, undefined, user);
+    return { user, temporaryPassword };
+  });
+}
+
 async function create(scope, actor, { profile, managerId, ...data }) {
-  if (!Object.hasOwn(MANAGER_ROLES, data.role)) {
+  if (!Object.hasOwn(MANAGER_ROLES, data.role) && data.role !== 'client') {
     throw error(ERROR_CODES.ROLE_NOT_CREATABLE, 'This role cannot be created here');
   }
+  checkClientFields(data, managerId);
   ensureProfileRole(data.role, profile);
+  if (data.role === 'client') return createClientUser(scope, actor, data);
   const { temporaryPassword, passwordHash } = await password();
   const at = date();
   return write(async (tx) => {
@@ -137,6 +175,9 @@ function changeStatus(scope, actor, id, status) {
         'You cannot suspend or mark your own account left',
       );
     }
+    if (status === 'active' && before.role === 'client') {
+      await ensureActiveClient(tx, scope, before.clientId);
+    }
     if (status === 'left') {
       const future = await scheduledLine(tx, scope, id, at);
       if (future) await deleteLine(tx, scope, future.id);
@@ -187,7 +228,32 @@ async function detail(scope, id) {
   };
 }
 
+/**
+ * Suspends every active portal account of a client and revokes their sessions, inside the caller's
+ * transaction (the catalog module calls it when the client is soft-deleted).
+ */
+async function suspendClientUsers(tx, scope, actor, clientId) {
+  const users = await repository.activeClientUsers(tx, scope, clientId);
+  for (const { id } of users) {
+    await revokeAllSessions(tx, id);
+    await repository.updateUser(tx, scope, id, { status: 'suspended' });
+    await audit(
+      tx,
+      actor,
+      'org.user_status_changed',
+      id,
+      { status: 'active' },
+      {
+        status: 'suspended',
+        reason: 'client_deleted',
+      },
+    );
+  }
+  return users.length;
+}
+
 export const userManagementService = Object.freeze({
+  suspendClientUsers,
   create,
   update,
   changeStatus,

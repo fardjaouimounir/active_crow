@@ -1,4 +1,5 @@
 import { z } from 'zod';
+import { clock } from './time.js';
 
 const businessDateFormat = new Intl.DateTimeFormat('en-CA', {
   timeZone: 'Africa/Algiers',
@@ -7,8 +8,8 @@ const businessDateFormat = new Intl.DateTimeFormat('en-CA', {
   day: '2-digit',
 });
 
-/** Returns the Algerian business date for the supplied instant. */
-export function today(instant = new Date()) {
+/** Algerian business date (YYYY-MM-DD) of an instant, by default now on the injectable clock. */
+export function today(instant = clock.now()) {
   return businessDateFormat.format(instant);
 }
 

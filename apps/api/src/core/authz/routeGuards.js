@@ -7,6 +7,8 @@ export const GUARD = Object.freeze({
   AUTHENTICATE: 'authenticate',
   PERMISSION: 'permission',
   ANY_AUTHENTICATED: 'any-authenticated',
+  /** File reads: authorization delegated to the policy of the file's kind (modules/files). */
+  FILE_POLICY: 'file-policy',
   PUBLIC: 'public',
 });
 

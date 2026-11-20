@@ -10,6 +10,8 @@ const fieldByCode = {
   POS_CODE_TAKEN: 'code',
   WILAYA_ALREADY_IN_REGION: 'wilayaIds',
   ROLE_NOT_CREATABLE: 'role',
+  CLIENT_NAME_TAKEN: 'name',
+  SKU_TAKEN: 'sku',
 };
 
 /** Translates the API error and indexes validation errors by form field. */
@@ -29,5 +31,12 @@ export function useApiError(error) {
   }
   const field = fieldByCode[error.code];
   if (field) fields[field] = message;
+  // Business-rule errors that point at one request field (`details.path`), with an optional reason.
+  const { path, reason } = Array.isArray(error.details) ? {} : (error.details ?? {});
+  if (typeof path === 'string' && path.startsWith('body.')) {
+    fields[path.slice(5)] = reason
+      ? t('rules.reasons.' + reason, { defaultValue: message })
+      : message;
+  }
   return { message, fields };
 }

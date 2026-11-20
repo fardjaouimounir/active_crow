@@ -63,7 +63,10 @@ export function findUnguardedRoutes(app) {
     }
     const auth = guards.indexOf(GUARD.AUTHENTICATE);
     const permission = guards.findIndex(
-      (guard) => guard === GUARD.PERMISSION || guard === GUARD.ANY_AUTHENTICATED,
+      (guard) =>
+        guard === GUARD.PERMISSION ||
+        guard === GUARD.ANY_AUTHENTICATED ||
+        guard === GUARD.FILE_POLICY,
     );
     if (auth === -1) problems.push(`${route} does not authenticate`);
     else if (permission === -1) problems.push(`${route} has no permission guard`);

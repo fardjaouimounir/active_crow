@@ -5,6 +5,9 @@ coverage/
 *.log
 .DS_Store
 
+# Uploaded files (default UPLOAD_DIR)
+apps/api/var/
+
 # Environment files: only the documented examples are committed
 .env
 .env.*

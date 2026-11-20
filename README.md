@@ -85,25 +85,27 @@ Per workspace: `npm test -w @fieldflow/api`, `npm run build -w @fieldflow/web`, 
 
 ## Environment variables
 
-| Variable                 | Where           | Purpose                                                   |
-| ------------------------ | --------------- | --------------------------------------------------------- |
-| `POSTGRES_USER`          | `.env`          | Local PostgreSQL user                                     |
-| `POSTGRES_PASSWORD`      | `.env`          | Local PostgreSQL password                                 |
-| `POSTGRES_PORT`          | `.env`          | Host port (bound to 127.0.0.1 only)                       |
-| `NODE_ENV`               | `apps/api/.env` | `development`, `test` or `production`                     |
-| `PORT`                   | `apps/api/.env` | API port (default 4000)                                   |
-| `LOG_LEVEL`              | `apps/api/.env` | pino level (`info`, `debug`, `silent`, …)                 |
-| `CORS_ORIGINS`           | `apps/api/.env` | Comma-separated origins allowed with credentials          |
-| `DATABASE_URL`           | `apps/api/.env` | PostgreSQL connection string                              |
-| `DATABASE_URL_TEST`      | `apps/api/.env` | Test database (required when `NODE_ENV=test`)             |
-| `JWT_ACCESS_SECRET`      | `apps/api/.env` | HS256 key for access tokens (≥ 32 characters, required)   |
-| `ACCESS_TOKEN_TTL`       | `apps/api/.env` | Access-token lifetime (`15m` default; s, m or h)          |
-| `REFRESH_TOKEN_TTL_DAYS` | `apps/api/.env` | Refresh-token lifetime in days (default 7)                |
-| `COOKIE_SECURE`          | `apps/api/.env` | `true`/`false`; unset = Secure except in development      |
-| `SEED_AGENCY_NAME`       | `apps/api/.env` | Name of the agency created by `db:seed`                   |
-| `SEED_AGENCY_CODE`       | `apps/api/.env` | Its code (`^[A-Z0-9-]{2,20}$`)                            |
-| `API_PORT`               | `apps/web/.env` | Port the Vite dev proxy forwards `/api` to (default 4000) |
-| `WEB_PORT`               | `apps/web/.env` | Vite dev server port (default 5173)                       |
+| Variable                 | Where           | Purpose                                                                                                 |
+| ------------------------ | --------------- | ------------------------------------------------------------------------------------------------------- |
+| `POSTGRES_USER`          | `.env`          | Local PostgreSQL user                                                                                   |
+| `POSTGRES_PASSWORD`      | `.env`          | Local PostgreSQL password                                                                               |
+| `POSTGRES_PORT`          | `.env`          | Host port (bound to 127.0.0.1 only)                                                                     |
+| `NODE_ENV`               | `apps/api/.env` | `development`, `test` or `production`                                                                   |
+| `PORT`                   | `apps/api/.env` | API port (default 4000)                                                                                 |
+| `LOG_LEVEL`              | `apps/api/.env` | pino level (`info`, `debug`, `silent`, …)                                                               |
+| `CORS_ORIGINS`           | `apps/api/.env` | Comma-separated origins allowed with credentials                                                        |
+| `DATABASE_URL`           | `apps/api/.env` | PostgreSQL connection string                                                                            |
+| `DATABASE_URL_TEST`      | `apps/api/.env` | Test database (required when `NODE_ENV=test`)                                                           |
+| `JWT_ACCESS_SECRET`      | `apps/api/.env` | HS256 key for access tokens (≥ 32 characters, required)                                                 |
+| `ACCESS_TOKEN_TTL`       | `apps/api/.env` | Access-token lifetime (`15m` default; s, m or h)                                                        |
+| `REFRESH_TOKEN_TTL_DAYS` | `apps/api/.env` | Refresh-token lifetime in days (default 7)                                                              |
+| `COOKIE_SECURE`          | `apps/api/.env` | `true`/`false`; unset = Secure except in development                                                    |
+| `UPLOAD_DIR`             | `apps/api/.env` | Uploaded files (default `./var/uploads`, relative to `apps/api`; git-ignored; never under the web root) |
+| `STORAGE_DRIVER`         | `apps/api/.env` | Storage adapter; only `local` for now                                                                   |
+| `SEED_AGENCY_NAME`       | `apps/api/.env` | Name of the agency created by `db:seed`                                                                 |
+| `SEED_AGENCY_CODE`       | `apps/api/.env` | Its code (`^[A-Z0-9-]{2,20}$`)                                                                          |
+| `API_PORT`               | `apps/web/.env` | Port the Vite dev proxy forwards `/api` to (default 4000)                                               |
+| `WEB_PORT`               | `apps/web/.env` | Vite dev server port (default 5173)                                                                     |
 
 The API refuses to start and lists every invalid variable when its configuration is wrong.
 

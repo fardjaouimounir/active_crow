@@ -170,7 +170,7 @@ describe('user management', () => {
     await rejected(send('post', '/users', 'director', body), 409, 'EMAIL_TAKEN');
     await rejected(send('post', '/users', 'supervisor', body), 403, 'FORBIDDEN');
     await rejected(
-      send('post', '/users', 'director', { ...body, role: 'client', email: 'client@example.dz' }),
+      send('post', '/users', 'director', { ...body, role: 'director', email: 'boss@example.dz' }),
       422,
       'ROLE_NOT_CREATABLE',
     );
@@ -496,7 +496,7 @@ it('seeds exactly the requested demo organization twice and refuses production',
   await seedDemo(opts);
   await seedDemo(opts);
   const where = { agencyId: demoAgency.id, isDemo: true };
-  expect(await prisma.user.count({ where })).toBe(19);
+  expect(await prisma.user.count({ where })).toBe(21);
   expect(await prisma.region.count({ where })).toBe(2);
   expect(await prisma.pointOfSale.count({ where })).toBe(20);
   expect(await prisma.reportingLine.count({ where: { agencyId: demoAgency.id } })).toBe(19);

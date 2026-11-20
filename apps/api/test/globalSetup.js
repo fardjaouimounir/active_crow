@@ -1,9 +1,11 @@
 // Runs once before the API test suite: applies all migrations to the test database.
 import { execFileSync } from 'node:child_process';
+import { rmSync } from 'node:fs';
 import { createRequire } from 'node:module';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import dotenv from 'dotenv';
+import { TEST_UPLOAD_DIR } from '../vitest.config.js';
 
 const apiDir = fileURLToPath(new URL('..', import.meta.url));
 const require = createRequire(import.meta.url);
@@ -33,4 +35,9 @@ export default function setup() {
       cause: err,
     });
   }
+
+  // Teardown: remove the temporary upload directory of this run.
+  return () => {
+    rmSync(TEST_UPLOAD_DIR, { recursive: true, force: true });
+  };
 }

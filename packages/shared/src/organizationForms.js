@@ -21,6 +21,7 @@ export const createUserSchema = z.strictObject({
   ...fields,
   role: z.enum(USER_ROLES),
   managerId: z.uuid().optional(),
+  clientId: z.uuid().optional(),
   phone: fields.phone.optional(),
   wilayaId: fields.wilayaId.optional(),
   communeId: fields.communeId.optional(),

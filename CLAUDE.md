@@ -103,10 +103,15 @@ docs/              business analysis and database design (Arabic)
 - Lists: `?page&pageSize&sort&<filters>`, `pageSize` max 100.
 - Success: `{ data, meta? }`. Error: `{ error: { code, message, details?, requestId } }`.
 - Status codes: 400 validation · 401 unauthenticated · 403 forbidden · 404 not found / out of scope ·
-  409 conflict (version, overlap) · 422 business rule violated · 429 rate limit · 500 internal (generic message).
+  409 conflict (version, overlap) · 413 payload too large (`FILE_TOO_LARGE` for uploads, body too large) ·
+  422 business rule violated · 429 rate limit · 500 internal (generic message).
 - Error `code` values are UPPER_SNAKE constants in `packages/shared`; the web app translates them.
 - Field-entry endpoints (sales, attendance, visits, stock confirmations) require an `Idempotency-Key` header.
 - JSON is camelCase; dates ISO 8601 UTC; business dates `YYYY-MM-DD` in Africa/Algiers.
+- Money (DZD, `numeric(14,2)`) travels as a decimal string (`"1250.00"`), never a JSON number. Inputs
+  use the shared `moneySchema` (≥ 0, at most 2 decimals, ≤ 999 999 999 999.99; parsed to two decimals);
+  repositories return Prisma `Decimal` values as `toFixed(2)` strings. Web forms accept localised input
+  (`1 250,50`) through `moneyInputSchema` and display amounts with `Intl.NumberFormat` (currency DZD).
 
 ## 7. Database conventions
 
@@ -179,6 +184,9 @@ npm run db:bootstrap -- --email <e> --name "<n>"  # first director of the seeded
 npm run db:studio           # Prisma Studio
 ```
 
+API env for files: `UPLOAD_DIR` (default `./var/uploads` under `apps/api`, git-ignored; tests use a
+temporary directory removed after the run) and `STORAGE_DRIVER` (`local`).
+
 ## 11. Decision log
 
 | Date | Decision |
@@ -200,4 +208,10 @@ npm run db:studio           # Prisma Studio
 | 2026-11-20 | Prisma 7.10.x pinned (~7.10) with prisma-client-js (JS output); prisma-client generator rejected (TS-only output). |
 | 2026-11-20 | Access tokens: `jose` (HS256, 15 min, claims sub/agencyId/role/clientId/tv/mcp). Refresh tokens: 32 random bytes, SHA-256 in `refresh_tokens`, rotated per use, reuse revokes the family. |
 | 2026-11-20 | Passwords: `@node-rs/argon2` (argon2id, m=19 MiB, t=2, p=1; prebuilt binaries, no native build on Windows). Cookies parsed with `cookie-parser`. |
+| 2026-11-20 | Files: `multer` (memory, per-kind limits), `file-type` (content sniffing), `sharp` (images → WebP q80, max 1600 px, EXIF-rotated, metadata stripped, 400 px thumbnail). Upload rules per kind in `packages/shared/src/files.js`. Reads go through `filePolicy()` → policy registered by the module owning the kind; unknown kind or denial ⇒ 404. File endpoints use Bearer auth only; the web app opens files through its `/files/:id` viewer route. |
+| 2026-11-20 | Campaign codes `CMP-{YYYY}-{NNN}` per agency and start-date year, under a transaction advisory lock (READ COMMITTED). Coverage PUTs take an object body (`{ wilayas }`, `{ pointOfSaleIds }`, `{ productIds }`). |
+| 2026-11-20 | Rules (Prompt 07): six fixed rule types with strict Zod schemas in `packages/shared/src/rules/` (attendance and customer_fields required for approval). Rule sets are versioned: an approved version is never edited (service-enforced; no DB trigger), approval takes effect at approval time and supersedes the previous version, a change is a new draft cloned from the approved one. `GET …/rule-sets/effective?at=` returns the version in force at any moment. |
+| 2026-11-20 | Promotions: `evaluatePromotions` (shared, pure) gives ONE entitlement per promotion per sale (not per unit), from the highest tier reached; a product belongs to at most one promotion per rule set and an all-products promotion must be alone; `maxPerCustomer` is applied by the sales module, not here. The product scope is per promotion (stored on each tier row). |
+| 2026-11-20 | Lifecycle: draft → planning → assigned → active ⇄ suspended → completed → closed, plus cancelled, only through `POST /campaigns/:id/<action>`; guards live in a registry (`registerTransitionGuard`) so later modules add blockers; activation only between start and end dates. Edit permissions per status are one pure matrix, `canEdit` in `packages/shared/src/campaignPolicy.js`, used by API and web. |
+| 2026-11-20 | One injectable clock: `clock` / `now()` / `today()` in `packages/shared/src/time.js` (the API's `core/time/clock.js` re-exports the same object). Tests control time with `vi.spyOn(clock, 'now')`. |
 | 2026-11-20 | Self-service auth routes (`/auth/me`, `/auth/logout`, …) use `anyAuthenticated()` instead of a catalog permission; the permission catalog is unchanged. |

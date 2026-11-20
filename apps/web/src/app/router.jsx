@@ -35,6 +35,14 @@ export const routes = [
                 .ChangePasswordPage,
             }),
           },
+          {
+            // Any signed-in user; the API decides per file (unauthorised ⇒ "not found").
+            path: 'files/:id',
+            lazy: async () => ({
+              Component: (await import('../features/files/pages/FileViewerPage.jsx'))
+                .FileViewerPage,
+            }),
+          },
         ],
       },
       {
@@ -98,6 +106,41 @@ export const routes = [
                 lazy: async () => ({
                   Component: (await import('../features/points-of-sale/pages/PointPage.jsx'))
                     .PointPage,
+                }),
+              },
+              {
+                path: 'clients',
+                lazy: async () => ({
+                  Component: (await import('../features/catalog/pages/ClientsPage.jsx'))
+                    .ClientsPage,
+                }),
+              },
+              {
+                path: 'clients/:id',
+                lazy: async () => ({
+                  Component: (await import('../features/catalog/pages/ClientDetailPage.jsx'))
+                    .ClientDetailPage,
+                }),
+              },
+              {
+                path: 'campaigns',
+                lazy: async () => ({
+                  Component: (await import('../features/campaigns/pages/CampaignsPage.jsx'))
+                    .CampaignsPage,
+                }),
+              },
+              {
+                path: 'campaigns/new',
+                lazy: async () => ({
+                  Component: (await import('../features/campaigns/pages/NewCampaignPage.jsx'))
+                    .NewCampaignPage,
+                }),
+              },
+              {
+                path: 'campaigns/:id',
+                lazy: async () => ({
+                  Component: (await import('../features/campaigns/pages/CampaignDetailPage.jsx'))
+                    .CampaignDetailPage,
                 }),
               },
               {

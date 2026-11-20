@@ -17,8 +17,12 @@ export const operation = (
     password = false,
     publicRoute = false,
     cookie = false,
+    multipart,
+    binary,
   } = {},
 ) => ({
+  multipart,
+  binary,
   method,
   path,
   summary,
@@ -63,8 +67,16 @@ const page = {
   },
 };
 
-function response({ list, array, dataSchema, password, status }) {
+function response({ list, array, dataSchema, password, status, binary }) {
   if (status === 204) return { description: 'No content' };
+  if (binary) {
+    return {
+      description: 'The file content, served inline',
+      content: Object.fromEntries(
+        binary.map((type) => [type, { schema: { type: 'string', format: 'binary' } }]),
+      ),
+    };
+  }
   let data =
     list || array ? { type: 'array', items: dataSchema ?? { type: 'object' } } : (dataSchema ?? {});
   if (password) {
@@ -89,6 +101,23 @@ function response({ list, array, dataSchema, password, status }) {
   };
 }
 
+/** `multipart/form-data` with one binary `file` part plus the given Zod-described text fields. */
+function multipartBody({ fields }) {
+  const schema = fields ? inputSchema(fields) : { type: 'object', properties: {}, required: [] };
+  return {
+    required: true,
+    content: {
+      'multipart/form-data': {
+        schema: {
+          type: 'object',
+          required: ['file', ...(schema.required ?? [])],
+          properties: { file: { type: 'string', format: 'binary' }, ...schema.properties },
+        },
+      },
+    },
+  };
+}
+
 function operationDocument(config) {
   const { method, summary, permission, params, query, body, status } = config;
   const responses = { [status]: response(config) };
@@ -100,6 +129,7 @@ function operationDocument(config) {
   };
   if (method !== 'get')
     Object.assign(errors, { 409: 'Conflict', 422: 'Business rule violation', 429: 'Rate limited' });
+  if (config.multipart) errors[413] = 'File too large (FILE_TOO_LARGE)';
   for (const [code, description] of Object.entries(errors)) {
     responses[code] = { description, content: jsonContent({ $ref: '#/components/schemas/Error' }) };
   }
@@ -113,6 +143,7 @@ function operationDocument(config) {
         : [{ bearerAuth: [] }],
     parameters: [...parameters('path', params), ...parameters('query', query)],
     ...(body ? { requestBody: { required: true, content: jsonContent(inputSchema(body)) } } : {}),
+    ...(config.multipart ? { requestBody: multipartBody(config.multipart) } : {}),
     responses,
   };
 }

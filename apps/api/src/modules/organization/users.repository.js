@@ -4,11 +4,12 @@ import { userFields } from './userManagement.repository.js';
 
 export async function listUsers(
   scope,
-  { role, status, wilayaId, managerId, q, sort, page, pageSize },
+  { role, status, wilayaId, managerId, clientId, q, sort, page, pageSize },
   at,
 ) {
   const where = scoped(await userWhere(scope, { at, reportingOnly: true }), {
-    role,
+    role: clientId ? 'client' : role,
+    clientId,
     status,
     wilayaId,
     reportingLines: managerId
@@ -42,4 +43,17 @@ export async function listUsers(
     { isolationLevel: 'RepeatableRead' },
   );
   return { data, meta: { page, pageSize, total } };
+}
+
+export async function countClientUsers(scope, clientIds, at) {
+  if (!clientIds.length) return {};
+  const rows = await prisma.user.groupBy({
+    by: ['clientId'],
+    where: scoped(await userWhere(scope, { at, reportingOnly: true }), {
+      role: 'client',
+      clientId: { in: clientIds },
+    }),
+    _count: { _all: true },
+  });
+  return Object.fromEntries(rows.map((row) => [row.clientId, row._count._all]));
 }

@@ -1,7 +1,10 @@
 // Loads apps/api/.env (if present) and validates the environment once at startup.
+import { isAbsolute, resolve, sep } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import dotenv from 'dotenv';
 import { z } from 'zod';
+
+const apiDir = fileURLToPath(new URL('../..', import.meta.url));
 
 // LOG_LEVEL as set by the caller (shell, CI, vitest), before apps/api/.env fills the gaps.
 const explicitLogLevel = process.env.LOG_LEVEL;
@@ -47,6 +50,18 @@ const envSchema = z
       .transform(toSeconds)
       .pipe(z.number().int().min(60).max(86_400)),
     REFRESH_TOKEN_TTL_DAYS: z.coerce.number().int().min(1).max(90).default(7),
+    // Uploaded files. Relative paths resolve from apps/api; never inside the web app.
+    UPLOAD_DIR: z
+      .string()
+      .min(1)
+      .default('./var/uploads')
+      .transform((value) => resolve(apiDir, value))
+      .refine((value) => isAbsolute(value), 'must resolve to an absolute path')
+      .refine(
+        (value) => !value.startsWith(resolve(apiDir, '../web') + sep),
+        'must not be inside apps/web',
+      ),
+    STORAGE_DRIVER: z.enum(['local']).default('local'),
     // Unset: Secure cookies everywhere except development (plain http://localhost).
     COOKIE_SECURE: z
       .enum(['true', 'false'])

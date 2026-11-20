@@ -1,4 +1,9 @@
+import { tmpdir } from 'node:os';
+import { join } from 'node:path';
 import { defineProject } from 'vitest/config';
+
+/** Uploads of this run; test/globalSetup.js deletes the directory at the end. */
+export const TEST_UPLOAD_DIR = join(tmpdir(), 'fieldflow-test-uploads-' + process.pid);
 
 export default defineProject({
   test: {
@@ -22,6 +27,8 @@ export default defineProject({
       NODE_ENV: 'test',
       // Test-only signing key: tests never use the secret from apps/api/.env.
       JWT_ACCESS_SECRET: 'test-only-access-secret-0123456789abcdef',
+      UPLOAD_DIR: TEST_UPLOAD_DIR,
+      STORAGE_DRIVER: 'local',
     },
   },
 });

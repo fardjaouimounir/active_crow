@@ -7,6 +7,7 @@ export const userFields = {
   email: true,
   phone: true,
   role: true,
+  clientId: true,
   status: true,
   wilayaId: true,
   communeId: true,
@@ -48,6 +49,13 @@ export function saveProfile(tx, scope, userId, profile) {
     where: { userId, agencyId: scope.agencyId },
     create: { skills: [], languages: [], ...profile, userId, agencyId: scope.agencyId },
     update: profile,
+  });
+}
+
+export function activeClientUsers(tx, scope, clientId) {
+  return tx.user.findMany({
+    where: { agencyId: scope.agencyId, role: 'client', clientId, status: 'active' },
+    select: { id: true, status: true },
   });
 }
 

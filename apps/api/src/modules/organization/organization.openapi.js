@@ -38,7 +38,7 @@ const paths = [
     params: ids,
     array: true,
   }),
-  operation('post', '/users', 'Create a staff account', grants.manage, {
+  operation('post', '/users', 'Create a staff or client portal account', grants.manage, {
     body: users.createUser,
     status: 201,
     password: true,
