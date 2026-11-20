@@ -45,11 +45,16 @@ export function findRecentRequest(
       subjectId,
       requestedById,
       filters: { equals: filters },
-      status: { in: ['queued', 'sent'] },
+      status: { in: ['queued', 'sent', 'completed'] },
       createdAt: { gte: since },
     },
     orderBy: { createdAt: 'desc' },
+    include: { suggestion: { select: { id: true, status: true, output: true } } },
   });
+}
+
+export function countRequestsSince(db, { agencyId, requestedById, since }) {
+  return db.aiRequest.count({ where: { agencyId, requestedById, createdAt: { gte: since } } });
 }
 
 export function createRequest(db, data) {

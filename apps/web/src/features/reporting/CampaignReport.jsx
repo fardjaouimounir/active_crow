@@ -84,7 +84,7 @@ export function CampaignReport() {
         </div>
       </header>
       <Cards values={kpis} />
-      <CampaignAiCards campaignId={id} />
+      <CampaignAiCards campaignId={id} period={kpis.period} />
       <DailyChart rows={daily} />
       <BreakdownTable rows={wilayas} title="byWilaya" />
       <BreakdownTable rows={stores} title="byStore" />

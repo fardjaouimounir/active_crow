@@ -24,6 +24,11 @@ export function keyMatches(presented, expected) {
 
 /** Route guard: the AI service outbound key, never a user session. */
 export const serviceAuth = tagGuard((req, _res, next) => {
+  const { outboundKey } = aiConfig.get();
+  const presented = req.get('authorization')?.match(BEARER)?.[1];
+  // The key is checked first: an unauthenticated caller gets 401 whether or not AI is enabled.
+  if (!outboundKey || presented === undefined || !keyMatches(presented, outboundKey))
+    return next(new UnauthenticatedError());
   if (!aiConfig.enabled())
     return next(
       new AppError({
@@ -32,9 +37,7 @@ export const serviceAuth = tagGuard((req, _res, next) => {
         message: 'The AI service is not configured',
       }),
     );
-  const presented = req.get('authorization')?.match(BEARER)?.[1];
-  const ok = presented !== undefined && keyMatches(presented, aiConfig.get().outboundKey);
-  next(ok ? undefined : new UnauthenticatedError());
+  next();
 }, GUARD.SERVICE);
 
 export function createInternalAiRouter() {

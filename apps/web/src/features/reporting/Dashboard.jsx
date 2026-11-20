@@ -201,9 +201,13 @@ export function Dashboard() {
             )}
           </div>
           {supervisorId && (
-            <AiCommentaryCard capability="supervisor_daily_summary" subjectId={supervisorId} />
+            <AiCommentaryCard
+              capability="supervisor_daily_summary"
+              subjectId={supervisorId}
+              period={oneDay ? { from: mainFilters.from, to: mainFilters.to } : undefined}
+            />
           )}
-          {!supervisor && <CampaignAiCards campaignId={campaignId} />}
+          {!supervisor && <CampaignAiCards campaignId={campaignId} period={mainFilters} />}
         </div>
       )}
       {!parsed.success && <p role="alert">{t('invalid')}</p>}

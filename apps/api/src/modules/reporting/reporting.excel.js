@@ -15,7 +15,7 @@ export async function download(req, res, { filters, id, view }) {
   const data = await reportingService.exportData(req.actor, filters, id);
   const rtl = req.acceptsLanguages('ar', 'en') === 'ar';
   // Only a human-accepted AI text may appear in a report, and it is labelled as such.
-  const ai = id ? await aiService.acceptedNarrative(req.actor, id) : null;
+  const ai = id ? await aiService.acceptedNarrative(req.actor, id, data.filters) : null;
   const breakdown = (rows, daily = false) =>
     rows.map((row) => [
       daily ? date(row.id) : (rtl && row.labelAr) || row.label || row.id,
@@ -33,7 +33,7 @@ export async function download(req, res, { filters, id, view }) {
         ...(ai?.text
           ? [
               [
-                `AI commentary (AI-generated, reviewed by ${ai.reviewedBy ?? '-'} on ${ai.reviewedAt.toISOString().slice(0, 10)})`,
+                `AI commentary (AI-generated, reviewed by ${ai.reviewedBy ?? '-'} on ${ai.reviewedAt.toISOString().slice(0, 10)}; period ${ai.period.from} to ${ai.period.to})`,
                 ai.text,
               ],
             ]

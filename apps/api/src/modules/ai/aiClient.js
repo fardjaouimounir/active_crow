@@ -38,7 +38,12 @@ export async function sendToAiService(capability, payload) {
     const body = await response.json().catch(() => null);
     return { status: body?.data?.status === 'cached' ? 'cached' : 'queued' };
   }
-  const permanent = response.status >= 400 && response.status < 500 && response.status !== 429;
+  // 408 and 429 are transient like 5xx; any other 4xx will not change on retry.
+  const permanent =
+    response.status >= 400 &&
+    response.status < 500 &&
+    response.status !== 429 &&
+    response.status !== 408;
   // The response body can echo request content; keep only the status in the error.
   throw new AiClientError(`AI service answered HTTP ${response.status}`, {
     permanent,

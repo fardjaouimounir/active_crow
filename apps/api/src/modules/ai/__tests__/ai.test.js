@@ -78,11 +78,24 @@ describe('disabled mode (no AI_SERVICE_BASE_URL)', () => {
     try {
       const before = await prisma.aiRequest.count({ where: { agencyId: world.agency.id } });
       await world.refused(trigger('director', daily()), 503, 'AI_DISABLED');
+      // Unauthenticated callers get 401 whether or not AI is enabled.
+      await world.refused(
+        postCallback(app, callbackBody(randomUUID(), 'campaign_insights', {})),
+        401,
+        'UNAUTHENTICATED',
+      );
+      await world.refused(
+        postCallback(app, callbackBody(randomUUID(), 'campaign_insights', {}), 'x'.repeat(48)),
+        401,
+        'UNAUTHENTICATED',
+      );
+      const keysOnly = aiConfig.override({ baseUrl: undefined, outboundKey: OUTBOUND_KEY });
       await world.refused(
         postCallback(app, callbackBody(randomUUID(), 'campaign_insights', {})),
         503,
         'AI_DISABLED',
       );
+      keysOnly();
       expect(await prisma.aiRequest.count({ where: { agencyId: world.agency.id } })).toBe(before);
       expect(await world.ok(world.call('director', 'get', '/reports/kpis'))).toBeTruthy();
       expect(
@@ -90,7 +103,7 @@ describe('disabled mode (no AI_SERVICE_BASE_URL)', () => {
           world.call(
             'director',
             'get',
-            `/ai/commentary?capability=campaign_insights&subjectId=${randomUUID()}`,
+            `/ai/commentary?capability=campaign_insights&subjectId=${randomUUID()}&from=2026-01-01&to=2026-01-02`,
           ),
         ),
       ).toBeNull();
@@ -248,7 +261,7 @@ describe('end to end with the fake AI service', () => {
       403,
       'FORBIDDEN',
     );
-    const card = `/ai/commentary?capability=supervisor_daily_summary&subjectId=${world.people.supervisor.id}`;
+    const card = `/ai/commentary?capability=supervisor_daily_summary&subjectId=${world.people.supervisor.id}&from=${created.filters.from}&to=${created.filters.to}`;
     expect(await world.ok(world.call('supervisor', 'get', card))).toBeNull();
 
     await world.refused(
@@ -286,6 +299,10 @@ describe('end to end with the fake AI service', () => {
       reviewedBy: { name: world.people.director.fullName },
     });
     expect(commentary.output.headline).toBeTruthy();
+    // A suggestion made for another period is never shown for this one.
+    expect(
+      await world.ok(world.call('supervisor', 'get', card.replace(/to=.*$/, 'to=2000-01-01'))),
+    ).toBeNull();
     // Another supervisor has no access to this card.
     expect(await world.ok(world.call('supervisorTwo', 'get', card))).toBeNull();
 
@@ -407,6 +424,71 @@ describe('end to end with the fake AI service', () => {
   });
 });
 
+describe('cost guard and daily cap', () => {
+  it('reuses a completed request (and its suggestion) within the hour', async () => {
+    const built = await world.campaign();
+    await addRules(world, built);
+    const body = campaignRequest(built, 'animateur_coaching');
+    const first = await world.ok(trigger('director', body), 201);
+    await postCallback(
+      app,
+      callbackBody(first.requestId, 'animateur_coaching', outputs.happy.animateur_coaching),
+    );
+    const again = await world.ok(trigger('director', body), 200);
+    expect(again).toMatchObject({ id: first.id, status: 'completed' });
+    expect(again.suggestion).toMatchObject({ status: 'pending_review' });
+  });
+
+  it('429 AI_DAILY_LIMIT_REACHED after the per-user daily cap (reuse does not count)', async () => {
+    const built = await world.campaign();
+    await addRules(world, built);
+    const user = world.people.general;
+    const used = await prisma.aiRequest.count({ where: { requestedById: user.id } });
+    const restoreLimit = aiConfig.override({
+      ...aiConfig.get(),
+      dailyLimit: used + 1,
+    });
+    try {
+      const body = campaignRequest(built, 'animateur_coaching');
+      await world.ok(trigger('general', body), 201);
+      await world.ok(trigger('general', body), 200);
+      await world.refused(
+        trigger('general', { ...body, filters: { from: '2026-01-01', to: '2026-01-03' } }),
+        429,
+        'AI_DAILY_LIMIT_REACHED',
+      );
+    } finally {
+      restoreLimit();
+    }
+  });
+
+  it('408 from the AI service is retryable', async () => {
+    const created = await prisma.aiRequest.create({
+      data: {
+        requestId: randomUUID(),
+        agencyId: world.agency.id,
+        capability: 'supervisor_daily_summary',
+        subjectType: 'supervisor',
+        subjectId: world.people.supervisor.id,
+        filters: {
+          supervisorIds: [world.people.supervisor.id],
+          from: '2026-01-05',
+          to: '2026-01-05',
+          workDate: '2026-01-05',
+          locale: 'en',
+        },
+        requestedById: world.people.director.id,
+      },
+    });
+    fake.state.handler = ({ body }) =>
+      body.requestId === created.requestId ? { status: 408 } : { status: 202, body: {} };
+    await expect(
+      aiService.processRequest({ aiRequestId: created.id }, { retryCount: 0, retryLimit: 5 }),
+    ).rejects.toThrow(/408/);
+    expect((await row(created.id)).status).toBe('queued');
+  });
+});
+
 describe('review hardening', () => {
   it('a failed output can only be rejected; a NUL byte in the output is stored safely', async () => {
     const built = await world.campaign();
@@ -476,7 +558,15 @@ describe('final report', () => {
     const built = await world.campaign();
     await addRules(world, built);
     const created = await world.ok(
-      trigger('director', campaignRequest(built, 'campaign_insights')),
+      trigger(
+        'director',
+        campaignRequest(built, 'campaign_insights', {
+          filters: {
+            from: built.campaign.startDate.toISOString().slice(0, 10),
+            to: built.campaign.endDate.toISOString().slice(0, 10),
+          },
+        }),
+      ),
       201,
     );
     await postCallback(
@@ -760,7 +850,7 @@ describe('scope of requests and suggestions', () => {
         world.call(
           'supervisor',
           'get',
-          `/ai/commentary?capability=animateur_coaching&subjectId=${built.id}`,
+          `/ai/commentary?capability=animateur_coaching&subjectId=${built.id}&from=${mine.filters.from}&to=${mine.filters.to}`,
         ),
       ),
     ).toBeNull();

@@ -264,6 +264,7 @@
       "AI_CAPABILITY_MISMATCH": "The AI result does not match its request.",
       "AI_SUGGESTION_NOT_PENDING": "This suggestion was already reviewed.",
       "AI_SUBJECT_NOT_ALLOWED": "You can only request your own daily summary.",
+      "AI_DAILY_LIMIT_REACHED": "You reached the daily limit of AI requests.",
       "AI_TARGET_REQUIRED": "Set a sales target in the campaign rules before requesting this."
     }
   },

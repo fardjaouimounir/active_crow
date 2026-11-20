@@ -8,6 +8,7 @@ const fromEnv = () => ({
   inboundKey: env.AI_SERVICE_INBOUND_KEY,
   outboundKey: env.AI_SERVICE_OUTBOUND_KEY,
   timeoutMs: 10_000,
+  dailyLimit: 20,
 });
 
 let current = fromEnv();

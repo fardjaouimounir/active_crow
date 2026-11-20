@@ -116,8 +116,8 @@ function dispatch(aiRequest) {
 }
 
 /**
- * Creates a request, or returns the one already queued or sent for the same capability, subject
- * and filters within the last hour (cost guard).
+ * Creates a request, or returns the one already queued, sent or completed for the same requester,
+ * capability, subject and filters within the last hour (cost guard, no second paid call).
  */
 async function createOrReuse({ agencyId, capability, subjectId, filters, requestedById }) {
   const stored = canonical(filters);
@@ -133,6 +133,20 @@ async function createOrReuse({ agencyId, capability, subjectId, filters, request
       since: new Date(clock.now().getTime() - HOUR),
     });
     if (existing) return { request: existing, created: false };
+    if (requestedById) {
+      const today = businessDate(clock.now());
+      const used = await repository.countRequestsSince(tx, {
+        agencyId,
+        requestedById,
+        since: new Date(`${today}T00:00:00+01:00`),
+      });
+      if (used >= aiConfig.get().dailyLimit)
+        throw new AppError({
+          status: 429,
+          code: ERROR_CODES.AI_DAILY_LIMIT_REACHED,
+          message: 'Daily AI request limit reached',
+        });
+    }
     const request = await repository.createRequest(tx, {
       requestId: randomUUID(),
       agencyId,
@@ -635,11 +649,25 @@ function review(actor, id, decision, note, req) {
 }
 
 /** The latest accepted suggestion for a dashboard card, or null. Same visibility as the review list. */
-async function commentary(actor, { capability, subjectId }) {
+async function commentary(actor, { capability, subjectId, from, to }) {
   const scope = ScopeService.resolve(actor);
   if (scope.level === 'self' || scope.level === 'client') return null;
   const row = await repository.latestAccepted(prisma, {
-    AND: [await repository.visibility(scope, 'suggestion'), { capability, subjectId }],
+    AND: [
+      await repository.visibility(scope, 'suggestion'),
+      { capability, subjectId },
+      // Only a suggestion generated for exactly this period may be shown for it.
+      {
+        request: {
+          is: {
+            AND: [
+              { filters: { path: ['from'], equals: from } },
+              { filters: { path: ['to'], equals: to } },
+            ],
+          },
+        },
+      },
+    ],
   });
   return row ? detail(actor, row) : null;
 }
@@ -659,13 +687,19 @@ function plainText(output) {
  * The latest accepted campaign_insights text for the final report (Excel Summary sheet), or null.
  * @returns {Promise<{ text: string, reviewedBy: string | null, reviewedAt: Date } | null>}
  */
-async function acceptedNarrative(actor, campaignId) {
-  const row = await commentary(actor, { capability: 'campaign_insights', subjectId: campaignId });
+async function acceptedNarrative(actor, campaignId, { from, to }) {
+  const row = await commentary(actor, {
+    capability: 'campaign_insights',
+    subjectId: campaignId,
+    from,
+    to,
+  });
   if (!row || row.failure) return null;
   return {
     text: plainText(row.output),
     reviewedBy: row.reviewedBy?.name ?? null,
     reviewedAt: row.reviewedAt,
+    period: { from, to },
   };
 }
 

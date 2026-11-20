@@ -246,17 +246,30 @@ export function AiOutput({ capability, output, labels }) {
 }
 
 /** The latest accepted suggestion next to a dashboard or report, labelled as AI-generated. */
-export function AiCommentaryCard({ capability, subjectId }) {
+export function AiCommentaryCard({ capability, subjectId, period }) {
   const { t, date } = useAiText();
-  const commentary = useAiCommentary(capability, subjectId);
+  const canRequest = useCan('ai.request');
+  const commentary = useAiCommentary(capability, subjectId, period);
   const row = commentary.data;
-  if (!row || row.failure) return null;
+  if (!period?.from || !period?.to || commentary.isPending) return null;
+  if (!row || row.failure)
+    return canRequest ? (
+      <p className="text-xs text-slate-500">
+        {t('capabilityName.' + capability)}: {t('noneForPeriod')}
+      </p>
+    ) : null;
   return (
     <section className="space-y-3 rounded-xl border border-violet-200 bg-violet-50/40 p-4">
       <header className="space-y-1">
         <h2 className="font-semibold">
           {t('commentary')} · {t('capabilityName.' + capability)}
         </h2>
+        <p className="text-xs text-slate-600">
+          {t('period')}:{' '}
+          <bdi dir="ltr">
+            {row.filters?.from} – {row.filters?.to}
+          </bdi>
+        </p>
         <p className="text-xs text-slate-600">
           {t('reviewedBy', {
             name: row.reviewedBy?.name ?? '—',
@@ -295,12 +308,17 @@ export function CampaignAiActions({ campaignId, period = {}, salesTarget }) {
 }
 
 /** Accepted AI commentary of a campaign, one card per capability that has one. */
-export function CampaignAiCards({ campaignId }) {
+export function CampaignAiCards({ campaignId, period }) {
   if (!campaignId) return null;
   return (
     <>
       {CAMPAIGN_CAPABILITIES.map((capability) => (
-        <AiCommentaryCard key={capability} capability={capability} subjectId={campaignId} />
+        <AiCommentaryCard
+          key={capability}
+          capability={capability}
+          subjectId={campaignId}
+          period={period}
+        />
       ))}
     </>
   );

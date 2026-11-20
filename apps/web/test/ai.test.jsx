@@ -42,6 +42,7 @@ const insights = {
     decisions: [],
   },
   labels: {},
+  filters: { from: '2026-11-16', to: '2026-11-20' },
   kpis: kpis(100),
   request: { status: 'completed', requestedById: null },
 };
@@ -212,7 +213,7 @@ it('shows an accepted suggestion as a labelled commentary card', async () => {
           })
         : ok(null),
   });
-  renderApp(`/app/dashboard?campaignIds=${campaignId}`);
+  renderApp(`/app/dashboard?campaignIds=${campaignId}&from=2026-11-16&to=2026-11-20`);
   expect(await screen.findByText(/AI-generated, reviewed by Amina Benali on/)).toBeInTheDocument();
   expect(screen.getByText('The campaign is on track.')).toBeInTheDocument();
 });

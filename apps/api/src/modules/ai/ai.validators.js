@@ -14,6 +14,8 @@ export const params = z.strictObject({ id: z.uuid() });
 export const commentaryQuery = z.strictObject({
   capability: z.enum(AI_CAPABILITIES),
   subjectId: z.uuid(),
+  from: z.iso.date(),
+  to: z.iso.date(),
 });
 export {
   aiAcceptInput,

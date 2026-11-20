@@ -264,6 +264,7 @@
       "AI_CAPABILITY_MISMATCH": "نتيجة الذكاء الاصطناعي لا تطابق طلبها.",
       "AI_SUGGESTION_NOT_PENDING": "تمت مراجعة هذا الاقتراح من قبل.",
       "AI_SUBJECT_NOT_ALLOWED": "يمكنك طلب ملخصك اليومي فقط.",
+      "AI_DAILY_LIMIT_REACHED": "بلغت الحد اليومي لطلبات الذكاء الاصطناعي.",
       "AI_TARGET_REQUIRED": "حدّد هدف مبيعات في قواعد الحملة قبل هذا الطلب."
     }
   },

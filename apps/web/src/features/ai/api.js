@@ -50,14 +50,18 @@ export function useAiSuggestion(id) {
   });
 }
 
-export function useAiCommentary(capability, subjectId, enabled = true) {
+export function useAiCommentary(capability, subjectId, period, enabled = true) {
   const { user } = useAuth();
   return useQuery({
-    queryKey: ['ai', user?.id, 'commentary', capability, subjectId],
-    enabled: enabled && Boolean(subjectId),
+    queryKey: ['ai', user?.id, 'commentary', capability, subjectId, period?.from, period?.to],
+    enabled: enabled && Boolean(subjectId && period?.from && period?.to),
     queryFn: async ({ signal }) =>
-      (await apiClient.get('/ai/commentary', { signal, params: { capability, subjectId } })).data
-        .data,
+      (
+        await apiClient.get('/ai/commentary', {
+          signal,
+          params: { capability, subjectId, from: period.from, to: period.to },
+        })
+      ).data.data,
     staleTime: 60_000,
   });
 }

@@ -29,6 +29,10 @@ export const messages = {
   backendKpis: ['Our figures for the same filters', 'أرقامنا لنفس المرشحات'],
   aiText: ['AI suggestion', 'اقتراح الذكاء الاصطناعي'],
   period: ['Period', 'الفترة'],
+  noneForPeriod: [
+    'no accepted AI commentary for this period; generate one above.',
+    'لا يوجد تعليق معتمد بالذكاء الاصطناعي لهذه الفترة؛ أنشئ واحدًا أعلاه.',
+  ],
   commentary: ['AI commentary', 'تعليق الذكاء الاصطناعي'],
   reviewedBy: [
     'AI-generated, reviewed by {{name}} on {{date}}',
