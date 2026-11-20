@@ -1,3 +1,6 @@
+import { registerNotificationsOpenApi } from './modules/notifications/notifications.openapi.js';
+import { registerIssuesOpenApi } from './modules/issues/issues.openapi.js';
+import { registerAnnouncementsOpenApi } from './modules/announcements/announcements.openapi.js';
 import { createOpenApiRegistry, operation } from './core/http/openapi.js';
 import { registerAssignmentsOpenApi } from './modules/assignments/assignments.openapi.js';
 import { registerAuthOpenApi } from './modules/auth/auth.openapi.js';
@@ -19,5 +22,8 @@ export function openApiDocument() {
   registerCampaignsOpenApi(registry);
   registerRuleSetsOpenApi(registry);
   registerAssignmentsOpenApi(registry);
+  registerNotificationsOpenApi(registry);
+  registerIssuesOpenApi(registry);
+  registerAnnouncementsOpenApi(registry);
   return registry.document();
 }

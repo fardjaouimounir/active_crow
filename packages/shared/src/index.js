@@ -13,3 +13,4 @@ export * from './promotions/index.js';
 export * from './lifecycle.js';
 export * from './campaignPolicy.js';
 export * from './assignments.js';
+export * from './communications.js';

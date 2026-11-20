@@ -48,7 +48,7 @@ When a prompt cites `BR-41` or `FR-070`, look it up in these files.
 | DB | PostgreSQL 17+, Prisma ORM 7.x (driver adapter `@prisma/adapter-pg`), raw SQL migrations for constraints Prisma cannot express |
 | Validation | Zod (shared schemas in `packages/shared`) |
 | Auth | Email + password (argon2id), short-lived access JWT in memory, rotating refresh token in httpOnly cookie |
-| Jobs | pg-boss (PostgreSQL-backed; no Redis) |
+| Jobs | pg-boss (schema `pgboss`; enabled by `JOBS_ENABLED`) |
 | Logging | pino + pino-http |
 | API docs | OpenAPI 3.1 generated from shared Zod schemas |
 | Files | `StorageAdapter` interface; `LocalDiskAdapter` now, S3-compatible later; images processed with sharp |
@@ -215,3 +215,4 @@ temporary directory removed after the run) and `STORAGE_DRIVER` (`local`).
 | 2026-11-20 | Lifecycle: draft → planning → assigned → active ⇄ suspended → completed → closed, plus cancelled, only through `POST /campaigns/:id/<action>`; guards live in a registry (`registerTransitionGuard`) so later modules add blockers; activation only between start and end dates. Edit permissions per status are one pure matrix, `canEdit` in `packages/shared/src/campaignPolicy.js`, used by API and web. |
 | 2026-11-20 | One injectable clock: `clock` / `now()` / `today()` in `packages/shared/src/time.js` (the API's `core/time/clock.js` re-exports the same object). Tests control time with `vi.spyOn(clock, 'now')`. |
 | 2026-11-20 | Self-service auth routes (`/auth/me`, `/auth/logout`, …) use `anyAuthenticated()` instead of a catalog permission; the permission catalog is unchanged. |
+| 2026-11-20 | In-app notifications store an event type and structured payload. The web app localizes the message. |

@@ -1,4 +1,9 @@
-import { activePoints, countRows, liveStatuses } from './assignments.repository.js';
+import {
+  activePoints,
+  countRows,
+  hasApprovedAssignmentOnDay,
+  liveStatuses,
+} from './assignments.repository.js';
 
 const countActiveForSupervisor = (tx, campaignId, userId) =>
   countRows(tx, { campaignId, supervisorId: userId, status: { in: liveStatuses } });
@@ -6,6 +11,7 @@ const countApproved = (tx, campaignId) => countRows(tx, { campaignId, status: 'a
 
 export const assignmentReadService = Object.freeze({
   countApproved,
+  hasApprovedAssignmentOnDay,
   countActiveForSupervisor,
   pointsOfSaleWithActiveAssignments: activePoints,
 });

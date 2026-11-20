@@ -380,7 +380,7 @@ PK `(location_id, stock_item_id)`، location_kind (منسوخ)، quantity int، 
 | --- | --- | --- |
 | issues | campaign_id، point_of_sale_id NULL، stock_item_id NULL، visit_id NULL، category text (stock_shortage، pos_problem، absence، equipment، other)، title، description، status issue_status، reported_by، assigned_to NULL، resolved_by، resolved_at، resolution_note، version | فهرس `(campaign_id, status)`، `(assigned_to, status)` |
 | issue_comments | issue_id، author_id، body | فهرس `(issue_id, created_at)` |
-| issue_attachments | (issue_id, file_id) | PK مركّب |
+| issue_attachments | (issue_id, file_id)، comment_id NULL | PK مركّب، FK مركّب يربط التعليق بالبلاغ نفسه |
 | announcements | campaign_id NULL، author_id، title، body، target_roles user_role\[\]، wilaya_id NULL، published_at | الجمهور = الأدوار × النطاق؛ لا يُنشر إلا لمن تحت الكاتب |
 | announcement_reads | (announcement_id, user_id)، read_at | PK مركّب |
 | notifications | user_id، type text، entity_type، entity_id، payload jsonb، read_at | Partial فهرس `(user_id, created_at DESC) WHERE read_at IS NULL` |

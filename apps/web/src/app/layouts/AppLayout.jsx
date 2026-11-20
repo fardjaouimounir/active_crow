@@ -1,3 +1,4 @@
+import { NotificationBell } from '../../shared/ui/NotificationBell.jsx';
 import { useTranslation } from 'react-i18next';
 import { Outlet } from 'react-router';
 import { useAuth } from '../../shared/auth/hooks.js';
@@ -12,6 +13,8 @@ const navigation = [
   { key: 'points', to: '/app/points-of-sale', permission: 'org.pos.read', hiddenFor: 'supervisor' },
   { key: 'clients', to: '/app/clients', permission: 'catalog.read' },
   { key: 'campaigns', to: '/app/campaigns', permission: 'campaign.read' },
+  { key: 'issues', to: '/app/issues', permission: 'issue.read' },
+  { key: 'announcements', to: '/app/announcements', permission: 'announcement.read' },
   { key: 'approvals', to: '/app/approvals', permission: 'assignment.approve' },
 ];
 
@@ -28,6 +31,7 @@ export function AppLayout() {
       items={items}
       topBar={
         <div className="flex min-w-0 items-center gap-3">
+          <NotificationBell />
           <LanguageSwitcher />
           <UserMenu />
         </div>

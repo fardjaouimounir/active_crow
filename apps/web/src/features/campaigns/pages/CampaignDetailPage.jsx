@@ -1,3 +1,4 @@
+import { IssuesPage } from '../../issues/IssuesPage.jsx';
 import { canEdit as canEditArea } from '@fieldflow/shared';
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
@@ -28,6 +29,7 @@ const TABS = [
   'products',
   'rules',
   'assignments',
+  'issues',
   'documents',
   'history',
 ];
@@ -100,11 +102,14 @@ export function CampaignDetailPage() {
   const location = useLocation();
   const { t } = useTranslation('common');
   const canManage = useCan('campaign.manage');
+  const showIssues = useCan('issue.read');
   const showAssignments = useCan('assignment.read');
   const { filters, setFilters } = useFilters();
   const query = useCampaign(id);
   const { message } = useApiError(query.error);
-  const tabs = TABS.filter((item) => showAssignments || item !== 'assignments');
+  const tabs = TABS.filter(
+    (item) => (showAssignments || item !== 'assignments') && (showIssues || item !== 'issues'),
+  );
   const tab = tabs.includes(filters.tab) ? filters.tab : 'overview';
   if (query.isPending) return <p role="status">{t('admin.loading')}</p>;
   if (query.isError) return <Toast error message={message} />;
@@ -155,6 +160,7 @@ export function CampaignDetailPage() {
         )}
         {tab === 'rules' && <RulesTab campaign={campaign} canEdit={allowed('ruleSet')} />}
         {tab === 'documents' && <DocumentsTab campaign={campaign} canEdit={allowed('documents')} />}
+        {tab === 'issues' && <IssuesPage campaignId={id} />}
         {tab === 'assignments' && <AssignmentsTab campaign={campaign} />}
         {tab === 'history' && <HistoryTab campaignId={campaign.id} />}
       </Tabs>

@@ -99,7 +99,15 @@
       "ASSIGNMENT_ALREADY_STARTED": "بدأ هذا التعيين بالفعل.",
       "INVALID_END_DATE": "اختر تاريخ إنهاء مبكر صالحًا.",
       "REPLACEMENT_DATE_INVALID": "اختر تاريخًا ومنشطًا صالحين للاستبدال.",
-      "NOTE_REQUIRED": "سبب الرفض مطلوب."
+      "NOTE_REQUIRED": "سبب الرفض مطلوب.",
+      "CAMPAIGN_NOT_ACCEPTING_ISSUES": "الحملة لا تستقبل بلاغات حاليًا.",
+      "NOT_ASSIGNED_HERE": "ليس لديك تعيين جارٍ في نقطة البيع هذه.",
+      "ASSIGNEE_NOT_ELIGIBLE": "لا يمكن إسناد البلاغ إلى هذا المستخدم.",
+      "INVALID_ISSUE_TRANSITION": "لا يمكن تغيير البلاغ إلى الحالة المطلوبة.",
+      "RESOLUTION_NOTE_REQUIRED": "ملاحظة الحل أو الإغلاق مطلوبة.",
+      "EMPTY_AUDIENCE": "لا يوجد مستخدمون نشطون يطابقون الجمهور.",
+      "AUDIENCE_NOT_ALLOWED": "هذا الجمهور خارج نطاق صلاحية النشر.",
+      "TOO_MANY_ATTACHMENTS": "يمكن إرفاق ثلاثة ملفات كحد أقصى."
     }
   },
   "roles": {
@@ -210,7 +218,13 @@
     "animateur": "المنشط",
     "supervisor": "المشرف",
     "shiftStart": "بداية الدوام",
-    "shiftEnd": "نهاية الدوام"
+    "shiftEnd": "نهاية الدوام",
+    "notifications": "الإشعارات",
+    "issues": "البلاغات",
+    "announcements": "الإعلانات",
+    "category": "الفئة",
+    "stockItem": "عنصر المخزون",
+    "title": "العنوان"
   },
   "catalog": {
     "newClient": "عميل جديد",
@@ -275,7 +289,8 @@
       "documents": "المستندات",
       "history": "السجل",
       "rules": "القواعد",
-      "assignments": "التعيينات"
+      "assignments": "التعيينات",
+      "issues": "البلاغات"
     },
     "counts": {
       "wilayas": "الولايات",
@@ -479,6 +494,65 @@
       "approved": "معتمد",
       "rejected": "مرفوض",
       "cancelled": "ملغى"
+    }
+  },
+  "issues": {
+    "new": "بلاغ جديد",
+    "attachments": "المرفقات (حتى 3)",
+    "attachment": "المرفق {{number}}",
+    "mine": "مسندة إليّ",
+    "assignee": "المسند إليه",
+    "reporter": "المبلّغ",
+    "comments": "التعليقات",
+    "addComment": "إضافة تعليق",
+    "resolutionNote": "ملاحظة الحل",
+    "status": {
+      "open": "مفتوح",
+      "in_progress": "قيد المعالجة",
+      "resolved": "تم الحل",
+      "closed": "مغلق"
+    },
+    "categories": {
+      "stock_shortage": "نقص المخزون",
+      "pos_problem": "مشكلة في نقطة البيع",
+      "absence": "غياب",
+      "equipment": "المعدات",
+      "other": "أخرى"
+    },
+    "actions": {
+      "assign": "إسناد",
+      "start": "بدء المعالجة",
+      "resolve": "حل البلاغ",
+      "reopen": "إعادة الفتح",
+      "close": "إغلاق البلاغ"
+    }
+  },
+  "announcements": {
+    "compose": "كتابة إعلان",
+    "body": "الرسالة",
+    "audience": "الجمهور",
+    "count": "عدد المستلمين {{count}}",
+    "publish": "نشر",
+    "read": "قرأوا الإعلان",
+    "notRead": "لم يقرؤوا الإعلان"
+  },
+  "notices": {
+    "bell": "الإشعارات، {{count}} غير مقروءة",
+    "readAll": "تعليم الكل كمقروء",
+    "unreadOnly": "غير المقروءة فقط",
+    "events": {
+      "campaign_status_changed": "تغيّرت حالة الحملة",
+      "assignment_proposed": "تعيين جديد بانتظار الاعتماد",
+      "assignment_approved": "تم اعتماد التعيين",
+      "assignment_rejected": "رُفض التعيين",
+      "assignment_cancelled": "أُلغي التعيين",
+      "assignment_ended": "أُنهي التعيين مبكرًا",
+      "assignment_replaced": "تم استبدال التعيين",
+      "issue_created": "تم رفع بلاغ جديد",
+      "issue_assigned": "أُسند إليك بلاغ",
+      "issue_status_changed": "تغيّرت حالة البلاغ",
+      "issue_commented": "تعليق جديد على البلاغ",
+      "announcement_published": "إعلان جديد"
     }
   }
 }

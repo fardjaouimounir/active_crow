@@ -123,3 +123,20 @@ export function getOverlaps(db, agencyId, ids, startDate, endDate) {
     endDate: { gte: startDate },
   });
 }
+
+/** Locks the applicable assignment so it cannot be cancelled while the issue is created. */
+export async function hasApprovedAssignmentOnDay(
+  db,
+  { agencyId, userId },
+  { campaignId, pointOfSaleId, day },
+) {
+  const weekday = asDate(day).getUTCDay() || 7;
+  const rows = await db.$queryRaw`
+    SELECT id FROM assignments
+    WHERE agency_id = ${agencyId}::uuid AND animateur_id = ${userId}::uuid
+      AND campaign_id = ${campaignId}::uuid AND point_of_sale_id = ${pointOfSaleId}::uuid
+      AND status = 'approved' AND start_date <= ${day}::date AND end_date >= ${day}::date
+      AND (COALESCE(cardinality(work_days), 0) = 0 OR ${weekday}::smallint = ANY(work_days))
+    FOR SHARE`;
+  return rows.length > 0;
+}

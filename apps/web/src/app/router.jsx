@@ -123,6 +123,40 @@ export const routes = [
                 }),
               },
               {
+                path: 'issues',
+                lazy: async () => ({
+                  Component: (await import('../features/issues/IssuesPage.jsx')).IssuesPage,
+                }),
+              },
+              {
+                path: 'issues/:id',
+                lazy: async () => ({
+                  Component: (await import('../features/issues/IssueDetailPage.jsx'))
+                    .IssueDetailPage,
+                }),
+              },
+              {
+                path: 'announcements',
+                lazy: async () => ({
+                  Component: (await import('../features/announcements/AnnouncementsPage.jsx'))
+                    .AnnouncementsPage,
+                }),
+              },
+              {
+                path: 'announcements/:id',
+                lazy: async () => ({
+                  Component: (await import('../features/announcements/AnnouncementsPage.jsx'))
+                    .AnnouncementDetailPage,
+                }),
+              },
+              {
+                path: 'notifications',
+                lazy: async () => ({
+                  Component: (await import('../features/notifications/NotificationsPage.jsx'))
+                    .NotificationsPage,
+                }),
+              },
+              {
                 path: 'approvals',
                 lazy: async () => ({
                   Component: (await import('../features/assignments/ApprovalsPage.jsx'))

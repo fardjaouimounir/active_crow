@@ -24,6 +24,7 @@ const envSchema = z
         z.string().regex(/^\d+$/).transform(Number).pipe(z.int().nonnegative()),
       ])
       .default(false),
+    JOBS_ENABLED: z.enum(['true', 'false']).optional(),
     PORT: z.coerce.number().int().min(1).max(65535).default(4000),
     LOG_LEVEL: z
       .enum(['fatal', 'error', 'warn', 'info', 'debug', 'trace', 'silent'])
@@ -74,6 +75,8 @@ const envSchema = z
   })
   .transform((env) => ({
     ...env,
+    JOBS_ENABLED:
+      env.JOBS_ENABLED === undefined ? env.NODE_ENV !== 'test' : env.JOBS_ENABLED === 'true',
     COOKIE_SECURE: env.COOKIE_SECURE ?? env.NODE_ENV !== 'development',
   }));
 

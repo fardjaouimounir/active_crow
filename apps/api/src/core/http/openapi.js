@@ -102,7 +102,7 @@ function response({ list, array, dataSchema, password, status, binary }) {
 }
 
 /** `multipart/form-data` with one binary `file` part plus the given Zod-described text fields. */
-function multipartBody({ fields }) {
+function multipartBody({ fields, multiple }) {
   const schema = fields ? inputSchema(fields) : { type: 'object', properties: {}, required: [] };
   return {
     required: true,
@@ -110,8 +110,19 @@ function multipartBody({ fields }) {
       'multipart/form-data': {
         schema: {
           type: 'object',
-          required: ['file', ...(schema.required ?? [])],
-          properties: { file: { type: 'string', format: 'binary' }, ...schema.properties },
+          required: [...(multiple ? [] : ['file']), ...(schema.required ?? [])],
+          properties: {
+            ...(multiple
+              ? {
+                  files: {
+                    type: 'array',
+                    maxItems: 3,
+                    items: { type: 'string', format: 'binary' },
+                  },
+                }
+              : { file: { type: 'string', format: 'binary' } }),
+            ...schema.properties,
+          },
         },
       },
     },
@@ -143,7 +154,17 @@ function operationDocument(config) {
         : [{ bearerAuth: [] }],
     parameters: [...parameters('path', params), ...parameters('query', query)],
     ...(body ? { requestBody: { required: true, content: jsonContent(inputSchema(body)) } } : {}),
-    ...(config.multipart ? { requestBody: multipartBody(config.multipart) } : {}),
+    ...(config.multipart
+      ? {
+          requestBody: {
+            ...multipartBody(config.multipart),
+            content: {
+              ...multipartBody(config.multipart).content,
+              ...(body ? jsonContent(inputSchema(body)) : {}),
+            },
+          },
+        }
+      : {}),
     responses,
   };
 }

@@ -1370,6 +1370,9 @@ model IssueComment {
   issue  Issue  @relation(fields: [issueId], references: [id], onDelete: Restrict)
   author User   @relation(fields: [authorId], references: [id], onDelete: Restrict)
 
+  attachments IssueAttachment[]
+
+  @@unique([issueId, id])
   @@index([issueId, createdAt])
   @@map("issue_comments")
 }
@@ -1377,6 +1380,7 @@ model IssueComment {
 /// Pure join table.
 model IssueAttachment {
   issueId   String   @map("issue_id") @db.Uuid
+  commentId String?  @map("comment_id") @db.Uuid
   fileId    String   @map("file_id") @db.Uuid
   agencyId  String   @map("agency_id") @db.Uuid
   createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
@@ -1385,7 +1389,10 @@ model IssueAttachment {
   file   File   @relation(fields: [fileId], references: [id], onDelete: Cascade)
   agency Agency @relation(fields: [agencyId], references: [id], onDelete: Restrict)
 
+  comment IssueComment? @relation(fields: [issueId, commentId], references: [issueId, id], onDelete: Restrict)
+
   @@id([issueId, fileId])
+  @@index([issueId, commentId])
   @@map("issue_attachments")
 }
 

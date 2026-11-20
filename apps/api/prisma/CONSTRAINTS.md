@@ -114,3 +114,7 @@ waits for it and then sees `drawn`.
 ### Organization migration
 
 The organization migration adds `is_demo BOOLEAN NOT NULL DEFAULT false` to `regions` and `points_of_sale`. A reporting line closed on its creation day is retained as an empty half-open interval. It remains in history and does not overlap the replacement line.
+
+### Issue comment attachments migration
+
+Migration `20261120050000_issue_comment_attachments` adds the nullable UUID `issue_attachments.comment_id`. The composite foreign key `issue_attachments_issue_id_comment_id_fkey` references `issue_comments(issue_id, id)` and prevents attaching a file to a comment from a different issue. `issue_comments_issue_id_id_key` supplies the referenced unique pair, and `issue_attachments_issue_id_comment_id_idx` supports lookups by issue and comment. Existing rows with a null comment remain direct issue attachments.

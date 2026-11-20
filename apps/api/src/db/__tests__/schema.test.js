@@ -150,7 +150,12 @@ const FOREIGN_KEYS = {
     'resolved_by>users',
   ],
   issue_comments: ['agency_id>agencies', 'issue_id>issues', 'author_id>users'],
-  issue_attachments: ['issue_id>issues!', 'file_id>files!', 'agency_id>agencies'],
+  issue_attachments: [
+    'issue_id>issues!',
+    'file_id>files!',
+    'agency_id>agencies',
+    'issue_id,comment_id>issue_comments',
+  ],
   announcements: [
     'agency_id>agencies',
     'campaign_id>campaigns',
@@ -210,6 +215,7 @@ const PRIMARY_KEYS = [
 ];
 
 const UNIQUES = [
+  'issue_comments(issue_id,id)',
   'agencies(code)',
   'users(email)',
   'refresh_tokens(token_hash)',
@@ -265,6 +271,7 @@ const INDEXES = [
   'issues(campaign_id,status)',
   'issues(assigned_to,status)',
   'issue_comments(issue_id,created_at)',
+  'issue_attachments(issue_id,comment_id)',
   'files(agency_id,sha256)',
   'audit_logs(entity_type,entity_id,id)',
   'audit_logs(actor_id,created_at)',
@@ -457,6 +464,13 @@ describe('database schema matches docs/04-database-design.md', () => {
     }
     const range = actual.constraints.find(({ name }) => name === 'reporting_lines_valid_range');
     expect(range?.definition).toMatch(/valid_to >= valid_from/);
+  });
+
+  it('allows existing issue attachments without a comment and stores comment IDs as UUIDs', () => {
+    const column = actual.columns.find(
+      ({ table, column }) => table === 'issue_attachments' && column === 'comment_id',
+    );
+    expect(column).toMatchObject({ type: 'uuid', notNull: false });
   });
 
   it('uses the designed column types', () => {

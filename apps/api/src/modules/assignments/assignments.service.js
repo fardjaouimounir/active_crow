@@ -1,3 +1,4 @@
+import { events } from '../../core/events/index.js';
 import { now, today } from '@fieldflow/shared';
 import { auditService } from '../../core/audit/index.js';
 import { ScopeService } from '../../core/authz/index.js';
@@ -188,6 +189,13 @@ function rejectInvalidItems(failures) {
 }
 
 async function audit(db, actor, action, row, before, after) {
+  const event =
+    action === 'replacement' ? (row.status === 'approved' ? 'replaced' : 'proposed') : action;
+  events.emit(db, 'assignment.' + event, {
+    actorId: actor.id,
+    agencyId: actor.agencyId,
+    assignmentId: row.id,
+  });
   await auditService.record(db, {
     actor,
     action: 'assignment.' + action,
@@ -345,6 +353,12 @@ async function decide(actor, items, batch = false) {
       if (original)
         await shorten(db, actor, original, date(row.startDate), note ?? row.decisionNote);
       const status = decision === 'approve' ? 'approved' : 'rejected';
+      if (original)
+        events.emit(db, 'assignment.replaced', {
+          actorId: actor.id,
+          agencyId: actor.agencyId,
+          assignmentId: row.id,
+        });
       result.push(
         await change(db, actor, row, status, {
           status,

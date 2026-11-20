@@ -1,10 +1,13 @@
+import './core/jobs/maintenance.js';
+import { jobs } from './core/jobs/index.js';
 import { SHUTDOWN_TIMEOUT_MS } from './config/constants.js';
 import { env } from './config/env.js';
 import { logger } from './config/logger.js';
 import { createApp } from './app.js';
 import { disconnectDatabase } from './db/client.js';
 
-function start() {
+async function start() {
+  if (env.JOBS_ENABLED) await jobs.start();
   const app = createApp();
   const server = app.listen(env.PORT, (err) => {
     if (err) {
@@ -31,6 +34,7 @@ function start() {
       if (err) logger.error({ err }, 'Error while closing the HTTP server');
       else logger.info('HTTP server closed');
       try {
+        await jobs.stop();
         await disconnectDatabase();
         logger.info('Database disconnected');
       } catch (dbErr) {
@@ -56,7 +60,7 @@ process.on('uncaughtException', (err) => {
 });
 
 try {
-  start();
+  await start();
 } catch (err) {
   // Bootstrap fallback: the logger itself may be what failed.
   console.error('FieldFlow API failed to start:', err);

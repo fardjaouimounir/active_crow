@@ -1,0 +1,31 @@
+import { z } from 'zod';
+
+const id = z.uuid();
+const base = { agencyId: id, actorId: id };
+const campaign = z.strictObject({ ...base, campaignId: id, status: z.string() });
+const assignment = z.strictObject({ ...base, assignmentId: id });
+const issue = z.strictObject({
+  ...base,
+  issueId: id,
+  assigneeId: id.nullable().optional(),
+  commentAt: z.iso.datetime().optional(),
+});
+export const eventCatalog = Object.freeze({
+  'campaign.status_changed': campaign,
+  'assignment.proposed': assignment,
+  'assignment.approved': assignment,
+  'assignment.rejected': assignment,
+  'assignment.cancelled': assignment,
+  'assignment.ended': assignment,
+  'assignment.replaced': assignment,
+  'issue.created': issue,
+  'issue.assigned': issue,
+  'issue.status_changed': issue,
+  'issue.commented': issue,
+  'announcement.published': z.strictObject({
+    ...base,
+    announcementId: id,
+    userIds: z.array(id),
+    eventId: id,
+  }),
+});

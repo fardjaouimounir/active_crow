@@ -99,7 +99,15 @@
       "ASSIGNMENT_ALREADY_STARTED": "This assignment has already started.",
       "INVALID_END_DATE": "Choose a valid early end date.",
       "REPLACEMENT_DATE_INVALID": "Choose a valid replacement date and Animateur.",
-      "NOTE_REQUIRED": "A rejection note is required."
+      "NOTE_REQUIRED": "A rejection note is required.",
+      "CAMPAIGN_NOT_ACCEPTING_ISSUES": "This campaign is not accepting issues.",
+      "NOT_ASSIGNED_HERE": "You do not have a current assignment at this point of sale.",
+      "ASSIGNEE_NOT_ELIGIBLE": "This user cannot be assigned this issue.",
+      "INVALID_ISSUE_TRANSITION": "This issue cannot change to the requested status.",
+      "RESOLUTION_NOTE_REQUIRED": "A resolution or closing note is required.",
+      "EMPTY_AUDIENCE": "No active users match this audience.",
+      "AUDIENCE_NOT_ALLOWED": "This audience is outside your publishing scope.",
+      "TOO_MANY_ATTACHMENTS": "Attach no more than three files."
     }
   },
   "roles": {
@@ -210,7 +218,13 @@
     "animateur": "Animateur",
     "supervisor": "Superviseur",
     "shiftStart": "Shift starts",
-    "shiftEnd": "Shift ends"
+    "shiftEnd": "Shift ends",
+    "notifications": "Notifications",
+    "issues": "Issues",
+    "announcements": "Announcements",
+    "category": "Category",
+    "stockItem": "Stock item",
+    "title": "Title"
   },
   "catalog": {
     "newClient": "New client",
@@ -275,7 +289,8 @@
       "documents": "Documents",
       "history": "History",
       "rules": "Rules",
-      "assignments": "Assignments"
+      "assignments": "Assignments",
+      "issues": "Issues"
     },
     "counts": {
       "wilayas": "Wilayas",
@@ -479,6 +494,65 @@
       "approved": "Approved",
       "rejected": "Rejected",
       "cancelled": "Cancelled"
+    }
+  },
+  "issues": {
+    "new": "New issue",
+    "attachments": "Attachments (up to 3)",
+    "attachment": "Attachment {{number}}",
+    "mine": "Assigned to me",
+    "assignee": "Assignee",
+    "reporter": "Reporter",
+    "comments": "Comments",
+    "addComment": "Add a comment",
+    "resolutionNote": "Resolution note",
+    "status": {
+      "open": "Open",
+      "in_progress": "In progress",
+      "resolved": "Resolved",
+      "closed": "Closed"
+    },
+    "categories": {
+      "stock_shortage": "Stock shortage",
+      "pos_problem": "Point-of-sale problem",
+      "absence": "Absence",
+      "equipment": "Equipment",
+      "other": "Other"
+    },
+    "actions": {
+      "assign": "Assign",
+      "start": "Start work",
+      "resolve": "Resolve",
+      "reopen": "Reopen",
+      "close": "Close issue"
+    }
+  },
+  "announcements": {
+    "compose": "Write announcement",
+    "body": "Message",
+    "audience": "Audience",
+    "count": "Recipients: {{count}}",
+    "publish": "Publish",
+    "read": "Read",
+    "notRead": "Not read"
+  },
+  "notices": {
+    "bell": "Notifications, {{count}} unread",
+    "readAll": "Mark all as read",
+    "unreadOnly": "Unread only",
+    "events": {
+      "campaign_status_changed": "Campaign status changed",
+      "assignment_proposed": "New assignment awaiting approval",
+      "assignment_approved": "Assignment approved",
+      "assignment_rejected": "Assignment rejected",
+      "assignment_cancelled": "Assignment cancelled",
+      "assignment_ended": "Assignment ended early",
+      "assignment_replaced": "Assignment replaced",
+      "issue_created": "New issue reported",
+      "issue_assigned": "Issue assigned to you",
+      "issue_status_changed": "Issue status changed",
+      "issue_commented": "New issue comment",
+      "announcement_published": "New announcement"
     }
   }
 }

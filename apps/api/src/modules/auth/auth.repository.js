@@ -131,7 +131,7 @@ export async function revokeActiveUserToken(tx, userId, tokenHash, at) {
  * Deletes refresh tokens that expired before `before`. Expired tokens are useless for reuse
  * detection (an expired token is rejected anyway). Tokens still referenced by a newer, unexpired
  * row of their family (replaced_by_id) are kept until that row expires too.
- * Called by the `auth.cleanup-tokens` job once pg-boss exists.
+ * Called by the `auth.cleanup-tokens` job.
  * @param {Date} before
  * @returns {Promise<number>} rows deleted
  */

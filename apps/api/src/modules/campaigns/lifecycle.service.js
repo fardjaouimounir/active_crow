@@ -1,3 +1,4 @@
+import { events } from '../../core/events/index.js';
 // Campaign lifecycle (FR-030): guarded transitions and the readiness view. A transition locks the
 // campaign row, re-runs the guards inside the transaction and records history and audit, so two
 // concurrent transitions cannot both succeed.
@@ -89,6 +90,12 @@ function transition(scope, actor, campaignId, action, { reason } = {}) {
       entityId: campaignId,
       before: { status: locked.status },
       after: { status: to, transition: action, reason: reason ?? null },
+    });
+    events.emit(tx, 'campaign.status_changed', {
+      agencyId: actor.agencyId,
+      actorId: actor.id,
+      campaignId,
+      status: to,
     });
     return repository.findCampaign(tx, scope, campaignId);
   });

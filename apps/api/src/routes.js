@@ -1,3 +1,6 @@
+import { createNotificationsRouter } from './modules/notifications/notifications.routes.js';
+import { createIssuesRouter } from './modules/issues/issues.routes.js';
+import { createAnnouncementsRouter } from './modules/announcements/announcements.routes.js';
 import { Router } from 'express';
 import { API_PREFIX, APP_VERSION } from './config/constants.js';
 import { publicRoute } from './core/authz/index.js';
@@ -42,6 +45,9 @@ export function createRoutes({ checkDatabase }) {
   api.use('/files', createFilesRouter());
   api.use(createAssignmentsRouter());
   api.use('/campaigns', createCampaignsRouter());
+  api.use(createNotificationsRouter());
+  api.use(createIssuesRouter());
+  api.use(createAnnouncementsRouter());
   api.use(createStructureRouter());
 
   const root = Router();

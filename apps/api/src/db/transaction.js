@@ -1,3 +1,4 @@
+import { beginEvents, publishEvents } from '../core/events/index.js';
 import { prisma } from './client.js';
 import { mapDbError } from './dbErrors.js';
 
@@ -21,7 +22,16 @@ export async function withTransaction(
   { isolationLevel = 'ReadCommitted', timeoutMs = 10_000, client = prisma } = {},
 ) {
   try {
-    return await client.$transaction(fn, { isolationLevel, timeout: timeoutMs });
+    let batch;
+    const result = await client.$transaction(
+      (tx) => {
+        batch = beginEvents(tx);
+        return fn(tx);
+      },
+      { isolationLevel, timeout: timeoutMs },
+    );
+    publishEvents(batch);
+    return result;
   } catch (err) {
     throw mapDbError(err);
   }
