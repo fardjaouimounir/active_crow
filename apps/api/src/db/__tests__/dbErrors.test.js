@@ -1,5 +1,5 @@
 // mapDbError unit tests: one per PostgreSQL error code, for each shape the errors arrive in.
-import { BUSINESS_RULE_VIOLATION, CONFLICT } from '@fieldflow/shared';
+import { BUSINESS_RULE_VIOLATION, CONFLICT, INSUFFICIENT_STOCK } from '@fieldflow/shared';
 import { describe, expect, it } from 'vitest';
 import { AppError, NotFoundError } from '../../core/errors/index.js';
 import { mapDbError, readPgError } from '../dbErrors.js';
@@ -66,7 +66,7 @@ describe('mapDbError', () => {
     });
   });
 
-  it('23514 check violation → 422 BUSINESS_RULE_VIOLATION', () => {
+  it('23514 stock balance check violation → 422 INSUFFICIENT_STOCK', () => {
     const mapped = mapDbError(
       prismaError(
         '23514',
@@ -75,8 +75,18 @@ describe('mapDbError', () => {
     );
     expect(mapped).toMatchObject({
       status: 422,
+      code: INSUFFICIENT_STOCK,
+    });
+  });
+
+  it('23514 other check violations → 422 BUSINESS_RULE_VIOLATION', () => {
+    const mapped = mapDbError(
+      prismaError('23514', 'violates check constraint "sales_void_consistent"'),
+    );
+    expect(mapped).toMatchObject({
+      status: 422,
       code: BUSINESS_RULE_VIOLATION,
-      details: { constraint: 'stock_balances_non_negative' },
+      details: { constraint: 'sales_void_consistent' },
     });
   });
 
@@ -92,12 +102,17 @@ describe('mapDbError', () => {
   });
 
   it('P0001 raised by a trigger → 422 with the trigger message in details.reason', () => {
-    const mapped = mapDbError(commitError('P0001', 'unbalanced ledger for line 42'));
+    const mapped = mapDbError(commitError('P0001', 'sales is append-only'));
     expect(mapped).toMatchObject({
       status: 422,
       code: BUSINESS_RULE_VIOLATION,
-      details: { reason: 'unbalanced ledger for line 42' },
+      details: { reason: 'sales is append-only' },
     });
+  });
+
+  it('keeps an unbalanced ledger failure internal', () => {
+    const error = commitError('P0001', 'unbalanced ledger for line 42');
+    expect(mapDbError(error)).toBe(error);
   });
 
   it('returns any other database error unchanged (so it becomes a logged 500)', () => {
