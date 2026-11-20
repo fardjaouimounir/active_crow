@@ -1,4 +1,4 @@
-import { Bell, Package, CalendarDays, CircleAlert, Megaphone, Users } from 'lucide-react';
+import { Bell, Package, Sparkles, CalendarDays, CircleAlert, Megaphone, Users } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { Link } from 'react-router';
 import { EmptyState, Toast } from '../../shared/ui/PageParts.jsx';
@@ -10,6 +10,7 @@ const icons = {
   campaign: CalendarDays,
   issue: CircleAlert,
   announcement: Megaphone,
+  ai_suggestion: Sparkles,
   stock_movement: Package,
 };
 function destination(item) {
@@ -30,6 +31,10 @@ function destination(item) {
       return '/app/issues/' + item.entityId;
     case 'announcement':
       return '/app/announcements/' + item.entityId;
+    case 'ai_suggestion':
+      return item.type === 'ai.suggestion_received'
+        ? '/app/ai-review/' + item.entityId
+        : '/app/dashboard';
     default:
       return '/app/notifications';
   }

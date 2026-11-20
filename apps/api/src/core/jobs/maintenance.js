@@ -5,6 +5,7 @@ import { anonymizeCustomers } from '../../modules/customers/anonymization.js';
 import { notificationService } from '../../modules/notifications/notifications.service.js';
 import { deliver } from '../../modules/notifications/subscriptions.js';
 import { cleanupIdempotencyKeys } from '../http/idempotency.js';
+import '../../modules/ai/ai.jobs.js';
 import { jobs } from './index.js';
 
 jobs.register('auth.cleanup-tokens', cleanupTokens, { cron: '30 2 * * *' });

@@ -178,13 +178,15 @@ const FOREIGN_KEYS = {
   files: ['agency_id>agencies', 'uploaded_by>users'],
   audit_logs: ['agency_id>agencies'],
   idempotency_keys: ['user_id>users', 'agency_id>agencies'],
-  ai_suggestions: ['agency_id>agencies', 'reviewed_by>users'],
+  ai_requests: ['agency_id>agencies', 'requested_by>users'],
+  ai_suggestions: ['agency_id>agencies', 'reviewed_by>users', 'request_id>ai_requests'],
 };
 
 const TABLES = Object.keys(FOREIGN_KEYS);
 const REFERENCE_TABLES = ['agencies', 'wilayas', 'communes'];
-/** Append-only / insert-only tables: no updated_at. */
+/** Append-only / insert-only tables: no updated_at (ai_requests tracks sent_at / completed_at instead). */
 const IMMUTABLE_TABLES = [
+  'ai_requests',
   'field_interactions',
   'region_wilayas',
   'campaign_status_history',
@@ -353,6 +355,8 @@ const CHECKS = [
 const EXCLUSIONS = ['reporting_lines_no_overlap', 'assignments_no_overlap'];
 
 const TRIGGERS = [
+  'ai_suggestions.ai_suggestions_review_only',
+  'ai_suggestions.ai_suggestions_no_delete',
   'gift_entitlements.gift_entitlements_shortage_issue_immutable',
   'field_interactions.field_interactions_append_only',
   'stock_ledger_entries.stock_ledger_append_only',
@@ -455,7 +459,7 @@ beforeAll(async () => {
 
 describe('database schema matches docs/04-database-design.md', () => {
   it('has the original tables and field interactions', () => {
-    expect(TABLES).toHaveLength(53);
+    expect(TABLES).toHaveLength(54);
     expect(actual.tables).toEqual([...TABLES].sort());
   });
 

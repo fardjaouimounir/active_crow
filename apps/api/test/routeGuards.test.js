@@ -68,6 +68,11 @@ export function findUnguardedRoutes(app) {
         guard === GUARD.ANY_AUTHENTICATED ||
         guard === GUARD.FILE_POLICY,
     );
+    if (guards.includes(GUARD.SERVICE)) {
+      if (guards.includes(GUARD.AUTHENTICATE))
+        problems.push(`${route} mixes service and user auth`);
+      continue;
+    }
     if (auth === -1) problems.push(`${route} does not authenticate`);
     else if (permission === -1) problems.push(`${route} has no permission guard`);
     else if (permission < auth) problems.push(`${route} checks permissions before authenticate`);

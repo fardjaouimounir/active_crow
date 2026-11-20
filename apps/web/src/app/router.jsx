@@ -169,6 +169,18 @@ export const routes = [
                 }),
               },
               {
+                path: 'ai-review',
+                lazy: async () => ({
+                  Component: (await import('../features/ai/AiReviewPage.jsx')).AiReviewPage,
+                }),
+              },
+              {
+                path: 'ai-review/:id',
+                lazy: async () => ({
+                  Component: (await import('../features/ai/AiReviewPage.jsx')).AiReviewPage,
+                }),
+              },
+              {
                 path: 'approvals',
                 lazy: async () => ({
                   Component: (await import('../features/assignments/ApprovalsPage.jsx'))

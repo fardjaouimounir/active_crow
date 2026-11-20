@@ -11,7 +11,19 @@ const issue = z.strictObject({
   commentAt: z.iso.datetime().optional(),
 });
 const stock = z.strictObject({ ...base, campaignId: id, movementId: id });
+const aiSuggestion = z.strictObject({
+  agencyId: id,
+  actorId: id.nullable(),
+  suggestionId: id,
+  capability: z.string(),
+  eventId: id.optional(),
+});
 export const eventCatalog = Object.freeze({
+  'ai.suggestion_received': aiSuggestion.extend({ requesterId: id.nullable() }),
+  'ai.suggestion_reviewed': aiSuggestion.extend({
+    requesterId: id.nullable(),
+    decision: z.enum(['accepted', 'rejected']),
+  }),
   'campaign.status_changed': campaign,
   'assignment.proposed': assignment,
   'assignment.approved': assignment,

@@ -19,3 +19,5 @@ export * from './attendance.js';
 export * from './geo.js';
 export * from './sales.js';
 export * from './kpi.js';
+export * from './aiContract.js';
+export * from './ai.js';

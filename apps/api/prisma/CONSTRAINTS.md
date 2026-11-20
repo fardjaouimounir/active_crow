@@ -128,3 +128,7 @@ Migration `20261120050000_issue_comment_attachments` adds the nullable UUID `iss
 `field_interactions_kind_check` and `field_interactions_count_check` constrain counted batches. The `field_interactions_append_only` trigger uses the existing `forbid_mutation` function for updates and deletes.
 
 `issues_one_open_shortage_per_assignment_item` enforces one open or in-progress stock shortage issue per assignment and stock item. The `gift_entitlements_shortage_issue_immutable` trigger preserves the original nullable `shortage_issue_id` once assigned, including after delivery or void.
+
+### AI integration migration
+
+`ai_requests` (ours, never sent to the AI service) has `ai_requests_status_check` (`queued`, `sent`, `send_failed`, `completed`) and `ai_requests_capability_check` (the four capability ids). `ai_suggestions.request_id` becomes `uuid` with the foreign key `ai_suggestions_request_id_fkey` to `ai_requests(request_id)`, so a suggestion exists only for a request we made. The trigger `ai_suggestions_review_only` allows an update only while the row is `pending_review`, only to `accepted` or `rejected`, and only on `status`, `reviewed_by`, `reviewed_at`, `review_note` (and the housekeeping `updated_at`); `ai_suggestions_no_delete` forbids deletes.

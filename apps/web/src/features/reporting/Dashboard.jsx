@@ -1,6 +1,12 @@
 import { reportingFilterFields, reportingFilters, today } from '@fieldflow/shared';
 import { useSearchParams } from 'react-router';
 import { useAuth, useCan } from '../../shared/auth/hooks.js';
+import {
+  AiActionButton,
+  AiCommentaryCard,
+  CampaignAiActions,
+  CampaignAiCards,
+} from '../ai/AiUi.jsx';
 import { useReport } from './api.js';
 import {
   BreakdownTable,
@@ -162,6 +168,13 @@ export function Dashboard() {
     (a, b) => b.sales.units - a.sales.units || a.id.localeCompare(b.id),
   );
   const values = current.data;
+  const campaignId = filters.campaignIds?.length === 1 ? filters.campaignIds[0] : null;
+  const supervisorId = supervisor
+    ? user.id
+    : filters.supervisorIds?.length === 1
+      ? filters.supervisorIds[0]
+      : null;
+  const oneDay = mainFilters.from && mainFilters.from === mainFilters.to;
   return (
     <section className="space-y-5">
       <div className="flex flex-wrap items-center justify-between gap-2">
@@ -169,6 +182,30 @@ export function Dashboard() {
         {canExport && parsed.success && <ExportButton filters={mainFilters} />}
       </div>
       <Filters raw={raw} update={update} options={values?.options} />
+      {parsed.success && (
+        <div className="space-y-3">
+          <div className="flex flex-wrap gap-3">
+            {supervisorId && (
+              <AiActionButton
+                capability="supervisor_daily_summary"
+                subjectId={supervisorId}
+                filters={oneDay ? { workDate: mainFilters.from } : {}}
+              />
+            )}
+            {!supervisor && (
+              <CampaignAiActions
+                campaignId={campaignId}
+                period={mainFilters}
+                salesTarget={values?.completion?.salesTarget}
+              />
+            )}
+          </div>
+          {supervisorId && (
+            <AiCommentaryCard capability="supervisor_daily_summary" subjectId={supervisorId} />
+          )}
+          {!supervisor && <CampaignAiCards campaignId={campaignId} />}
+        </div>
+      )}
       {!parsed.success && <p role="alert">{t('invalid')}</p>}
       {parsed.success && current.isPending && (
         <div role="status" className="animate-pulse rounded-xl bg-slate-100 p-6">

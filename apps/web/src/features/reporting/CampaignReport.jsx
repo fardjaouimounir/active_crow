@@ -1,6 +1,7 @@
 import { useParams } from 'react-router';
 import { useTranslation } from 'react-i18next';
 import { useAuth } from '../../shared/auth/hooks.js';
+import { CampaignAiActions, CampaignAiCards } from '../ai/AiUi.jsx';
 import { useReport } from './api.js';
 import {
   BreakdownTable,
@@ -74,8 +75,16 @@ export function CampaignReport() {
           </button>
           <ExportButton id={id} />
         </div>
+        <div className="report-actions">
+          <CampaignAiActions
+            campaignId={id}
+            period={{ from: kpis.period?.from, to: kpis.period?.to }}
+            salesTarget={kpis.completion?.salesTarget}
+          />
+        </div>
       </header>
       <Cards values={kpis} />
+      <CampaignAiCards campaignId={id} />
       <DailyChart rows={daily} />
       <BreakdownTable rows={wilayas} title="byWilaya" />
       <BreakdownTable rows={stores} title="byStore" />

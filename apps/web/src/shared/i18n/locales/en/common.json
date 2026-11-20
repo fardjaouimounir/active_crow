@@ -258,7 +258,13 @@
       "PROOF_REQUIRED": "A photo is required for lost or stolen stock.",
       "IDEMPOTENCY_KEY_REQUIRED": "The request is missing its unique key. Reload the page.",
       "IDEMPOTENCY_KEY_REUSED": "This request was already sent with different content. Reload the page.",
-      "ENTITLEMENT_NOT_DISTRIBUTABLE": "This gift was already handled."
+      "ENTITLEMENT_NOT_DISTRIBUTABLE": "This gift was already handled.",
+      "AI_DISABLED": "The AI service is not configured.",
+      "AI_REQUEST_NOT_FOUND": "This AI request was not found.",
+      "AI_CAPABILITY_MISMATCH": "The AI result does not match its request.",
+      "AI_SUGGESTION_NOT_PENDING": "This suggestion was already reviewed.",
+      "AI_SUBJECT_NOT_ALLOWED": "You can only request your own daily summary.",
+      "AI_TARGET_REQUIRED": "Set a sales target in the campaign rules before requesting this."
     }
   },
   "roles": {
@@ -368,6 +374,7 @@
     "assignmentApproverRole": "Assignment approver",
     "label": "Label",
     "approvals": "Approvals",
+    "aiReview": "AI review",
     "point": "Point de Vente",
     "animateur": "Animateur",
     "supervisor": "Superviseur",
@@ -718,7 +725,9 @@
       "stock_transfer_created": "Stock sent to you",
       "stock_transfer_disputed": "Stock shortfall reported",
       "stock_adjustment_requested": "Stock adjustment awaiting approval",
-      "stock_adjustment_decided": "Stock adjustment decided"
+      "stock_adjustment_decided": "Stock adjustment decided",
+      "ai_suggestion_received": "AI suggestion ready for review",
+      "ai_suggestion_reviewed": "Your AI suggestion was reviewed"
     }
   },
   "stock": {

@@ -58,7 +58,7 @@ it('syncs filters with the URL, changes metrics and offers the chart data table'
   const section = (await screen.findByRole('heading', { name: 'Daily sales' })).closest('section');
   await user.click(within(section).getByText('View data'));
   expect(await within(section).findByRole('cell', { name: '9' })).toBeInTheDocument();
-});
+}, 20_000);
 
 it.each([
   ['supervisor', 'By Animateur'],

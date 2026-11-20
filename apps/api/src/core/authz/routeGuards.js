@@ -9,6 +9,8 @@ export const GUARD = Object.freeze({
   ANY_AUTHENTICATED: 'any-authenticated',
   /** File reads: authorization delegated to the policy of the file's kind (modules/files). */
   FILE_POLICY: 'file-policy',
+  /** Service-to-service routes (shared bearer key), never a user session. */
+  SERVICE: 'service',
   PUBLIC: 'public',
 });
 

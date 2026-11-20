@@ -20,11 +20,13 @@ export const operation = (
     multipart,
     binary,
     idempotent = false,
+    service = false,
   } = {},
 ) => ({
   multipart,
   binary,
   idempotent,
+  service,
   method,
   path,
   summary,
@@ -149,17 +151,20 @@ function operationDocument(config) {
   if (method !== 'get')
     Object.assign(errors, { 409: 'Conflict', 422: 'Business rule violation', 429: 'Rate limited' });
   if (config.multipart) errors[413] = 'File too large (FILE_TOO_LARGE)';
+  if (config.service) errors[413] = 'Body larger than 256 KB';
   for (const [code, description] of Object.entries(errors)) {
     responses[code] = { description, content: jsonContent({ $ref: '#/components/schemas/Error' }) };
   }
   return {
     summary,
     'x-permission': permission,
-    security: config.cookie
-      ? [{ refreshCookie: [] }]
-      : config.publicRoute
-        ? []
-        : [{ bearerAuth: [] }],
+    security: config.service
+      ? [{ serviceKey: [] }]
+      : config.cookie
+        ? [{ refreshCookie: [] }]
+        : config.publicRoute
+          ? []
+          : [{ bearerAuth: [] }],
     parameters: [
       ...parameters('path', params),
       ...parameters('query', query),
@@ -209,6 +214,11 @@ export function createOpenApiRegistry() {
           securitySchemes: {
             bearerAuth: { type: 'http', scheme: 'bearer', bearerFormat: 'JWT' },
             refreshCookie: { type: 'apiKey', in: 'cookie', name: REFRESH_COOKIE_NAME },
+            serviceKey: {
+              type: 'http',
+              scheme: 'bearer',
+              description: 'Shared service key (AI_SERVICE_OUTBOUND_KEY), never a user JWT',
+            },
           },
           schemas: {
             Error: {

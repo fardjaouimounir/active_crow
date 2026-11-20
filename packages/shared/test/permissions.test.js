@@ -63,6 +63,8 @@ const CATALOG = `
 | \`file.upload\` | ✓ | ✓ | ✓ | ✓ | ✓ | |
 | \`file.share_with_client\` | ✓ | | | | | |
 | \`audit.read\` | ✓ | | | | | |
+| \`ai.request\` | ✓ | ✓ | ✓ | ✓ | | |
+| \`ai.review\` | ✓ | ✓ | ✓ | | | |
 `;
 
 function parseCatalog(markdown) {

@@ -258,7 +258,13 @@
       "PROOF_REQUIRED": "الصورة مطلوبة للمخزون المفقود أو المسروق.",
       "IDEMPOTENCY_KEY_REQUIRED": "الطلب ينقصه المعرّف الفريد. أعد تحميل الصفحة.",
       "IDEMPOTENCY_KEY_REUSED": "أُرسل هذا الطلب سابقاً بمحتوى مختلف. أعد تحميل الصفحة.",
-      "ENTITLEMENT_NOT_DISTRIBUTABLE": "تمت معالجة هذه الهدية من قبل."
+      "ENTITLEMENT_NOT_DISTRIBUTABLE": "تمت معالجة هذه الهدية من قبل.",
+      "AI_DISABLED": "خدمة الذكاء الاصطناعي غير مهيأة.",
+      "AI_REQUEST_NOT_FOUND": "لم يتم العثور على طلب الذكاء الاصطناعي هذا.",
+      "AI_CAPABILITY_MISMATCH": "نتيجة الذكاء الاصطناعي لا تطابق طلبها.",
+      "AI_SUGGESTION_NOT_PENDING": "تمت مراجعة هذا الاقتراح من قبل.",
+      "AI_SUBJECT_NOT_ALLOWED": "يمكنك طلب ملخصك اليومي فقط.",
+      "AI_TARGET_REQUIRED": "حدّد هدف مبيعات في قواعد الحملة قبل هذا الطلب."
     }
   },
   "roles": {
@@ -368,6 +374,7 @@
     "assignmentApproverRole": "معتمد التعيينات",
     "label": "التسمية",
     "approvals": "الموافقات",
+    "aiReview": "مراجعة الذكاء الاصطناعي",
     "point": "نقطة البيع",
     "animateur": "المنشط",
     "supervisor": "المشرف",
@@ -718,7 +725,9 @@
       "stock_transfer_created": "مخزون مُرسَل إليك",
       "stock_transfer_disputed": "تم الإبلاغ عن نقص في المخزون",
       "stock_adjustment_requested": "تسوية مخزون بانتظار الاعتماد",
-      "stock_adjustment_decided": "تم البتّ في تسوية المخزون"
+      "stock_adjustment_decided": "تم البتّ في تسوية المخزون",
+      "ai_suggestion_received": "اقتراح ذكاء اصطناعي جاهز للمراجعة",
+      "ai_suggestion_reviewed": "تمت مراجعة اقتراحك بالذكاء الاصطناعي"
     }
   },
   "stock": {

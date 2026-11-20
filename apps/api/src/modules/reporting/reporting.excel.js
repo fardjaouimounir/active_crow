@@ -4,6 +4,7 @@ import { auditService } from '../../core/audit/index.js';
 import { AppError } from '../../core/errors/index.js';
 import { prisma } from '../../db/client.js';
 import { XLSX, definitions, metrics } from './reporting.columns.js';
+import { aiService } from '../ai/ai.service.js';
 import { reportingService } from './reporting.service.js';
 
 const MAX_ROWS = 100_000;
@@ -13,6 +14,8 @@ const date = (day) => new Date(`${day}T00:00:00Z`);
 export async function download(req, res, { filters, id, view }) {
   const data = await reportingService.exportData(req.actor, filters, id);
   const rtl = req.acceptsLanguages('ar', 'en') === 'ar';
+  // Only a human-accepted AI text may appear in a report, and it is labelled as such.
+  const ai = id ? await aiService.acceptedNarrative(req.actor, id) : null;
   const breakdown = (rows, daily = false) =>
     rows.map((row) => [
       daily ? date(row.id) : (rtl && row.labelAr) || row.label || row.id,
@@ -27,6 +30,14 @@ export async function download(req, res, { filters, id, view }) {
         ['Filters', JSON.stringify(data.filters)],
         ['Definitions', definitions.join('\n\n')],
         ...metrics.map((metric) => [metric[0], metricValue(data.kpis, metric)]),
+        ...(ai?.text
+          ? [
+              [
+                `AI commentary (AI-generated, reviewed by ${ai.reviewedBy ?? '-'} on ${ai.reviewedAt.toISOString().slice(0, 10)})`,
+                ai.text,
+              ],
+            ]
+          : []),
       ],
     },
     ...[

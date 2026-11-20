@@ -17,10 +17,13 @@ async function start(connectionString = env.DATABASE_URL) {
   await instance.start();
   try {
     for (const [name, { handler, options }] of definitions) {
-      await instance.createQueue(name, { retryLimit: 3, retryDelay: 10, retryBackoff: true });
+      const retryLimit = options.retryLimit ?? 3;
+      await instance.createQueue(name, { retryLimit, retryDelay: 10, retryBackoff: true });
       await instance.work(name, async ([job]) =>
         handler(job.data, {
           scope: SYSTEM_SCOPE,
+          retryCount: job.retryCount ?? 0,
+          retryLimit,
           logger: logger.child({ jobId: job.id, jobName: name }),
         }),
       );

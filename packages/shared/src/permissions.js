@@ -54,6 +54,8 @@ export const PERMISSIONS = Object.freeze([
   'file.upload',
   'file.share_with_client',
   'audit.read',
+  'ai.request',
+  'ai.review',
 ]);
 
 const D = 'director';
@@ -115,6 +117,8 @@ const GRANTS = {
   'file.upload': [D, GM, RM, SV, AN],
   'file.share_with_client': [D],
   'audit.read': [D],
+  'ai.request': [D, GM, RM, SV],
+  'ai.review': [D, GM, RM],
 };
 
 /** Role → frozen list of its permissions, in catalog order. */

@@ -340,4 +340,15 @@ export async function exportData(actor, filters, id) {
   };
 }
 
-export const reportingService = { kpis, breakdown, summary, exportData };
+/**
+ * Plain KPIs of the period, or of every bucket of `dimension`, with no options, alerts or stock.
+ * The AI integration builds its aggregate payloads from these numbers (the dashboard's own source).
+ * @returns {Promise<object | object[]>}
+ */
+export async function aggregates(actor, filters, dimension) {
+  const ctx = await context(actor, filters);
+  if (dimension) return grouped(ctx, dimension);
+  return calculateKpis(period(ctx.filters), totals(await read(ctx)));
+}
+
+export const reportingService = { kpis, breakdown, summary, exportData, aggregates };

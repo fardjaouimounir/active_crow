@@ -6,6 +6,7 @@ import rateLimit, { ipKeyGenerator } from 'express-rate-limit';
 import helmet from 'helmet';
 import { pinoHttp } from 'pino-http';
 import {
+  API_PREFIX,
   JSON_BODY_LIMIT,
   RATE_LIMIT_MAX_REQUESTS,
   RATE_LIMIT_WINDOW_MS,
@@ -17,6 +18,7 @@ import { requestId } from './core/http/index.js';
 import { pingDatabase } from './db/client.js';
 import { openApiDocument } from './openapi.js';
 import { openApiViewer } from './core/http/openapiViewer.js';
+import { createInternalAiRouter } from './modules/ai/ai.internal.routes.js';
 import { createRoutes } from './routes.js';
 
 /**
@@ -59,6 +61,8 @@ export function createApp({ checkDatabase = () => pingDatabase() } = {}) {
       handler: (_req, _res, next) => next(new RateLimitError()),
     }),
   );
+  // Service-to-service callback: own body limit and key auth, so it sits before the user routes.
+  app.use(`${API_PREFIX}/internal/ai`, createInternalAiRouter());
   app.use(express.json({ limit: JSON_BODY_LIMIT }));
   app.use(cookieParser());
 

@@ -18,6 +18,7 @@ const navigation = [
   { key: 'issues', to: '/app/issues', permission: 'issue.read' },
   { key: 'announcements', to: '/app/announcements', permission: 'announcement.read' },
   { key: 'myStock', to: '/app/my-stock', permission: 'inventory.transfer' },
+  { key: 'aiReview', to: '/app/ai-review', permission: 'ai.review' },
   { key: 'approvals', to: '/app/approvals', permission: 'assignment.approve' },
 ];
 

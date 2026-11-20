@@ -15,6 +15,10 @@ const postgresUrl = z
   .url()
   .refine((value) => /^postgres(ql)?:\/\//.test(value), 'must be a postgresql:// URL');
 
+const blankToUndefined = (value) =>
+  typeof value === 'string' && value.trim() === '' ? undefined : value;
+const PLACEHOLDER_SECRET = /^(replace-me|change-me|changeme|example|test-key|secret)/i;
+
 const envSchema = z
   .object({
     NODE_ENV: z.enum(['development', 'test', 'production']).default('development'),
@@ -68,6 +72,27 @@ const envSchema = z
       .enum(['true', 'false'])
       .optional()
       .transform((value) => (value === undefined ? undefined : value === 'true')),
+    // AI service (docs/ai-integration.md). An empty base URL disables the whole AI module.
+    AI_SERVICE_BASE_URL: z.preprocess(blankToUndefined, z.url().optional()),
+    AI_SERVICE_INBOUND_KEY: z.preprocess(blankToUndefined, z.string().optional()),
+    AI_SERVICE_OUTBOUND_KEY: z.preprocess(blankToUndefined, z.string().optional()),
+  })
+  .superRefine((env, ctx) => {
+    if (!env.AI_SERVICE_BASE_URL) return;
+    const keys = ['AI_SERVICE_INBOUND_KEY', 'AI_SERVICE_OUTBOUND_KEY'];
+    for (const name of keys) {
+      const value = env[name];
+      if (!value || value.length < 32)
+        ctx.addIssue({ code: 'custom', path: [name], message: 'must be at least 32 characters' });
+      else if (env.NODE_ENV === 'production' && PLACEHOLDER_SECRET.test(value))
+        ctx.addIssue({ code: 'custom', path: [name], message: 'must not be a placeholder value' });
+    }
+    if (env.AI_SERVICE_INBOUND_KEY && env.AI_SERVICE_INBOUND_KEY === env.AI_SERVICE_OUTBOUND_KEY)
+      ctx.addIssue({
+        code: 'custom',
+        path: ['AI_SERVICE_OUTBOUND_KEY'],
+        message: 'must differ from AI_SERVICE_INBOUND_KEY',
+      });
   })
   .refine((env) => env.NODE_ENV !== 'test' || env.DATABASE_URL_TEST, {
     path: ['DATABASE_URL_TEST'],
