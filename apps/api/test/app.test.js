@@ -3,6 +3,7 @@ import request from 'supertest';
 import { describe, expect, it } from 'vitest';
 import { z } from 'zod';
 import { createApp } from '../src/app.js';
+import { parseEnv } from '../src/config/env.js';
 import { errorHandler, notFoundHandler } from '../src/core/errors/index.js';
 import { ok, requestId, validate } from '../src/core/http/index.js';
 import { createPrismaClient, pingDatabase } from '../src/db/client.js';
@@ -169,6 +170,49 @@ describe('unexpected errors', () => {
         },
       });
       expect(res.text).not.toMatch(/hunter2|async internal detail|at .*\.js/);
+    },
+  );
+});
+
+describe('proxy and API documentation configuration', () => {
+  const settings = {
+    DATABASE_URL: 'postgresql://local:local@localhost/test',
+    JWT_ACCESS_SECRET: 'test-secret-of-at-least-32-characters',
+  };
+
+  it.each([
+    [undefined, false],
+    ['false', false],
+    ['0', 0],
+    ['1', 1],
+    ['2', 2],
+  ])('validates TRUST_PROXY=%s as %s', (value, expected) => {
+    expect(parseEnv({ ...settings, TRUST_PROXY: value })).toMatchObject({
+      success: true,
+      data: { TRUST_PROXY: expected },
+    });
+  });
+
+  it.each(['true', '-1', '1.5', 'loopback', '', '9999999999999999999'])(
+    'rejects TRUST_PROXY=%s',
+    (value) => {
+      expect(parseEnv({ ...settings, TRUST_PROXY: value })).toMatchObject({ success: false });
+    },
+  );
+
+  it('uses the forwarded client IP for the login limit behind one trusted hop', async () => {
+    const app = createApp().set('trust proxy', 1);
+    const login = (ip) =>
+      request(app).post('/api/v1/auth/login').set('X-Forwarded-For', ip).send({ email: 'invalid' });
+    for (let index = 0; index < 5; index++) expect((await login('192.0.2.1')).status).toBe(400);
+    expect((await login('192.0.2.1')).status).toBe(429);
+    expect((await login('192.0.2.2')).status).toBe(400);
+  });
+
+  it.each(['/api/docs', '/api/docs/openapi.json'])(
+    'does not serve %s outside development',
+    async (path) => {
+      expect((await request(createApp()).get(path)).status).toBe(404);
     },
   );
 });

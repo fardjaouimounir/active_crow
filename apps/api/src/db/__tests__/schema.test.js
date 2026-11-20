@@ -369,8 +369,9 @@ beforeAll(async () => {
       WHERE table_schema = 'public' AND table_type = 'BASE TABLE' AND table_name <> '_prisma_migrations'`,
     prisma.$queryRaw`
       SELECT c.relname::text AS "table", a.attname::text AS "column",
-             format_type(a.atttypid, a.atttypmod) AS type
+             format_type(a.atttypid, a.atttypmod) AS type, a.attnotnull AS "notNull", pg_get_expr(d.adbin, d.adrelid) AS "defaultValue"
       FROM pg_attribute a JOIN pg_class c ON c.oid = a.attrelid
+      LEFT JOIN pg_attrdef d ON d.adrelid = c.oid AND d.adnum = a.attnum
       WHERE c.relnamespace = 'public'::regnamespace AND c.relkind = 'r' AND a.attnum > 0 AND NOT a.attisdropped`,
     prisma.$queryRaw`
       SELECT t.typname::text AS name, array_agg(e.enumlabel::text ORDER BY e.enumsortorder) AS "values"
@@ -395,7 +396,7 @@ beforeAll(async () => {
       JOIN pg_class t ON t.oid = ix.indrelid
       WHERE t.relnamespace = 'public'::regnamespace`,
     prisma.$queryRaw`
-      SELECT conname::text AS name, contype::text AS type FROM pg_constraint
+      SELECT conname::text AS name, contype::text AS type, pg_get_constraintdef(oid) AS definition FROM pg_constraint
       WHERE connamespace = 'public'::regnamespace AND contype IN ('c', 'x')`,
     prisma.$queryRaw`
       SELECT c.relname::text AS "table", t.tgname::text AS name
@@ -408,6 +409,7 @@ beforeAll(async () => {
     tables: tables.map((t) => t.name).sort(),
     columns,
     columnsOf,
+    constraints,
     enums: Object.fromEntries(enums.map((e) => [e.name, e.values])),
     foreignKeys,
     indexes,
@@ -445,6 +447,16 @@ describe('database schema matches docs/04-database-design.md', () => {
       );
       expect(cols.includes('version'), `${table}.version`).toBe(VERSIONED_TABLES.includes(table));
     }
+  });
+
+  it('reflects the organization demo flags and same-day reporting constraint', () => {
+    for (const table of ['regions', 'points_of_sale']) {
+      expect(
+        actual.columns.find((column) => column.table === table && column.column === 'is_demo'),
+      ).toMatchObject({ type: 'boolean', notNull: true, defaultValue: 'false' });
+    }
+    const range = actual.constraints.find(({ name }) => name === 'reporting_lines_valid_range');
+    expect(range?.definition).toMatch(/valid_to >= valid_from/);
   });
 
   it('uses the designed column types', () => {

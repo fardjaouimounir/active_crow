@@ -1,5 +1,6 @@
-import { today } from '@fieldflow/shared';
-import { useState } from 'react';
+import { today, transferSchema } from '@fieldflow/shared';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { useForm, useWatch } from 'react-hook-form';
 import { useTranslation } from 'react-i18next';
 import { Modal } from '../../../shared/ui/Dialogs.jsx';
 import { DatePicker, FormField } from '../../../shared/ui/FormControls.jsx';
@@ -11,11 +12,21 @@ import { ManagerField, managerRoles } from './UserForm.jsx';
 
 export function TransferDialog({ user, team, onClose, onSuccess }) {
   const { t } = useTranslation('common');
-  const [newManagerId, setManager] = useState('');
-  const [effectiveDate, setDate] = useState(today);
-  const [reason, setReason] = useState('');
+  const {
+    control,
+    setValue,
+    handleSubmit,
+    formState: { errors },
+  } = useForm({
+    resolver: zodResolver(transferSchema),
+    defaultValues: { newManagerId: '', effectiveDate: today(), reason: '' },
+  });
+  const { newManagerId, effectiveDate, reason } = useWatch({ control });
+  const set = (name) => (value) => setValue(name, value, { shouldValidate: true });
   const mutation = useOrganizationWrite();
-  const { message, fields } = useApiError(mutation.error);
+  const { message, fields: serverFields } = useApiError(mutation.error);
+  const fields = { ...serverFields };
+  for (const key of Object.keys(errors)) fields[key] = t('admin.invalidField');
   const roles = team
     ? user.role === 'general_manager'
       ? ['general_manager', 'director']
@@ -27,22 +38,22 @@ export function TransferDialog({ user, team, onClose, onSuccess }) {
     <Modal title={t(team ? 'admin.transferTeam' : 'admin.transfer')} onClose={onClose}>
       <form
         className="grid gap-4"
-        onSubmit={(event) => {
-          event.preventDefault();
+        noValidate
+        onSubmit={handleSubmit((body) => {
           mutation.mutate(
             {
               method: 'post',
               path: '/users/' + user.id + '/transfers' + (team ? '/team' : ''),
-              body: { newManagerId, effectiveDate, reason },
+              body,
             },
             { onSuccess },
           );
-        }}
+        })}
       >
         <ManagerField
           roles={roles}
           value={newManagerId}
-          onChange={setManager}
+          onChange={set('newManagerId')}
           error={fields.newManagerId ?? fields.managerId}
           required
         />
@@ -54,7 +65,7 @@ export function TransferDialog({ user, team, onClose, onSuccess }) {
               max={max.toISOString().slice(0, 10)}
               value={effectiveDate}
               required
-              onChange={(event) => setDate(event.target.value)}
+              onChange={(event) => set('effectiveDate')(event.target.value)}
             />
           )}
         </FormField>
@@ -62,7 +73,7 @@ export function TransferDialog({ user, team, onClose, onSuccess }) {
           name="reason"
           fields={fields}
           value={reason}
-          onChange={setReason}
+          onChange={set('reason')}
           required
           maxLength={1000}
         />

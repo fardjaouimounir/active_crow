@@ -22,6 +22,7 @@
   },
   "dependencies": {
     "@fieldflow/shared": "^0.1.0",
+    "@hookform/resolvers": "^7.0.7",
     "@tanstack/react-query": "^5.108.1",
     "@tanstack/react-table": "^8.21.3",
     "axios": "^1.21.1",
@@ -29,6 +30,7 @@
     "lucide-react": "^1.76.0",
     "react": "^19.3.1",
     "react-dom": "^19.3.1",
+    "react-hook-form": "^7.92.0",
     "react-i18next": "^18.0.3",
     "react-router": "^8.5.2"
   }

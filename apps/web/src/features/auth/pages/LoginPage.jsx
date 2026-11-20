@@ -1,46 +1,26 @@
 import { loginBodySchema } from '@fieldflow/shared';
 import { CircleAlert } from 'lucide-react';
-import { useState } from 'react';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { useForm } from 'react-hook-form';
 import { useTranslation } from 'react-i18next';
 import { TextField } from '../../../shared/ui/TextField.jsx';
 import { useLoginMutation } from '../api.js';
 import { AuthCard } from '../components/AuthCard.jsx';
 import { apiErrorMessage } from '../errorMessage.js';
 
-/** @param {Record<string, string>} values @param {import('zod').ZodError} error */
-function fieldErrorsFrom(values, error) {
-  const errors = {};
-  for (const issue of error.issues) {
-    const field = issue.path[0];
-    if (errors[field]) continue;
-    const filled = values[field].trim() !== '';
-    errors[field] = field === 'email' && filled ? 'validation.emailInvalid' : 'validation.required';
-  }
-  return errors;
-}
-
 /** FR-001: email + password. After success the route guard sends the user to their surface. */
 export function LoginPage() {
   const { t } = useTranslation(['auth', 'common']);
   const login = useLoginMutation();
-  const [values, setValues] = useState({ email: '', password: '' });
-  const [fieldErrors, setFieldErrors] = useState({});
-
-  const update = (field) => (event) => {
-    setValues((current) => ({ ...current, [field]: event.target.value }));
-    setFieldErrors((current) => ({ ...current, [field]: undefined }));
-  };
-
-  const onSubmit = (event) => {
-    event.preventDefault();
-    const parsed = loginBodySchema.safeParse(values);
-    if (!parsed.success) {
-      setFieldErrors(fieldErrorsFrom(values, parsed.error));
-      return;
-    }
-    setFieldErrors({});
-    login.mutate(parsed.data);
-  };
+  const {
+    register,
+    handleSubmit,
+    formState: { errors },
+  } = useForm({
+    resolver: zodResolver(loginBodySchema),
+    defaultValues: { email: '', password: '' },
+  });
+  const onSubmit = handleSubmit((values) => login.mutate(values));
 
   return (
     <AuthCard title={t('login.title')} subtitle={t('login.subtitle')}>
@@ -57,23 +37,26 @@ export function LoginPage() {
         <TextField
           label={t('login.email')}
           type="email"
-          name="email"
           autoComplete="username"
           dir="ltr"
-          value={values.email}
-          onChange={update('email')}
-          error={fieldErrors.email && t(fieldErrors.email)}
+          {...register('email')}
+          error={
+            errors.email &&
+            t(
+              errors.email.message === 'required'
+                ? 'validation.required'
+                : 'validation.emailInvalid',
+            )
+          }
           disabled={login.isPending}
         />
         <TextField
           label={t('login.password')}
           type="password"
-          name="password"
           autoComplete="current-password"
           dir="ltr"
-          value={values.password}
-          onChange={update('password')}
-          error={fieldErrors.password && t(fieldErrors.password)}
+          {...register('password')}
+          error={errors.password && t('validation.required')}
           disabled={login.isPending}
         />
         <button

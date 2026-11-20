@@ -55,6 +55,28 @@ describe('FR-012 / BR-02: reporting lines never overlap, one open line per user'
     await expect(line({ validFrom: day('2026-06-01'), validTo: null })).resolves.toBeDefined();
   });
 
+  it('preserves a line closed on its first day without overlapping the replacement', async () => {
+    const validFrom = day('2026-01-01');
+    const first = await line({ validFrom });
+    const replacement = await withTransaction(async (tx) => {
+      await tx.reportingLine.update({ where: { id: first.id }, data: { validTo: validFrom } });
+      return tx.reportingLine.create({
+        data: {
+          agencyId: ctx.agency.id,
+          userId: ctx.animateur.id,
+          managerId: ctx.manager.id,
+          validFrom,
+        },
+      });
+    });
+    expect(await prisma.reportingLine.findMany({ where: { userId: ctx.animateur.id } })).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({ id: first.id, validFrom, validTo: validFrom }),
+        expect.objectContaining({ id: replacement.id, validFrom, validTo: null }),
+      ]),
+    );
+  });
+
   it('rejects a second open line for the same user', async () => {
     await line({ validFrom: day('2026-01-01'), validTo: null });
     await expectPgError(line({ validFrom: day('2027-01-01'), validTo: null }), {

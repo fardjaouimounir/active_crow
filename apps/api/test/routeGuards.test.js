@@ -1,3 +1,4 @@
+import { readFileSync } from 'node:fs';
 // Deny by default: every route under /api/v1 must be either explicitly public (and on the list
 // below) or go through `authenticate` and then a permission guard. The test walks the real Express
 // router stack and reads the markers that the guard middlewares carry.
@@ -6,6 +7,7 @@ import { describe, expect, it } from 'vitest';
 import { createApp } from '../src/app.js';
 import { authenticate } from '../src/core/auth/index.js';
 import { GUARD, guardOf, publicRoute, requirePermission } from '../src/core/authz/index.js';
+import { openApiDocument } from '../src/openapi.js';
 import { createRoutes } from '../src/routes.js';
 
 const API_PREFIX = '/api/v1';
@@ -119,4 +121,19 @@ describe('route guards (FR-004 deny by default)', () => {
 
     expect(findUnguardedRoutes(app)).toEqual(['GET /api/v1/things/before does not authenticate']);
   });
+});
+
+it('documents every API route and keeps the generated document in sync', () => {
+  const document = openApiDocument();
+  const documented = Object.entries(document.paths).flatMap(([path, operations]) =>
+    Object.keys(operations).map((method) => method.toUpperCase() + ' ' + path),
+  );
+  const registered = listRoutes(createApp())
+    .map(({ route }) => route)
+    .filter((route) => route.split(' ')[1].startsWith(API_PREFIX + '/'))
+    .map((route) => route.replace(/:([A-Za-z_][\w]*)/g, '{$1}'));
+  expect(documented.sort()).toEqual(registered.sort());
+  expect(JSON.parse(readFileSync(new URL('../openapi.json', import.meta.url), 'utf8'))).toEqual(
+    JSON.parse(JSON.stringify(document)),
+  );
 });

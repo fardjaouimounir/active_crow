@@ -32,6 +32,7 @@ export const passwordSchema = z.string().superRefine((value, ctx) => {
 export const emailSchema = z
   .string()
   .trim()
+  .min(1, 'required')
   .toLowerCase()
   .max(EMAIL_MAX_LENGTH)
   .pipe(z.email({ message: 'invalid_email' }));
@@ -54,3 +55,15 @@ export const changePasswordBodySchema = z
     newPassword: z.string().min(1, 'required').max(1024),
   })
   .strict();
+
+export const changePasswordFormSchema = changePasswordBodySchema
+  .extend({ confirm: z.string().min(1, 'required') })
+  .superRefine(({ currentPassword, newPassword, confirm }, ctx) => {
+    for (const id of passwordPolicyViolations(newPassword)) {
+      if (newPassword) ctx.addIssue({ code: 'custom', path: ['newPassword'], message: id });
+    }
+    if (newPassword && newPassword === currentPassword)
+      ctx.addIssue({ code: 'custom', path: ['newPassword'], message: 'same_as_current' });
+    if (confirm && confirm !== newPassword)
+      ctx.addIssue({ code: 'custom', path: ['confirm'], message: 'confirmMismatch' });
+  });

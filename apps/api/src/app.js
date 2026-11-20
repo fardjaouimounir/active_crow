@@ -1,7 +1,7 @@
 import cookieParser from 'cookie-parser';
 import cors from 'cors';
 import express from 'express';
-import rateLimit from 'express-rate-limit';
+import rateLimit, { ipKeyGenerator } from 'express-rate-limit';
 import helmet from 'helmet';
 import { pinoHttp } from 'pino-http';
 import {
@@ -14,6 +14,8 @@ import { logger } from './config/logger.js';
 import { errorHandler, notFoundHandler, RateLimitError } from './core/errors/index.js';
 import { requestId } from './core/http/index.js';
 import { pingDatabase } from './db/client.js';
+import { openApiDocument } from './openapi.js';
+import { openApiViewer } from './core/http/openapiViewer.js';
 import { createRoutes } from './routes.js';
 
 /**
@@ -24,6 +26,7 @@ export function createApp({ checkDatabase = () => pingDatabase() } = {}) {
   const app = express();
 
   app.disable('x-powered-by');
+  app.set('trust proxy', env.TRUST_PROXY);
   app.use(helmet());
   app.use(
     cors({
@@ -49,6 +52,7 @@ export function createApp({ checkDatabase = () => pingDatabase() } = {}) {
     rateLimit({
       windowMs: RATE_LIMIT_WINDOW_MS,
       limit: RATE_LIMIT_MAX_REQUESTS,
+      keyGenerator: (req) => ipKeyGenerator(req.ip ?? ''),
       standardHeaders: 'draft-8',
       legacyHeaders: false,
       handler: (_req, _res, next) => next(new RateLimitError()),
@@ -56,6 +60,12 @@ export function createApp({ checkDatabase = () => pingDatabase() } = {}) {
   );
   app.use(express.json({ limit: JSON_BODY_LIMIT }));
   app.use(cookieParser());
+
+  if (env.NODE_ENV === 'development') {
+    const spec = openApiDocument();
+    app.get('/api/docs', (_req, res) => res.type('html').send(openApiViewer(spec)));
+    app.get('/api/docs/openapi.json', (_req, res) => res.json(spec));
+  }
 
   app.use(createRoutes({ checkDatabase }));
 

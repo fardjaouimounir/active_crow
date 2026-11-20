@@ -1,4 +1,5 @@
 import { z } from 'zod';
+import { operation } from '../../core/http/openapi.js';
 import * as structure from './structure.validators.js';
 import * as users from './userManagement.validators.js';
 
@@ -7,7 +8,7 @@ const lookupId = z.strictObject({
   id: z.string().regex(/^\d+$/).transform(Number).pipe(z.int().min(1).max(32767)),
 });
 const date = z.strictObject({ at: z.iso.date().optional() });
-const base = '/api/v1';
+
 const grants = {
   reference: 'reference.read',
   users: 'org.user.read',
@@ -17,33 +18,14 @@ const grants = {
   structure: 'org.structure.manage',
 };
 
-const operation = (
-  method,
-  path,
-  summary,
-  permission,
-  { params, query, body, status = 200, list = false, password = false } = {},
-) => ({
-  method,
-  path,
-  summary,
-  permission,
-  params,
-  query,
-  body,
-  status,
-  list,
-  password,
-});
-
 const paths = [
-  operation('get', '/reference/wilayas', 'List wilayas', grants.reference),
+  operation('get', '/reference/wilayas', 'List wilayas', grants.reference, { array: true }),
   operation(
     'get',
     '/reference/wilayas/{id}/communes',
     'List communes in a wilaya',
     grants.reference,
-    { params: lookupId },
+    { params: lookupId, array: true },
   ),
   operation('get', '/users', 'List scoped users', grants.users, {
     query: users.userListQuery,
@@ -54,6 +36,7 @@ const paths = [
   }),
   operation('get', '/users/{id}/reporting-lines', 'Read reporting history', grants.users, {
     params: ids,
+    array: true,
   }),
   operation('post', '/users', 'Create a staff account', grants.manage, {
     body: users.createUser,
@@ -79,6 +62,7 @@ const paths = [
     params: ids,
     body: users.transferBody,
     status: 201,
+    array: true,
   }),
   operation(
     'delete',
@@ -89,8 +73,11 @@ const paths = [
   ),
   operation('get', '/organization/tree', 'Read the organization at a business date', grants.users, {
     query: date,
+    array: true,
   }),
-  operation('get', '/regions', 'List regions with their wilayas', grants.readStructure),
+  operation('get', '/regions', 'List regions with their wilayas', grants.readStructure, {
+    array: true,
+  }),
   operation('post', '/regions', 'Create a region', grants.structure, {
     body: structure.region,
     status: 201,
@@ -134,123 +121,6 @@ const paths = [
   ),
 ];
 
-function inputSchema(schema) {
-  const input = z.toJSONSchema(schema, { io: 'input' });
-  delete input.$schema;
-  return input;
-}
-
-function parameters(inLocation, schema) {
-  if (!schema) return [];
-  const { properties, required } = inputSchema(schema);
-  return Object.entries(properties).map(([name, property]) => ({
-    in: inLocation,
-    name,
-    required: inLocation === 'path' || (required ?? []).includes(name),
-    schema: property,
-  }));
-}
-
-const jsonContent = (schema) => ({ 'application/json': { schema } });
-const page = {
-  type: 'object',
-  required: ['page', 'pageSize', 'total'],
-  properties: {
-    page: { type: 'integer' },
-    pageSize: { type: 'integer' },
-    total: { type: 'integer' },
-  },
-};
-
-function response({ list, password, status, path, method }) {
-  if (status === 204) return { description: 'No content' };
-  let data = {};
-  if (
-    list ||
-    (path === '/regions' && method === 'get') ||
-    path.startsWith('/reference/') ||
-    path === '/organization/tree' ||
-    path.endsWith('/reporting-lines') ||
-    path.endsWith('/team')
-  ) {
-    data = { type: 'array', items: { type: 'object' } };
-  }
-  if (password) {
-    data = {
-      type: 'object',
-      required: ['temporaryPassword'],
-      properties: {
-        user: { type: 'object' },
-        temporaryPassword: { type: 'string', minLength: 16, maxLength: 16 },
-      },
-    };
-  }
-  return {
-    description: password
-      ? 'Success. Copy the one-time temporary password from this response.'
-      : 'Success',
-    content: jsonContent({
-      type: 'object',
-      required: list ? ['data', 'meta'] : ['data'],
-      properties: list ? { data, meta: page } : { data },
-    }),
-  };
-}
-
-function operationDocument(config) {
-  const { method, summary, permission, params, query, body, status } = config;
-  const responses = { [status]: response(config) };
-  const errors = {
-    400: 'Invalid input',
-    401: 'Unauthenticated',
-    403: 'Forbidden',
-    404: 'Resource missing or outside scope',
-  };
-  if (method !== 'get') Object.assign(errors, { 409: 'Conflict', 422: 'Business rule violation' });
-  for (const [code, description] of Object.entries(errors)) {
-    responses[code] = { description, content: jsonContent({ $ref: '#/components/schemas/Error' }) };
-  }
-  return {
-    summary,
-    'x-permission': permission,
-    security: [{ bearerAuth: [] }],
-    parameters: [...parameters('path', params), ...parameters('query', query)],
-    ...(body ? { requestBody: { required: true, content: jsonContent(inputSchema(body)) } } : {}),
-    responses,
-  };
-}
-
-export function organizationOpenApi() {
-  const pathsByMethod = {};
-  for (const definition of paths) {
-    const path = base + definition.path;
-    pathsByMethod[path] ??= {};
-    pathsByMethod[path][definition.method] = operationDocument(definition);
-  }
-  return {
-    openapi: '3.1.0',
-    info: { title: 'FieldFlow Organization API', version: '0.1.0' },
-    paths: pathsByMethod,
-    components: {
-      securitySchemes: { bearerAuth: { type: 'http', scheme: 'bearer', bearerFormat: 'JWT' } },
-      schemas: {
-        Error: {
-          type: 'object',
-          required: ['error'],
-          properties: {
-            error: {
-              type: 'object',
-              required: ['code', 'message', 'requestId'],
-              properties: {
-                code: { type: 'string' },
-                message: { type: 'string' },
-                requestId: { type: 'string' },
-                details: {},
-              },
-            },
-          },
-        },
-      },
-    },
-  };
+export function registerOrganizationOpenApi(registry) {
+  paths.forEach((path) => registry.register(path));
 }

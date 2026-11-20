@@ -75,7 +75,7 @@ export function LocationFields({ values, set, fields, required }) {
         value={values.wilayaId}
         disabled={wilayas.isLoading}
         options={areaOptions(wilayas.data?.data, i18n.resolvedLanguage)}
-        onChange={(value) => set({ wilayaId: value, communeId: '' })}
+        onChange={(value) => set({ wilayaId: value ? Number(value) : null, communeId: null })}
       />
       <SelectField
         name="commune"
@@ -83,7 +83,7 @@ export function LocationFields({ values, set, fields, required }) {
         value={values.communeId}
         disabled={!values.wilayaId || communes.isLoading}
         options={areaOptions(communes.data?.data, i18n.resolvedLanguage)}
-        onChange={(value) => set({ communeId: value })}
+        onChange={(value) => set({ communeId: value ? Number(value) : null })}
       />
       {(wilayas.isError || communes.isError) && (
         <Toast error message={t('errors.codes.NETWORK_ERROR')} />

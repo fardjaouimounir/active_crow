@@ -50,7 +50,7 @@ When a prompt cites `BR-41` or `FR-070`, look it up in these files.
 | Auth | Email + password (argon2id), short-lived access JWT in memory, rotating refresh token in httpOnly cookie |
 | Jobs | pg-boss (PostgreSQL-backed; no Redis) |
 | Logging | pino + pino-http |
-| API docs | OpenAPI 3.1 generated from Zod (`@asteasolutions/zod-to-openapi`) |
+| API docs | OpenAPI 3.1 generated from shared Zod schemas |
 | Files | `StorageAdapter` interface; `LocalDiskAdapter` now, S3-compatible later; images processed with sharp |
 | Web | React (JS) + Vite, React Router (data router), TanStack Query + Axios, React Hook Form + Zod, TanStack Table, Recharts, Tailwind CSS, Lucide React, i18next |
 | Tests | Vitest + Supertest against a real PostgreSQL test database (no DB mocks); Testing Library for UI |
@@ -124,6 +124,7 @@ docs/              business analysis and database design (Arabic)
   Each surface is lazy-loaded.
 - No Axios calls inside components; use hooks from `features/*/api.js`.
 - Filters live in the URL.
+- All forms use React Hook Form + zodResolver with schemas from packages/shared.
 - Access token in memory only; refresh via cookie on reload.
 - UI languages: English and Arabic. Arabic is RTL. Use Tailwind logical utilities (`ms-*`, `me-*`,
   `ps-*`, `pe-*`, `start-*`, `end-*`, `text-start`) — never `ml-*`/`mr-*`/`left-*`/`right-*` for layout.
@@ -165,7 +166,7 @@ npm test                    # all tests (vitest projects: api, web, shared)
 npm run test:quick          # all tests, dot reporter, silent, stop at first failure
 npm run test:related -- <files>  # only tests affected by the given files
 npm run verify              # lint:quick + test:quick (end-of-task check)
-npm run --silent openapi:organization  # print the Organization OpenAPI 3.1 JSON
+npm run openapi            # write apps/api/openapi.json
 npm run db:up               # start dev/test PostgreSQL (docker compose, waits until healthy)
 npm run db:down             # stop it (data kept in the named volume)
 npm run db:generate         # prisma generate (also runs automatically on npm install / npm ci)

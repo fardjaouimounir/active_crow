@@ -1,3 +1,6 @@
+import { createPointFormSchema, updatePointFormSchema } from '@fieldflow/shared';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { useForm, useWatch } from 'react-hook-form';
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Link, useLocation, useNavigate, useParams } from 'react-router';
@@ -23,47 +26,63 @@ const fieldNames = [
   'contactName',
   'contactPhone',
 ];
-const number = (value) => (value == null || value === '' ? null : Number(value));
+
+const requiredFields = ['name', 'code', 'type'];
+const pointValues = (point) => ({
+  ...Object.fromEntries(
+    fieldNames.map((key) => [key, point?.[key] ?? (requiredFields.includes(key) ? '' : null)]),
+  ),
+  wilayaId: point?.wilayaId ?? null,
+  communeId: point?.communeId ?? null,
+  ...(point ? { version: point.version } : {}),
+});
 
 function PointForm({ point, canManage }) {
   const { t } = useTranslation('common');
   const navigate = useNavigate();
-  const [values, setValues] = useState(point ?? {});
+  const {
+    control,
+    setValue,
+    handleSubmit,
+    reset,
+    formState: { errors },
+  } = useForm({
+    resolver: zodResolver(point ? updatePointFormSchema : createPointFormSchema),
+    defaultValues: pointValues(point),
+  });
+  const values = useWatch({ control });
   const [deleted, setDelete] = useState(false);
   const [saved, setSaved] = useState(false);
-  const set = (fields) => setValues((previous) => ({ ...previous, ...fields }));
+  const set = (patch) => {
+    for (const [key, value] of Object.entries(patch))
+      setValue(key, value, { shouldValidate: true });
+  };
   const mutation = usePointOfSaleWrite();
-  const { fields, message } = useApiError(mutation.error);
+  const { fields: serverFields, message } = useApiError(mutation.error);
+  const fields = { ...serverFields };
+  for (const key of Object.keys(errors)) fields[key] = t('admin.invalidField');
   const path = '/points-of-sale' + (point ? '/' + point.id : '');
   return (
     <>
       {saved && <Toast message={t('admin.saved')} />}
       <form
         className="grid max-w-2xl gap-4 rounded-xl border border-slate-200 bg-white p-5 sm:grid-cols-2"
-        onSubmit={(event) => {
-          event.preventDefault();
+        noValidate
+        onSubmit={handleSubmit((body) => {
           if (!canManage) return;
-          const body = Object.fromEntries(fieldNames.map((key) => [key, values[key] || null]));
-          Object.assign(body, {
-            wilayaId: Number(values.wilayaId),
-            communeId: number(values.communeId),
-            latitude: number(values.latitude),
-            longitude: number(values.longitude),
-          });
-          if (point) body.version = values.version;
           mutation.mutate(
             { method: point ? 'patch' : 'post', path, body },
             {
               onSuccess: (result) => {
                 if (!point) navigate('/app/points-of-sale/' + result.id, { replace: true });
                 else {
-                  setValues(result);
+                  reset(pointValues(result));
                   setSaved(true);
                 }
               },
             },
           );
-        }}
+        })}
       >
         <fieldset className="contents" disabled={!canManage || mutation.isPending}>
           {fieldNames.map((name) => {
@@ -74,7 +93,11 @@ function PointForm({ point, canManage }) {
                 name={name}
                 fields={fields}
                 value={values[name]}
-                onChange={(value) => set({ [name]: value })}
+                onChange={(value) =>
+                  set({
+                    [name]: coordinate || requiredFields.includes(name) ? value : value || null,
+                  })
+                }
                 type={coordinate ? 'number' : name === 'contactPhone' ? 'tel' : 'text'}
                 step={coordinate ? 'any' : undefined}
                 min={coordinate ? (name === 'latitude' ? -90 : -180) : undefined}

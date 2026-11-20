@@ -12,7 +12,7 @@
     "db:migrate": "prisma migrate dev",
     "db:migrate:deploy": "prisma migrate deploy",
     "db:reset": "prisma migrate reset",
-    "openapi:organization": "node scripts/organizationOpenApi.js",
+    "openapi": "node scripts/openapi.js",
     "db:seed": "node prisma/seed/index.js",
     "db:studio": "prisma studio",
     "db:bootstrap": "node scripts/bootstrapDirector.js"

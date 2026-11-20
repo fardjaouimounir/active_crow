@@ -243,6 +243,31 @@ describe('campaignWhere', () => {
     expect(await campaignIds(scopeOf(w[name]))).toEqual(ids(...expected));
   });
 
+  it('includes proposed and approved assignments but excludes rejected and cancelled assignments for unstaffed supervisors', async () => {
+    const campaign = await createCampaign(w.agency.id, w.clientX.id);
+    const point = await createPointOfSale(w.agency.id);
+    await linkPointOfSale(campaign, point.id);
+    const assignment = await prisma.assignment.create({
+      data: {
+        agencyId: w.agency.id,
+        campaignId: campaign.id,
+        pointOfSaleId: point.id,
+        animateurId: w.A2.id,
+        supervisorId: w.S2.id,
+        proposedById: w.R1.id,
+        startDate: day('2026-03-01'),
+        endDate: day('2026-03-02'),
+        status: 'proposed',
+      },
+    });
+    for (const status of ['proposed', 'approved', 'rejected', 'cancelled']) {
+      await prisma.assignment.update({ where: { id: assignment.id }, data: { status } });
+      expect((await campaignIds(scopeOf(w.S2))).includes(campaign.id)).toBe(
+        ['proposed', 'approved'].includes(status),
+      );
+    }
+  });
+
   it('never returns another agency’s campaigns, and always filters on agencyId', async () => {
     for (const name of ['D', 'R1', 'S1', 'A1', 'CU']) {
       const scope = scopeOf(w[name]);

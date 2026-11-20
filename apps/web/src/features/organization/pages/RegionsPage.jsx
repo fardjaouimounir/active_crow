@@ -1,3 +1,6 @@
+import { createRegionSchema, updateRegionSchema, regionWilayasSchema } from '@fieldflow/shared';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { useForm, useWatch } from 'react-hook-form';
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useCan } from '../../../shared/auth/hooks.js';
@@ -12,16 +15,29 @@ import { InputField, actionStyle, areaOptions, primaryStyle } from '../component
 function RegionEditor({ dialog, regions, onClose, onSuccess }) {
   const { t, i18n } = useTranslation('common');
   const { mode, region } = dialog;
-  const [name, setName] = useState(region?.name ?? '');
-  const [code, setCode] = useState(region?.code ?? '');
-  const [wilayaIds, setWilayaIds] = useState(
-    () => region?.wilayas.map(({ wilaya }) => wilaya.id) ?? [],
-  );
+  const assigning = mode === 'regionWilayas';
+  const {
+    control,
+    setValue,
+    handleSubmit,
+    formState: { errors },
+  } = useForm({
+    resolver: zodResolver(
+      assigning ? regionWilayasSchema : region ? updateRegionSchema : createRegionSchema,
+    ),
+    defaultValues: assigning
+      ? { wilayaIds: region.wilayas.map(({ wilaya }) => wilaya.id) }
+      : { name: region?.name ?? '', code: region?.code ?? '' },
+  });
+  const { name, code, wilayaIds } = useWatch({ control });
+  const set = (key) => (value) => setValue(key, value, { shouldValidate: true });
   const areas = useWilayas();
   const mutation = useOrganizationWrite();
-  const { message, fields } = useApiError(
+  const { message, fields: serverFields } = useApiError(
     mutation.error ?? (mode === 'regionWilayas' && areas.error),
   );
+  const fields = { ...serverFields };
+  for (const key of Object.keys(errors)) fields[key] = t('admin.invalidField');
   const path = region ? '/regions/' + region.id : '/regions';
   const disabled = mutation.isPending;
   if (mode === 'delete')
@@ -49,15 +65,15 @@ function RegionEditor({ dialog, regions, onClose, onSuccess }) {
     <Modal title={t('admin.' + mode)} onClose={onClose}>
       <form
         className="grid gap-4"
-        onSubmit={(event) => {
-          event.preventDefault();
+        noValidate
+        onSubmit={handleSubmit((body) => {
           mutation.mutate(
             mode === 'regionWilayas'
-              ? { method: 'put', path: path + '/wilayas', body: { wilayaIds } }
-              : { method: region ? 'patch' : 'post', path, body: { name, code } },
+              ? { method: 'put', path: path + '/wilayas', body }
+              : { method: region ? 'patch' : 'post', path, body },
             { onSuccess },
           );
-        }}
+        })}
       >
         {mode === 'regionWilayas' ? (
           <FormField label={t('admin.wilaya')} error={fields.wilayaIds}>
@@ -69,7 +85,7 @@ function RegionEditor({ dialog, regions, onClose, onSuccess }) {
                 value={wilayaIds.map(String)}
                 disabled={areas.isPending}
                 onChange={(event) =>
-                  setWilayaIds(
+                  set('wilayaIds')(
                     Array.from(event.target.selectedOptions, (option) => Number(option.value)),
                   )
                 }
@@ -84,8 +100,8 @@ function RegionEditor({ dialog, regions, onClose, onSuccess }) {
           </FormField>
         ) : (
           <>
-            <InputField name="name" value={name} onChange={setName} fields={fields} required />
-            <InputField name="code" value={code} onChange={setCode} fields={fields} required />
+            <InputField name="name" value={name} onChange={set('name')} fields={fields} required />
+            <InputField name="code" value={code} onChange={set('code')} fields={fields} required />
           </>
         )}
         <Toast error message={message} />

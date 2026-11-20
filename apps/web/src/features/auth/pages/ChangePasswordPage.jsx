@@ -4,10 +4,11 @@ import {
   PASSWORD_MIN_LENGTH,
   PASSWORD_RULES,
   WEAK_PASSWORD,
-  passwordPolicyViolations,
+  changePasswordFormSchema,
 } from '@fieldflow/shared';
 import { Check, CircleAlert, Circle } from 'lucide-react';
-import { useState } from 'react';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { useForm, useWatch } from 'react-hook-form';
 import { useTranslation } from 'react-i18next';
 import { useNavigate, useSearchParams } from 'react-router';
 import { landingPathFor } from '../../../shared/auth/guards.jsx';
@@ -69,47 +70,40 @@ export function ChangePasswordPage() {
   const [params] = useSearchParams();
   const change = useChangePasswordMutation();
   const logout = useLogoutMutation();
-  const [values, setValues] = useState({ currentPassword: '', newPassword: '', confirm: '' });
-  const [errors, setErrors] = useState({});
-  const [failedRules, setFailedRules] = useState([]);
-
-  const update = (field) => (event) => {
-    setValues((current) => ({ ...current, [field]: event.target.value }));
-    setErrors((current) => ({ ...current, [field]: undefined, form: undefined }));
-  };
-
-  const onSubmit = (event) => {
-    event.preventDefault();
-    const { currentPassword, newPassword, confirm } = values;
-    const next = {};
-    if (!currentPassword) next.currentPassword = t('validation.required');
-    const rules = passwordPolicyViolations(newPassword);
-    if (newPassword && newPassword === currentPassword) rules.push('same_as_current');
-    if (!newPassword) next.newPassword = t('validation.required');
-    if (!confirm) next.confirm = t('validation.required');
-    else if (confirm !== newPassword) next.confirm = t('validation.confirmMismatch');
-    setFailedRules(rules);
-    setErrors(next);
-    if (Object.keys(next).length > 0 || rules.length > 0) return;
-
+  const {
+    register,
+    control,
+    handleSubmit,
+    setError,
+    formState: { errors },
+  } = useForm({
+    resolver: zodResolver(changePasswordFormSchema),
+    criteriaMode: 'all',
+    defaultValues: { currentPassword: '', newPassword: '', confirm: '' },
+  });
+  const newPasswordValue = useWatch({ control, name: 'newPassword' });
+  const failedRules = [errors.newPassword?.types?.custom ?? []].flat();
+  const onSubmit = handleSubmit(({ currentPassword, newPassword }) => {
     change.mutate(
       { currentPassword, newPassword },
       {
         onSuccess: (session) =>
           navigate(landingPathFor(session.user, params.get('next')), { replace: true }),
         onError: (error) => {
-          if (error.code === CURRENT_PASSWORD_INCORRECT) {
-            setErrors({ currentPassword: apiErrorMessage(t, error) });
-          } else if (error.code === WEAK_PASSWORD) {
-            setFailedRules((error.details ?? []).map((detail) => detail.message));
-            setErrors({ form: apiErrorMessage(t, error) });
-          } else {
-            setErrors({ form: apiErrorMessage(t, error) });
+          const message = apiErrorMessage(t, error);
+          if (error.code === CURRENT_PASSWORD_INCORRECT)
+            setError('currentPassword', { type: 'server', message });
+          else {
+            setError('root.server', { message });
+            if (error.code === WEAK_PASSWORD)
+              setError('newPassword', {
+                types: { custom: (error.details ?? []).map((detail) => detail.message) },
+              });
           }
         },
       },
     );
-  };
+  });
 
   const busy = change.isPending || logout.isPending;
 
@@ -121,13 +115,13 @@ export function ChangePasswordPage() {
       }
     >
       <form noValidate onSubmit={onSubmit} className="space-y-4">
-        {errors.form && (
+        {errors.root?.server?.message && (
           <div
             role="alert"
             className="flex items-start gap-2 rounded-lg bg-red-50 p-3 text-sm text-red-900"
           >
             <CircleAlert aria-hidden="true" className="mt-0.5 size-4 shrink-0 text-red-600" />
-            <span>{errors.form}</span>
+            <span>{errors.root?.server?.message}</span>
           </div>
         )}
         <TextField
@@ -135,9 +129,13 @@ export function ChangePasswordPage() {
           type="password"
           autoComplete="current-password"
           dir="ltr"
-          value={values.currentPassword}
-          onChange={update('currentPassword')}
-          error={errors.currentPassword}
+          {...register('currentPassword')}
+          error={
+            errors.currentPassword &&
+            (errors.currentPassword.type === 'server'
+              ? errors.currentPassword.message
+              : t('validation.required'))
+          }
           disabled={busy}
         />
         <TextField
@@ -146,13 +144,9 @@ export function ChangePasswordPage() {
           autoComplete="new-password"
           dir="ltr"
           maxLength={PASSWORD_MAX_LENGTH + 1}
-          value={values.newPassword}
-          onChange={(event) => {
-            update('newPassword')(event);
-            setFailedRules([]);
-          }}
-          error={errors.newPassword}
-          hint={<PolicyHints value={values.newPassword} failed={failedRules} />}
+          {...register('newPassword')}
+          error={errors.newPassword?.message === 'required' ? t('validation.required') : undefined}
+          hint={<PolicyHints value={newPasswordValue} failed={failedRules} />}
           disabled={busy}
         />
         <TextField
@@ -160,9 +154,15 @@ export function ChangePasswordPage() {
           type="password"
           autoComplete="new-password"
           dir="ltr"
-          value={values.confirm}
-          onChange={update('confirm')}
-          error={errors.confirm}
+          {...register('confirm')}
+          error={
+            errors.confirm &&
+            t(
+              errors.confirm.message === 'confirmMismatch'
+                ? 'validation.confirmMismatch'
+                : 'validation.required',
+            )
+          }
           disabled={busy}
         />
         <button

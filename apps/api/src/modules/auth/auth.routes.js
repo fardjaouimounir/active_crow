@@ -64,7 +64,10 @@ export function createAuthRouter() {
     '/change-password',
     authenticate,
     anyAuthenticated(),
-    attemptLimiter((req) => req.actor.id, CHANGE_PASSWORD_RATE_LIMIT_MAX_ATTEMPTS),
+    attemptLimiter(
+      (req) => ipKeyGenerator(req.ip ?? '') + '|' + req.actor.id,
+      CHANGE_PASSWORD_RATE_LIMIT_MAX_ATTEMPTS,
+    ),
     validate(changePasswordSchemas),
     controller.changePassword,
   );

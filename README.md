@@ -133,3 +133,7 @@ Path=/api/v1/auth`). Presenting a refresh token twice revokes its whole session 
 - While `mustChangePassword` is set, every route but `me`, `change-password` and `logout` answers
   `403 PASSWORD_CHANGE_REQUIRED`.
 - Permissions per role: `packages/shared/src/permissions.js` (used by the API and by `useCan()`).
+
+When the API is behind Caddy, set `TRUST_PROXY=1` so rate limits use the client IP. Leave it at `false` for direct connections.
+
+Run `npm run openapi` to generate `apps/api/openapi.json`. In development, browse the API at `/api/docs` or fetch the JSON at `/api/docs/openapi.json`.

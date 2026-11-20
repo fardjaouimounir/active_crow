@@ -18,7 +18,7 @@
     "test:quick": "vitest run --reporter=dot --silent=true --bail=1",
     "test:related": "vitest related --run --reporter=dot --silent=true",
     "verify": "npm run -s lint:quick && npm run -s test:quick",
-    "openapi:organization": "npm run -s openapi:organization -w @fieldflow/api",
+    "openapi": "npm run -s openapi -w @fieldflow/api",
     "db:up": "docker compose -f docker-compose.dev.yml up -d --wait",
     "db:down": "docker compose -f docker-compose.dev.yml down",
     "db:generate": "npm run db:generate -w @fieldflow/api",

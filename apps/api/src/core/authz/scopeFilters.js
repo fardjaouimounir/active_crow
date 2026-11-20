@@ -56,7 +56,7 @@ const staffedAs = (userId, role) => ({
 /**
  * Campaigns visible to the scope.
  * agency: all of the agency · regional: staffed as regional_manager · supervisor: staffed as
- * supervisor or supervisor_id on any assignment · self: has an approved assignment · client: own client.
+ * supervisor or supervisor_id on a proposed or approved assignment · self: has an approved assignment · client: own client.
  * @param {import('./scopeService.js').Scope} scope
  */
 export function campaignWhere(scope) {
@@ -72,7 +72,11 @@ export function campaignWhere(scope) {
         agencyId,
         OR: [
           staffedAs(scope.userId, 'supervisor'),
-          { assignments: { some: { supervisorId: scope.userId } } },
+          {
+            assignments: {
+              some: { supervisorId: scope.userId, status: { in: ['proposed', 'approved'] } },
+            },
+          },
         ],
       };
     case 'self':

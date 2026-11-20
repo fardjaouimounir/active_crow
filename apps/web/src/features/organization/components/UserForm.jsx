@@ -1,4 +1,6 @@
-import { useState } from 'react';
+import { createUserFormSchema, updateUserFormSchema } from '@fieldflow/shared';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { useForm, useWatch } from 'react-hook-form';
 import { useTranslation } from 'react-i18next';
 import { FormField, SearchSelect } from '../../../shared/ui/FormControls.jsx';
 import { Toast } from '../../../shared/ui/PageParts.jsx';
@@ -33,50 +35,49 @@ export function ManagerField({ roles, value, onChange, error, required }) {
 
 const textFields = ['fullName', 'email', 'phone'];
 const profileFields = ['experienceYears', 'skills', 'languages', 'notes'];
-const list = (value) =>
-  String(value ?? '')
-    .split(/[,،]/)
-    .map((part) => part.trim())
-    .filter(Boolean);
 
 export function UserForm({ user, profile, onSuccess }) {
   const { t } = useTranslation('common');
-  const [values, setValues] = useState(() => ({
-    ...user,
-    ...profile,
-    skills: profile?.skills?.join(', '),
-    languages: profile?.languages?.join(', '),
-  }));
-  const set = (values) => setValues((previous) => ({ ...previous, ...values }));
-  const mutation = useOrganizationWrite();
-  const { fields, message } = useApiError(mutation.error);
-  const role = user?.role ?? values.role;
   const creating = !user;
-  const change = (key) => (value) => set({ [key]: value });
-  const onSubmit = async (event) => {
-    event.preventDefault();
-    const body = {
-      fullName: values.fullName,
-      email: values.email,
-      phone: values.phone || null,
-      wilayaId: Number(values.wilayaId) || null,
-      communeId: Number(values.communeId) || null,
-    };
-    if (creating) {
-      body.role = role;
-      if (values.managerId) body.managerId = values.managerId;
-    }
-    if (role === 'animateur') {
-      body.profile = {
-        experienceYears:
-          values.experienceYears === '' || values.experienceYears == null
-            ? null
-            : Number(values.experienceYears),
-        skills: list(values.skills),
-        languages: list(values.languages),
-        notes: values.notes || null,
-      };
-    }
+  const {
+    control,
+    setValue,
+    handleSubmit,
+    unregister,
+    formState: { errors },
+  } = useForm({
+    resolver: zodResolver(creating ? createUserFormSchema : updateUserFormSchema),
+    defaultValues: {
+      fullName: user?.fullName ?? '',
+      email: user?.email ?? '',
+      phone: user?.phone ?? null,
+      wilayaId: user?.wilayaId ?? null,
+      communeId: user?.communeId ?? null,
+      ...(creating ? { role: '' } : {}),
+      ...(profile
+        ? {
+            profile: {
+              ...profile,
+              skills: profile.skills?.join(', '),
+              languages: profile.languages?.join(', '),
+            },
+          }
+        : {}),
+    },
+  });
+  const values = useWatch({ control });
+  const role = user?.role ?? values.role;
+  const set = (patch) => {
+    for (const [key, value] of Object.entries(patch))
+      setValue(key, value, { shouldValidate: true });
+  };
+  const mutation = useOrganizationWrite();
+  const { fields: serverFields, message } = useApiError(mutation.error);
+  const fields = { ...serverFields };
+  for (const key of [...textFields, 'role', 'managerId', 'wilayaId', 'communeId']) {
+    if (errors[key]) fields[key] = t('admin.invalidField');
+  }
+  const onSubmit = handleSubmit(async (body) => {
     try {
       const result = await mutation.mutateAsync({
         method: creating ? 'post' : 'patch',
@@ -88,9 +89,9 @@ export function UserForm({ user, profile, onSuccess }) {
     } catch {
       // The mutation state exposes the server error to the form.
     }
-  };
+  });
   return (
-    <form onSubmit={onSubmit} className="grid gap-4">
+    <form noValidate onSubmit={onSubmit} className="grid gap-4">
       {creating && (
         <SelectField
           name="role"
@@ -101,7 +102,10 @@ export function UserForm({ user, profile, onSuccess }) {
             value,
             label: t('roles.' + value),
           }))}
-          onChange={(value) => set({ role: value, managerId: '' })}
+          onChange={(value) => {
+            unregister(['managerId', 'profile']);
+            set({ role: value });
+          }}
         />
       )}
       {creating && role && (
@@ -109,7 +113,7 @@ export function UserForm({ user, profile, onSuccess }) {
           key={role}
           roles={managerRoles[role]}
           value={values.managerId}
-          onChange={change('managerId')}
+          onChange={(value) => (value ? set({ managerId: value }) : unregister('managerId'))}
           error={fields.managerId}
           required={role !== 'general_manager'}
         />
@@ -120,7 +124,7 @@ export function UserForm({ user, profile, onSuccess }) {
           name={name}
           fields={fields}
           value={values[name]}
-          onChange={change(name)}
+          onChange={(value) => set({ [name]: name === 'phone' ? value || null : value })}
           type={name === 'email' ? 'email' : name === 'phone' ? 'tel' : 'text'}
           required={name !== 'phone'}
         />
@@ -131,9 +135,23 @@ export function UserForm({ user, profile, onSuccess }) {
           <InputField
             key={name}
             name={name}
-            fields={{ [name]: fields['profile.' + name] }}
-            value={values[name]}
-            onChange={change(name)}
+            fields={{
+              [name]: errors.profile?.[name] ? t('admin.invalidField') : fields['profile.' + name],
+            }}
+            value={values.profile?.[name]}
+            onChange={(value) =>
+              setValue(
+                'profile.' + name,
+                name === 'experienceYears'
+                  ? value === ''
+                    ? null
+                    : Number(value)
+                  : name === 'notes'
+                    ? value || null
+                    : value,
+                { shouldValidate: true },
+              )
+            }
             type={name === 'experienceYears' ? 'number' : 'text'}
             min={name === 'experienceYears' ? 0 : undefined}
             max={name === 'experienceYears' ? 100 : undefined}

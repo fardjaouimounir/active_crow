@@ -110,3 +110,7 @@ waits for it and then sees `drawn`.
 2. Add a row here, and a test that proves the database rejects the forbidden state and accepts the
    nearest valid one. Also add the object to the expected lists in `schema.test.js`.
 3. Run `npm run db:migrate`: it must report no drift.
+
+### Organization migration
+
+The organization migration adds `is_demo BOOLEAN NOT NULL DEFAULT false` to `regions` and `points_of_sale`. A reporting line closed on its creation day is retained as an empty half-open interval. It remains in history and does not overlap the replacement line.
