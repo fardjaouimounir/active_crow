@@ -4,21 +4,27 @@ import { createNodeResolver, importX } from 'eslint-plugin-import-x';
 import reactHooks from 'eslint-plugin-react-hooks';
 import globals from 'globals';
 
-/** Forbids one app from importing the other, by package name or by path. */
-function forbidApp(appName) {
-  const message = `apps must not import each other; move shared code to packages/shared.`;
-  return {
-    'no-restricted-imports': [
-      'error',
-      {
-        patterns: [
-          { group: [`@fieldflow/${appName}`, `@fieldflow/${appName}/*`], message },
-          { regex: `(^|/)apps/${appName}(/|$)`, message },
-        ],
-      },
-    ],
-  };
+/** Patterns forbidding one app from importing the other, by package name or by path. */
+function otherAppPatterns(appName) {
+  const message = 'apps must not import each other; move shared code to packages/shared.';
+  return [
+    { group: [`@fieldflow/${appName}`, `@fieldflow/${appName}/*`], message },
+    { regex: `(^|/)apps/${appName}(/|$)`, message },
+  ];
 }
+
+/** Only src/db/client.js talks to Prisma; everything else imports `prisma` from there. */
+const prismaPatterns = [
+  {
+    group: ['@prisma/client', '@prisma/client/*', '@prisma/adapter-pg'],
+    message: 'Import the database client from src/db/client.js, not from Prisma directly.',
+  },
+];
+
+/** `no-restricted-imports` with the given pattern lists (a later block replaces, not merges, this rule). */
+const restrictImports = (...patternLists) => ({
+  'no-restricted-imports': ['error', { patterns: patternLists.flat() }],
+});
 
 export default [
   {
@@ -62,15 +68,24 @@ export default [
 
   // Node.js code: API, shared package, tooling and config files (everything but the browser app)
   {
-    files: ['**/*.js'],
+    files: ['**/*.{js,mjs}'],
     ignores: ['apps/web/src/**', 'apps/web/test/**'],
     languageOptions: { globals: { ...globals.node } },
   },
 
   // API
   {
-    files: ['apps/api/**/*.js'],
-    rules: forbidApp('web'),
+    files: ['apps/api/**/*.{js,mjs}'],
+    rules: restrictImports(otherAppPatterns('web'), prismaPatterns),
+  },
+  {
+    // The only places allowed to import Prisma directly.
+    files: [
+      'apps/api/src/db/client.js',
+      'apps/api/prisma/seed/**/*.js',
+      'apps/api/src/db/__tests__/**/*.js',
+    ],
+    rules: restrictImports(otherAppPatterns('web')),
   },
   {
     // Bootstrap fallback when the logger itself failed.
@@ -87,7 +102,7 @@ export default [
     plugins: { 'react-hooks': reactHooks },
     rules: {
       ...reactHooks.configs.recommended.rules,
-      ...forbidApp('api'),
+      ...restrictImports(otherAppPatterns('api')),
     },
   },
 

@@ -3,6 +3,9 @@ import { fileURLToPath } from 'node:url';
 import dotenv from 'dotenv';
 import { z } from 'zod';
 
+// LOG_LEVEL as set by the caller (shell, CI, vitest), before apps/api/.env fills the gaps.
+const explicitLogLevel = process.env.LOG_LEVEL;
+
 dotenv.config({ path: fileURLToPath(new URL('../../.env', import.meta.url)), quiet: true });
 
 const postgresUrl = z
@@ -49,7 +52,13 @@ export function parseEnv(source) {
 
 /** @typedef {z.infer<typeof envSchema>} Env */
 
-const parsed = parseEnv(process.env);
+// Tests are silent unless the caller asks for logs (e.g. `LOG_LEVEL=debug npm test`);
+// a LOG_LEVEL coming only from apps/api/.env does not count.
+const source =
+  process.env.NODE_ENV === 'test' && explicitLogLevel === undefined
+    ? { ...process.env, LOG_LEVEL: 'silent' }
+    : process.env;
+const parsed = parseEnv(source);
 if (!parsed.success) {
   // The logger depends on this config, so report directly to stderr and stop.
   process.stderr.write(

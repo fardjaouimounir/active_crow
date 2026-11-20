@@ -141,18 +141,38 @@ docs/              business analysis and database design (Arabic)
 - No `console.log`, no commented-out code, no TODO without an issue reference.
 - A short report: files created/changed, decisions taken, anything left out and why, how to verify manually.
 
+## 9a. Token-efficient verification
+
+- While working: `npm run test:related -- <changed files>` (dot reporter, silent, only the affected tests).
+- At the end: `npm run verify` once (`lint:quick` + `test:quick`: quiet ESLint, dot reporter, stops at the
+  first failure and still prints its full diff). CI runs the full `npm run lint` (with Prettier) and `npm test`.
+- No verbose `npm test` unless a failure needs more detail, and then on that file only
+  (`npx vitest run <file>` from its workspace).
+- Quiet installs (`npm install --silent` / `--no-audit --no-fund`); pipe long outputs through `tail`.
+- Never `cat` generated files, lockfiles or migrations unless the task needs them.
+- On failure, read only the failing test and the code it exercises.
+- Tests are silent by default (pino level `silent`, Prisma errors only); pass `LOG_LEVEL=debug` to see logs.
+
 ## 10. Commands (keep this section up to date)
 
 ```
 npm install                 # install all workspaces
 npm run dev                 # api + web in watch mode
 npm run lint                # eslint + prettier check
+npm run lint:quick          # eslint --quiet (errors only)
 npm run format              # prettier write
 npm test                    # all tests (vitest projects: api, web, shared)
+npm run test:quick          # all tests, dot reporter, silent, stop at first failure
+npm run test:related -- <files>  # only tests affected by the given files
+npm run verify              # lint:quick + test:quick (end-of-task check)
 npm run db:up               # start dev/test PostgreSQL (docker compose, waits until healthy)
 npm run db:down             # stop it (data kept in the named volume)
-npm run db:migrate          # prisma migrate dev            (added in Prompt 02)
-npm run db:seed             # reference data (+ demo data with --demo; added in Prompt 02)
+npm run db:generate         # prisma generate (also runs automatically on npm install / npm ci)
+npm run db:migrate          # prisma migrate dev (dev DB; must report no drift)
+npm run db:migrate:deploy   # prisma migrate deploy (CI / production)
+npm run db:reset            # drop, re-migrate and re-seed the dev DB
+npm run db:seed             # reference data: 1 agency, 69 wilayas, 1,541 communes (idempotent)
+npm run db:studio           # Prisma Studio
 ```
 
 ## 11. Decision log
@@ -173,3 +193,4 @@ npm run db:seed             # reference data (+ demo data with --demo; added in 
 | 2026-11-20 | Modular monolith, monorepo, Prisma 7, real-DB tests (see `docs/`). |
 | 2026-11-20 | Customers belong to one campaign. No gift distribution without a confirmed holder balance. |
 | 2026-11-20 | Algeria has 69 wilayas and 1,541 communes (Law 26-06, JO n° 25 of 5 April 2026). |
+| 2026-11-20 | Prisma 7.10.x pinned (~7.10) with prisma-client-js (JS output); prisma-client generator rejected (TS-only output). |

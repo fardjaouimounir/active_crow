@@ -3,7 +3,11 @@
     "title": "System status",
     "checking": "Checking the API…",
     "healthy": "API healthy",
+    "degraded": "API running, database unavailable",
     "unreachable": "API unavailable",
+    "database": "Database",
+    "dbUp": "Connected",
+    "dbDown": "Unavailable",
     "version": "Version",
     "uptime": "Uptime"
   }

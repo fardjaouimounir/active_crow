@@ -34,14 +34,26 @@ describe('HealthCard', () => {
     expect(screen.getByRole('status')).toHaveTextContent('Checking the API…');
   });
 
-  it('shows the healthy state with version and uptime', () => {
-    mockQuery({ data: { status: 'ok', version: '0.1.0', uptimeSeconds: 42 } });
+  it('shows the healthy state with database, version and uptime', () => {
+    mockQuery({ data: { status: 'ok', db: 'up', version: '0.1.0', uptimeSeconds: 42 } });
     render(<HealthCard />);
 
-    expect(screen.getByText('API healthy')).toBeInTheDocument();
+    expect(screen.getByRole('status')).toHaveTextContent('API healthy');
+    expect(screen.getByText('Connected')).toBeInTheDocument();
     expect(screen.getByText('0.1.0')).toBeInTheDocument();
     expect(screen.getByText('42 seconds')).toBeInTheDocument();
     expect(screen.queryByRole('alert')).not.toBeInTheDocument();
+  });
+
+  it('shows the degraded state when the database is down (API answered 503)', async () => {
+    await i18n.changeLanguage('ar');
+    mockQuery({ data: { status: 'degraded', db: 'down', version: '0.1.0', uptimeSeconds: 5 } });
+    render(<HealthCard />);
+
+    expect(screen.getByRole('status')).toHaveTextContent(
+      'الخادم يعمل لكن قاعدة البيانات غير متاحة',
+    );
+    expect(screen.getByText('غير متاحة')).toBeInTheDocument();
   });
 
   it('shows the translated error state and retries on demand', async () => {

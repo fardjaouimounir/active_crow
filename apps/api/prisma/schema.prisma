@@ -1,0 +1,1543 @@
+// FieldFlow database schema — implements docs/04-database-design.md (52 tables).
+// Constraints Prisma cannot express (CHECK, EXCLUDE, partial / NULLS NOT DISTINCT indexes,
+// triggers) live in the hand-written migration `*_db_constraints` and in prisma/CONSTRAINTS.md.
+// Conventions: PascalCase singular models, camelCase fields, snake_case tables/columns.
+// Foreign keys are ON DELETE RESTRICT unless stated (Cascade only for refresh_tokens and pure join tables).
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+// ─── Enums ────────────────────────────────────────────────────────────────────
+
+enum UserRole {
+  director
+  general_manager
+  regional_manager
+  supervisor
+  animateur
+  client
+
+  @@map("user_role")
+}
+
+enum UserStatus {
+  active
+  suspended
+  left
+
+  @@map("user_status")
+}
+
+enum CampaignStatus {
+  draft
+  planning
+  assigned
+  active
+  suspended
+  completed
+  closed
+  cancelled
+
+  @@map("campaign_status")
+}
+
+enum RuleSetStatus {
+  draft
+  approved
+  superseded
+
+  @@map("rule_set_status")
+}
+
+enum RuleType {
+  attendance
+  uniform
+  sales_target
+  sampling_target
+  customer_fields
+  daily_report
+
+  @@map("rule_type")
+}
+
+enum PromotionType {
+  gift_with_purchase
+  tiered_gift
+
+  @@map("promotion_type")
+}
+
+enum CampaignStaffRole {
+  regional_manager
+  supervisor
+
+  @@map("campaign_staff_role")
+}
+
+enum AssignmentStatus {
+  proposed
+  approved
+  rejected
+  cancelled
+
+  @@map("assignment_status")
+}
+
+enum AttendanceStatus {
+  pending
+  verified
+  rejected
+
+  @@map("attendance_status")
+}
+
+enum AbsenceType {
+  justified
+  unjustified
+
+  @@map("absence_type")
+}
+
+enum SaleStatus {
+  recorded
+  voided
+
+  @@map("sale_status")
+}
+
+enum EntitlementStatus {
+  pending
+  distributed
+  undelivered
+  cancelled
+
+  @@map("entitlement_status")
+}
+
+enum StockItemKind {
+  gift
+  sample
+
+  @@map("stock_item_kind")
+}
+
+enum StockLocationKind {
+  external
+  warehouse
+  holder
+  in_transit
+  customers
+  losses
+
+  @@map("stock_location_kind")
+}
+
+enum StockMovementType {
+  stock_in
+  transfer
+  distribution
+  return
+  adjustment
+
+  @@map("stock_movement_type")
+}
+
+enum StockMovementStatus {
+  posted
+  pending
+  confirmed
+  disputed
+  cancelled
+  pending_approval
+  rejected
+
+  @@map("stock_movement_status")
+}
+
+enum TombolaStatus {
+  open
+  closed
+  drawn
+
+  @@map("tombola_status")
+}
+
+enum TombolaEntryStatus {
+  valid
+  excluded
+
+  @@map("tombola_entry_status")
+}
+
+enum PrizeDeliveryStatus {
+  pending
+  delivered
+  unreachable
+
+  @@map("prize_delivery_status")
+}
+
+enum IssueStatus {
+  open
+  in_progress
+  resolved
+  closed
+
+  @@map("issue_status")
+}
+
+enum FileVisibility {
+  internal
+  client_visible
+
+  @@map("file_visibility")
+}
+
+enum ActorType {
+  user
+  system
+  ai_service
+
+  @@map("actor_type")
+}
+
+enum AiSuggestionStatus {
+  pending_review
+  accepted
+  rejected
+
+  @@map("ai_suggestion_status")
+}
+
+// ─── 1. Identity, structure and geography (10) ────────────────────────────────
+
+model Agency {
+  id        String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  name      String
+  code      String   @unique
+  settings  Json     @default("{}")
+  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt DateTime @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(6)
+
+  users                 User[]
+  animateurProfiles     AnimateurProfile[]
+  refreshTokens         RefreshToken[]
+  regions               Region[]
+  regionWilayas         RegionWilaya[]
+  reportingLines        ReportingLine[]
+  pointsOfSale          PointOfSale[]
+  clients               Client[]
+  products              Product[]
+  stockItems            StockItem[]
+  campaigns             Campaign[]
+  campaignStatusHistory CampaignStatusHistory[]
+  campaignWilayas       CampaignWilaya[]
+  campaignStaff         CampaignStaff[]
+  campaignPointsOfSale  CampaignPointOfSale[]
+  campaignProducts      CampaignProduct[]
+  campaignDocuments     CampaignDocument[]
+  ruleSets              RuleSet[]
+  campaignRules         CampaignRule[]
+  promotions            Promotion[]
+  promotionTiers        PromotionTier[]
+  assignments           Assignment[]
+  attendanceRecords     AttendanceRecord[]
+  absences              Absence[]
+  supervisorVisits      SupervisorVisit[]
+  visitPhotos           VisitPhoto[]
+  customers             Customer[]
+  sales                 Sale[]
+  saleItems             SaleItem[]
+  giftEntitlements      GiftEntitlement[]
+  stockLocations        StockLocation[]
+  stockMovements        StockMovement[]
+  stockMovementLines    StockMovementLine[]
+  stockLedgerEntries    StockLedgerEntry[]
+  stockBalances         StockBalance[]
+  tombolas              Tombola[]
+  tombolaEntries        TombolaEntry[]
+  tombolaDraws          TombolaDraw[]
+  tombolaWinners        TombolaWinner[]
+  issues                Issue[]
+  issueComments         IssueComment[]
+  issueAttachments      IssueAttachment[]
+  announcements         Announcement[]
+  announcementReads     AnnouncementRead[]
+  notifications         Notification[]
+  files                 File[]
+  auditLogs             AuditLog[]
+  idempotencyKeys       IdempotencyKey[]
+  aiSuggestions         AiSuggestion[]
+
+  @@map("agencies")
+}
+
+model User {
+  id                 String     @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  agencyId           String     @map("agency_id") @db.Uuid
+  role               UserRole
+  clientId           String?    @map("client_id") @db.Uuid
+  fullName           String     @map("full_name")
+  email              String     @unique @db.Citext
+  phone              String?
+  wilayaId           Int?       @map("wilaya_id") @db.SmallInt
+  communeId          Int?       @map("commune_id")
+  status             UserStatus @default(active)
+  passwordHash       String     @map("password_hash")
+  mustChangePassword Boolean    @default(true) @map("must_change_password")
+  tokenVersion       Int        @default(0) @map("token_version")
+  lastLoginAt        DateTime?  @map("last_login_at") @db.Timestamptz(6)
+  isDemo             Boolean    @default(false) @map("is_demo")
+  createdAt          DateTime   @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt          DateTime   @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(6)
+
+  agency  Agency   @relation(fields: [agencyId], references: [id], onDelete: Restrict)
+  client  Client?  @relation(fields: [clientId], references: [id], onDelete: Restrict)
+  wilaya  Wilaya?  @relation(fields: [wilayaId], references: [id], onDelete: Restrict)
+  commune Commune? @relation(fields: [communeId], references: [id], onDelete: Restrict)
+
+  animateurProfile        AnimateurProfile?
+  refreshTokens           RefreshToken[]
+  reportingLines          ReportingLine[]         @relation("ReportingLineUser")
+  managedReportingLines   ReportingLine[]         @relation("ReportingLineManager")
+  campaignStatusChanges   CampaignStatusHistory[]
+  campaignStaff           CampaignStaff[]
+  approvedRuleSets        RuleSet[]
+  animateurAssignments    Assignment[]            @relation("AssignmentAnimateur")
+  supervisedAssignments   Assignment[]            @relation("AssignmentSupervisor")
+  proposedAssignments     Assignment[]            @relation("AssignmentProposedBy")
+  decidedAssignments      Assignment[]            @relation("AssignmentDecidedBy")
+  attendanceRecords       AttendanceRecord[]      @relation("AttendanceAnimateur")
+  reviewedAttendance      AttendanceRecord[]      @relation("AttendanceReviewedBy")
+  absences                Absence[]               @relation("AbsenceAnimateur")
+  recordedAbsences        Absence[]               @relation("AbsenceRecordedBy")
+  supervisorVisits        SupervisorVisit[]
+  createdCustomers        Customer[]
+  animateurSales          Sale[]                  @relation("SaleAnimateur")
+  supervisedSales         Sale[]                  @relation("SaleSupervisor")
+  voidedSales             Sale[]                  @relation("SaleVoidedBy")
+  stockLocations          StockLocation[]
+  createdStockMovements   StockMovement[]         @relation("StockMovementCreatedBy")
+  confirmedStockMovements StockMovement[]         @relation("StockMovementConfirmedBy")
+  approvedStockMovements  StockMovement[]         @relation("StockMovementApprovedBy")
+  tombolaDraws            TombolaDraw[]
+  reportedIssues          Issue[]                 @relation("IssueReportedBy")
+  assignedIssues          Issue[]                 @relation("IssueAssignedTo")
+  resolvedIssues          Issue[]                 @relation("IssueResolvedBy")
+  issueComments           IssueComment[]
+  announcements           Announcement[]
+  announcementReads       AnnouncementRead[]
+  notifications           Notification[]
+  uploadedFiles           File[]
+  idempotencyKeys         IdempotencyKey[]
+  reviewedAiSuggestions   AiSuggestion[]
+
+  @@index([agencyId, role, status])
+  @@index([agencyId, wilayaId])
+  @@map("users")
+}
+
+model AnimateurProfile {
+  userId          String   @id @map("user_id") @db.Uuid
+  agencyId        String   @map("agency_id") @db.Uuid
+  experienceYears Int?     @map("experience_years") @db.SmallInt
+  skills          String[]
+  languages       String[]
+  notes           String?
+  createdAt       DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt       DateTime @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(6)
+
+  user   User   @relation(fields: [userId], references: [id], onDelete: Restrict)
+  agency Agency @relation(fields: [agencyId], references: [id], onDelete: Restrict)
+
+  @@map("animateur_profiles")
+}
+
+model RefreshToken {
+  id           String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  agencyId     String    @map("agency_id") @db.Uuid
+  userId       String    @map("user_id") @db.Uuid
+  familyId     String    @map("family_id") @db.Uuid
+  tokenHash    String    @unique @map("token_hash")
+  expiresAt    DateTime  @map("expires_at") @db.Timestamptz(6)
+  revokedAt    DateTime? @map("revoked_at") @db.Timestamptz(6)
+  replacedById String?   @map("replaced_by_id") @db.Uuid
+  ip           String?   @db.Inet
+  userAgent    String?   @map("user_agent")
+  createdAt    DateTime  @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt    DateTime  @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(6)
+
+  agency     Agency         @relation(fields: [agencyId], references: [id], onDelete: Restrict)
+  user       User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+  replacedBy RefreshToken?  @relation("RefreshTokenReplacement", fields: [replacedById], references: [id], onDelete: Restrict)
+  replaces   RefreshToken[] @relation("RefreshTokenReplacement")
+
+  @@index([familyId])
+  @@map("refresh_tokens")
+}
+
+/// Reference data (seed). Official wilaya code 1–69 (Law 26-06, 2026). No agency_id.
+model Wilaya {
+  id        Int      @id @db.SmallInt
+  nameAr    String   @map("name_ar")
+  nameEn    String   @map("name_en")
+  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt DateTime @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(6)
+
+  communes        Commune[]
+  users           User[]
+  regionWilayas   RegionWilaya[]
+  pointsOfSale    PointOfSale[]
+  campaignWilayas CampaignWilaya[]
+  announcements   Announcement[]
+
+  @@map("wilayas")
+}
+
+/// Reference data (seed). `code` is the official commune code. No agency_id.
+model Commune {
+  id        Int      @id @default(autoincrement())
+  code      String   @unique
+  wilayaId  Int      @map("wilaya_id") @db.SmallInt
+  nameAr    String   @map("name_ar")
+  nameEn    String   @map("name_en")
+  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt DateTime @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(6)
+
+  wilaya Wilaya @relation(fields: [wilayaId], references: [id], onDelete: Restrict)
+
+  users        User[]
+  pointsOfSale PointOfSale[]
+
+  @@index([wilayaId])
+  @@map("communes")
+}
+
+model Region {
+  id        String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  agencyId  String    @map("agency_id") @db.Uuid
+  name      String
+  code      String
+  deletedAt DateTime? @map("deleted_at") @db.Timestamptz(6)
+  createdAt DateTime  @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt DateTime  @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(6)
+
+  agency Agency @relation(fields: [agencyId], references: [id], onDelete: Restrict)
+
+  wilayas RegionWilaya[]
+
+  @@unique([agencyId, code])
+  @@map("regions")
+}
+
+/// Pure join table. A wilaya belongs to one region per agency.
+model RegionWilaya {
+  regionId  String   @map("region_id") @db.Uuid
+  wilayaId  Int      @map("wilaya_id") @db.SmallInt
+  agencyId  String   @map("agency_id") @db.Uuid
+  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
+
+  region Region @relation(fields: [regionId], references: [id], onDelete: Cascade)
+  wilaya Wilaya @relation(fields: [wilayaId], references: [id], onDelete: Cascade)
+  agency Agency @relation(fields: [agencyId], references: [id], onDelete: Restrict)
+
+  @@id([regionId, wilayaId])
+  @@unique([agencyId, wilayaId])
+  @@map("region_wilayas")
+}
+
+/// Effective-dated default reporting line. Overlaps rejected by `reporting_lines_no_overlap`.
+model ReportingLine {
+  id        String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  agencyId  String    @map("agency_id") @db.Uuid
+  userId    String    @map("user_id") @db.Uuid
+  managerId String    @map("manager_id") @db.Uuid
+  validFrom DateTime  @map("valid_from") @db.Date
+  validTo   DateTime? @map("valid_to") @db.Date
+  reason    String?
+  createdAt DateTime  @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt DateTime  @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(6)
+
+  agency  Agency @relation(fields: [agencyId], references: [id], onDelete: Restrict)
+  user    User   @relation("ReportingLineUser", fields: [userId], references: [id], onDelete: Restrict)
+  manager User   @relation("ReportingLineManager", fields: [managerId], references: [id], onDelete: Restrict)
+
+  @@map("reporting_lines")
+}
+
+model PointOfSale {
+  id           String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  agencyId     String    @map("agency_id") @db.Uuid
+  code         String
+  name         String
+  type         String
+  wilayaId     Int       @map("wilaya_id") @db.SmallInt
+  communeId    Int?      @map("commune_id")
+  address      String?
+  latitude     Decimal?  @db.Decimal(9, 6)
+  longitude    Decimal?  @db.Decimal(9, 6)
+  contactName  String?   @map("contact_name")
+  contactPhone String?   @map("contact_phone")
+  version      Int       @default(1)
+  deletedAt    DateTime? @map("deleted_at") @db.Timestamptz(6)
+  createdAt    DateTime  @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt    DateTime  @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(6)
+
+  agency  Agency   @relation(fields: [agencyId], references: [id], onDelete: Restrict)
+  wilaya  Wilaya   @relation(fields: [wilayaId], references: [id], onDelete: Restrict)
+  commune Commune? @relation(fields: [communeId], references: [id], onDelete: Restrict)
+
+  campaignPointsOfSale CampaignPointOfSale[]
+  assignments          Assignment[]
+  attendanceRecords    AttendanceRecord[]
+  supervisorVisits     SupervisorVisit[]
+  sales                Sale[]
+  issues               Issue[]
+
+  @@unique([agencyId, code])
+  @@index([agencyId, wilayaId])
+  @@map("points_of_sale")
+}
+
+// ─── 2. Clients, catalogue, campaigns, rules, promotions (14) ─────────────────
+
+/// Unique name per agency among non-deleted rows: `clients_agency_name_active` (hand-written).
+model Client {
+  id           String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  agencyId     String    @map("agency_id") @db.Uuid
+  name         String
+  legalName    String?   @map("legal_name")
+  contactName  String?   @map("contact_name")
+  contactEmail String?   @map("contact_email")
+  contactPhone String?   @map("contact_phone")
+  deletedAt    DateTime? @map("deleted_at") @db.Timestamptz(6)
+  createdAt    DateTime  @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt    DateTime  @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(6)
+
+  agency Agency @relation(fields: [agencyId], references: [id], onDelete: Restrict)
+
+  users      User[]
+  products   Product[]
+  stockItems StockItem[]
+  campaigns  Campaign[]
+
+  @@map("clients")
+}
+
+model Product {
+  id             String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  agencyId       String    @map("agency_id") @db.Uuid
+  clientId       String    @map("client_id") @db.Uuid
+  sku            String
+  name           String
+  unitLabel      String    @map("unit_label")
+  referencePrice Decimal?  @map("reference_price") @db.Decimal(14, 2)
+  deletedAt      DateTime? @map("deleted_at") @db.Timestamptz(6)
+  createdAt      DateTime  @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt      DateTime  @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(6)
+
+  agency Agency @relation(fields: [agencyId], references: [id], onDelete: Restrict)
+  client Client @relation(fields: [clientId], references: [id], onDelete: Restrict)
+
+  campaignProducts CampaignProduct[]
+  promotionTiers   PromotionTier[]
+  saleItems        SaleItem[]
+
+  @@unique([clientId, sku])
+  @@map("products")
+}
+
+/// Gifts and samples only (Q-13).
+model StockItem {
+  id        String        @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  agencyId  String        @map("agency_id") @db.Uuid
+  clientId  String        @map("client_id") @db.Uuid
+  kind      StockItemKind
+  sku       String
+  name      String
+  unitLabel String        @map("unit_label")
+  deletedAt DateTime?     @map("deleted_at") @db.Timestamptz(6)
+  createdAt DateTime      @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt DateTime      @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(6)
+
+  agency Agency @relation(fields: [agencyId], references: [id], onDelete: Restrict)
+  client Client @relation(fields: [clientId], references: [id], onDelete: Restrict)
+
+  promotionTiers     PromotionTier[]
+  giftEntitlements   GiftEntitlement[]
+  stockMovementLines StockMovementLine[]
+  ledgerEntries      StockLedgerEntry[]
+  balances           StockBalance[]
+  issues             Issue[]
+
+  @@unique([clientId, sku])
+  @@map("stock_items")
+}
+
+model Campaign {
+  id                     String         @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  agencyId               String         @map("agency_id") @db.Uuid
+  clientId               String         @map("client_id") @db.Uuid
+  code                   String
+  name                   String
+  description            String?
+  startDate              DateTime       @map("start_date") @db.Date
+  endDate                DateTime       @map("end_date") @db.Date
+  status                 CampaignStatus @default(draft)
+  budgetAmount           Decimal?       @map("budget_amount") @db.Decimal(14, 2)
+  assignmentApproverRole UserRole       @default(regional_manager) @map("assignment_approver_role")
+  version                Int            @default(1)
+  createdAt              DateTime       @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt              DateTime       @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(6)
+
+  agency Agency @relation(fields: [agencyId], references: [id], onDelete: Restrict)
+  client Client @relation(fields: [clientId], references: [id], onDelete: Restrict)
+
+  statusHistory      CampaignStatusHistory[]
+  wilayas            CampaignWilaya[]
+  pointsOfSale       CampaignPointOfSale[]
+  products           CampaignProduct[]
+  documents          CampaignDocument[]
+  ruleSets           RuleSet[]
+  assignments        Assignment[]
+  attendanceRecords  AttendanceRecord[]
+  supervisorVisits   SupervisorVisit[]
+  customers          Customer[]
+  sales              Sale[]
+  giftEntitlements   GiftEntitlement[]
+  stockLocations     StockLocation[]
+  stockMovements     StockMovement[]
+  stockLedgerEntries StockLedgerEntry[]
+  tombolas           Tombola[]
+  issues             Issue[]
+  announcements      Announcement[]
+
+  @@unique([agencyId, code])
+  @@index([agencyId, status])
+  @@index([clientId])
+  @@index([agencyId, startDate, endDate])
+  @@map("campaigns")
+}
+
+/// Every status transition; never updated.
+model CampaignStatusHistory {
+  id          String          @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  agencyId    String          @map("agency_id") @db.Uuid
+  campaignId  String          @map("campaign_id") @db.Uuid
+  fromStatus  CampaignStatus? @map("from_status")
+  toStatus    CampaignStatus  @map("to_status")
+  reason      String?
+  changedById String?         @map("changed_by") @db.Uuid
+  createdAt   DateTime        @default(now()) @map("created_at") @db.Timestamptz(6)
+
+  agency    Agency   @relation(fields: [agencyId], references: [id], onDelete: Restrict)
+  campaign  Campaign @relation(fields: [campaignId], references: [id], onDelete: Restrict)
+  changedBy User?    @relation(fields: [changedById], references: [id], onDelete: Restrict)
+
+  @@map("campaign_status_history")
+}
+
+model CampaignWilaya {
+  campaignId         String   @map("campaign_id") @db.Uuid
+  wilayaId           Int      @map("wilaya_id") @db.SmallInt
+  agencyId           String   @map("agency_id") @db.Uuid
+  requiredAnimateurs Int      @default(0) @map("required_animateurs")
+  createdAt          DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt          DateTime @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(6)
+
+  campaign Campaign @relation(fields: [campaignId], references: [id], onDelete: Restrict)
+  wilaya   Wilaya   @relation(fields: [wilayaId], references: [id], onDelete: Restrict)
+  agency   Agency   @relation(fields: [agencyId], references: [id], onDelete: Restrict)
+
+  staff CampaignStaff[]
+
+  @@id([campaignId, wilayaId])
+  @@map("campaign_wilayas")
+}
+
+model CampaignStaff {
+  id         String            @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  agencyId   String            @map("agency_id") @db.Uuid
+  campaignId String            @map("campaign_id") @db.Uuid
+  wilayaId   Int               @map("wilaya_id") @db.SmallInt
+  userId     String            @map("user_id") @db.Uuid
+  role       CampaignStaffRole
+  createdAt  DateTime          @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt  DateTime          @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(6)
+
+  agency         Agency         @relation(fields: [agencyId], references: [id], onDelete: Restrict)
+  campaignWilaya CampaignWilaya @relation(fields: [campaignId, wilayaId], references: [campaignId, wilayaId], onDelete: Restrict)
+  user           User           @relation(fields: [userId], references: [id], onDelete: Restrict)
+
+  @@unique([campaignId, wilayaId, userId])
+  @@map("campaign_staff")
+}
+
+/// Pure join table.
+model CampaignPointOfSale {
+  campaignId    String   @map("campaign_id") @db.Uuid
+  pointOfSaleId String   @map("point_of_sale_id") @db.Uuid
+  agencyId      String   @map("agency_id") @db.Uuid
+  createdAt     DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
+
+  campaign    Campaign    @relation(fields: [campaignId], references: [id], onDelete: Cascade)
+  pointOfSale PointOfSale @relation(fields: [pointOfSaleId], references: [id], onDelete: Cascade)
+  agency      Agency      @relation(fields: [agencyId], references: [id], onDelete: Restrict)
+
+  assignments Assignment[]
+
+  @@id([campaignId, pointOfSaleId])
+  @@map("campaign_points_of_sale")
+}
+
+/// Pure join table.
+model CampaignProduct {
+  campaignId String   @map("campaign_id") @db.Uuid
+  productId  String   @map("product_id") @db.Uuid
+  agencyId   String   @map("agency_id") @db.Uuid
+  createdAt  DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
+
+  campaign Campaign @relation(fields: [campaignId], references: [id], onDelete: Cascade)
+  product  Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
+  agency   Agency   @relation(fields: [agencyId], references: [id], onDelete: Restrict)
+
+  @@id([campaignId, productId])
+  @@map("campaign_products")
+}
+
+/// Join table (with a display label): Mécanisme PDF and other campaign files.
+model CampaignDocument {
+  campaignId String   @map("campaign_id") @db.Uuid
+  fileId     String   @map("file_id") @db.Uuid
+  agencyId   String   @map("agency_id") @db.Uuid
+  label      String?
+  createdAt  DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
+
+  campaign Campaign @relation(fields: [campaignId], references: [id], onDelete: Cascade)
+  file     File     @relation(fields: [fileId], references: [id], onDelete: Cascade)
+  agency   Agency   @relation(fields: [agencyId], references: [id], onDelete: Restrict)
+
+  @@id([campaignId, fileId])
+  @@map("campaign_documents")
+}
+
+/// Versioned rule sets. One draft per campaign: `rule_sets_one_draft` (hand-written, BR-14).
+model RuleSet {
+  id            String        @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  agencyId      String        @map("agency_id") @db.Uuid
+  campaignId    String        @map("campaign_id") @db.Uuid
+  version       Int
+  status        RuleSetStatus @default(draft)
+  effectiveFrom DateTime?     @map("effective_from") @db.Timestamptz(6)
+  approvedById  String?       @map("approved_by") @db.Uuid
+  approvedAt    DateTime?     @map("approved_at") @db.Timestamptz(6)
+  source        String        @default("manual")
+  createdAt     DateTime      @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt     DateTime      @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(6)
+
+  agency     Agency   @relation(fields: [agencyId], references: [id], onDelete: Restrict)
+  campaign   Campaign @relation(fields: [campaignId], references: [id], onDelete: Restrict)
+  approvedBy User?    @relation(fields: [approvedById], references: [id], onDelete: Restrict)
+
+  rules             CampaignRule[]
+  promotions        Promotion[]
+  attendanceRecords AttendanceRecord[]
+  sales             Sale[]
+
+  @@unique([campaignId, version])
+  @@map("rule_sets")
+}
+
+/// `config` is validated by the Zod schema of its rule_type in packages/shared.
+model CampaignRule {
+  id        String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  agencyId  String   @map("agency_id") @db.Uuid
+  ruleSetId String   @map("rule_set_id") @db.Uuid
+  ruleType  RuleType @map("rule_type")
+  config    Json
+  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt DateTime @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(6)
+
+  agency  Agency  @relation(fields: [agencyId], references: [id], onDelete: Restrict)
+  ruleSet RuleSet @relation(fields: [ruleSetId], references: [id], onDelete: Restrict)
+
+  @@unique([ruleSetId, ruleType])
+  @@map("campaign_rules")
+}
+
+model Promotion {
+  id             String        @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  agencyId       String        @map("agency_id") @db.Uuid
+  ruleSetId      String        @map("rule_set_id") @db.Uuid
+  type           PromotionType
+  name           String
+  maxPerCustomer Int?          @map("max_per_customer")
+  createdAt      DateTime      @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt      DateTime      @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(6)
+
+  agency  Agency  @relation(fields: [agencyId], references: [id], onDelete: Restrict)
+  ruleSet RuleSet @relation(fields: [ruleSetId], references: [id], onDelete: Restrict)
+
+  tiers            PromotionTier[]
+  giftEntitlements GiftEntitlement[]
+
+  @@map("promotions")
+}
+
+model PromotionTier {
+  id           String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  agencyId     String   @map("agency_id") @db.Uuid
+  promotionId  String   @map("promotion_id") @db.Uuid
+  productId    String?  @map("product_id") @db.Uuid
+  minQuantity  Int      @map("min_quantity")
+  stockItemId  String   @map("stock_item_id") @db.Uuid
+  giftQuantity Int      @map("gift_quantity")
+  createdAt    DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt    DateTime @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(6)
+
+  agency    Agency    @relation(fields: [agencyId], references: [id], onDelete: Restrict)
+  promotion Promotion @relation(fields: [promotionId], references: [id], onDelete: Restrict)
+  product   Product?  @relation(fields: [productId], references: [id], onDelete: Restrict)
+  stockItem StockItem @relation(fields: [stockItemId], references: [id], onDelete: Restrict)
+
+  giftEntitlements GiftEntitlement[]
+
+  /// Recreated as NULLS NOT DISTINCT in the db_constraints migration.
+  @@unique([promotionId, productId, minQuantity], map: "promotion_tiers_unique")
+  @@map("promotion_tiers")
+}
+
+// ─── 3. Assignment, attendance and visits (5) ─────────────────────────────────
+
+/// No overlapping proposed/approved assignments per Animateur: `assignments_no_overlap` (hand-written, BR-13).
+model Assignment {
+  id                   String           @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  agencyId             String           @map("agency_id") @db.Uuid
+  campaignId           String           @map("campaign_id") @db.Uuid
+  animateurId          String           @map("animateur_id") @db.Uuid
+  pointOfSaleId        String           @map("point_of_sale_id") @db.Uuid
+  supervisorId         String           @map("supervisor_id") @db.Uuid
+  startDate            DateTime         @map("start_date") @db.Date
+  endDate              DateTime         @map("end_date") @db.Date
+  /// ISO weekdays 1–7; NULL = every day.
+  workDays             Int[]            @map("work_days") @db.SmallInt
+  shiftStart           DateTime?        @map("shift_start") @db.Time(6)
+  shiftEnd             DateTime?        @map("shift_end") @db.Time(6)
+  status               AssignmentStatus @default(proposed)
+  proposedById         String           @map("proposed_by") @db.Uuid
+  decidedById          String?          @map("decided_by") @db.Uuid
+  decidedAt            DateTime?        @map("decided_at") @db.Timestamptz(6)
+  decisionNote         String?          @map("decision_note")
+  replacesAssignmentId String?          @map("replaces_assignment_id") @db.Uuid
+  createdAt            DateTime         @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt            DateTime         @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(6)
+
+  agency              Agency              @relation(fields: [agencyId], references: [id], onDelete: Restrict)
+  campaign            Campaign            @relation(fields: [campaignId], references: [id], onDelete: Restrict)
+  animateur           User                @relation("AssignmentAnimateur", fields: [animateurId], references: [id], onDelete: Restrict)
+  pointOfSale         PointOfSale         @relation(fields: [pointOfSaleId], references: [id], onDelete: Restrict)
+  campaignPointOfSale CampaignPointOfSale @relation(fields: [campaignId, pointOfSaleId], references: [campaignId, pointOfSaleId], onDelete: Restrict)
+  supervisor          User                @relation("AssignmentSupervisor", fields: [supervisorId], references: [id], onDelete: Restrict)
+  proposedBy          User                @relation("AssignmentProposedBy", fields: [proposedById], references: [id], onDelete: Restrict)
+  decidedBy           User?               @relation("AssignmentDecidedBy", fields: [decidedById], references: [id], onDelete: Restrict)
+  replacesAssignment  Assignment?         @relation("AssignmentReplacement", fields: [replacesAssignmentId], references: [id], onDelete: Restrict)
+
+  replacedBy          Assignment[]       @relation("AssignmentReplacement")
+  attendanceRecords   AttendanceRecord[]
+  absences            Absence[]          @relation("AbsenceAssignment")
+  replacementAbsences Absence[]          @relation("AbsenceReplacement")
+  sales               Sale[]
+
+  @@index([campaignId, status])
+  @@index([supervisorId, startDate, endDate])
+  @@index([animateurId, startDate])
+  @@index([pointOfSaleId])
+  @@map("assignments")
+}
+
+model AttendanceRecord {
+  id            String           @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  agencyId      String           @map("agency_id") @db.Uuid
+  assignmentId  String           @map("assignment_id") @db.Uuid
+  campaignId    String           @map("campaign_id") @db.Uuid
+  animateurId   String           @map("animateur_id") @db.Uuid
+  pointOfSaleId String           @map("point_of_sale_id") @db.Uuid
+  /// Business date in Africa/Algiers.
+  workDate      DateTime         @map("work_date") @db.Date
+  checkpoint    String
+  /// Server time (BR-20).
+  recordedAt    DateTime         @default(now()) @map("recorded_at") @db.Timestamptz(6)
+  ruleSetId     String           @map("rule_set_id") @db.Uuid
+  isLate        Boolean          @map("is_late")
+  photoFileId   String?          @map("photo_file_id") @db.Uuid
+  latitude      Decimal?         @db.Decimal(9, 6)
+  longitude     Decimal?         @db.Decimal(9, 6)
+  gpsAccuracyM  Int?             @map("gps_accuracy_m")
+  distanceM     Int?             @map("distance_m")
+  status        AttendanceStatus @default(pending)
+  reviewedById  String?          @map("reviewed_by") @db.Uuid
+  reviewedAt    DateTime?        @map("reviewed_at") @db.Timestamptz(6)
+  reviewNote    String?          @map("review_note")
+  aiFlags       Json?            @map("ai_flags")
+  createdAt     DateTime         @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt     DateTime         @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(6)
+
+  agency      Agency      @relation(fields: [agencyId], references: [id], onDelete: Restrict)
+  assignment  Assignment  @relation(fields: [assignmentId], references: [id], onDelete: Restrict)
+  campaign    Campaign    @relation(fields: [campaignId], references: [id], onDelete: Restrict)
+  animateur   User        @relation("AttendanceAnimateur", fields: [animateurId], references: [id], onDelete: Restrict)
+  pointOfSale PointOfSale @relation(fields: [pointOfSaleId], references: [id], onDelete: Restrict)
+  ruleSet     RuleSet     @relation(fields: [ruleSetId], references: [id], onDelete: Restrict)
+  photoFile   File?       @relation(fields: [photoFileId], references: [id], onDelete: Restrict)
+  reviewedBy  User?       @relation("AttendanceReviewedBy", fields: [reviewedById], references: [id], onDelete: Restrict)
+
+  @@unique([assignmentId, workDate, checkpoint])
+  @@index([campaignId, workDate])
+  @@map("attendance_records")
+}
+
+model Absence {
+  id                      String      @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  agencyId                String      @map("agency_id") @db.Uuid
+  assignmentId            String      @map("assignment_id") @db.Uuid
+  animateurId             String      @map("animateur_id") @db.Uuid
+  workDate                DateTime    @map("work_date") @db.Date
+  type                    AbsenceType
+  reason                  String?
+  recordedById            String      @map("recorded_by") @db.Uuid
+  replacementAssignmentId String?     @map("replacement_assignment_id") @db.Uuid
+  createdAt               DateTime    @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt               DateTime    @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(6)
+
+  agency                Agency      @relation(fields: [agencyId], references: [id], onDelete: Restrict)
+  assignment            Assignment  @relation("AbsenceAssignment", fields: [assignmentId], references: [id], onDelete: Restrict)
+  animateur             User        @relation("AbsenceAnimateur", fields: [animateurId], references: [id], onDelete: Restrict)
+  recordedBy            User        @relation("AbsenceRecordedBy", fields: [recordedById], references: [id], onDelete: Restrict)
+  replacementAssignment Assignment? @relation("AbsenceReplacement", fields: [replacementAssignmentId], references: [id], onDelete: Restrict)
+
+  @@unique([assignmentId, workDate])
+  @@map("absences")
+}
+
+model SupervisorVisit {
+  id                   String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  agencyId             String   @map("agency_id") @db.Uuid
+  campaignId           String   @map("campaign_id") @db.Uuid
+  supervisorId         String   @map("supervisor_id") @db.Uuid
+  pointOfSaleId        String   @map("point_of_sale_id") @db.Uuid
+  /// Server time.
+  visitedAt            DateTime @default(now()) @map("visited_at") @db.Timestamptz(6)
+  latitude             Decimal? @db.Decimal(9, 6)
+  longitude            Decimal? @db.Decimal(9, 6)
+  notes                String?
+  observedAnimateurIds String[] @map("observed_animateur_ids") @db.Uuid
+  createdAt            DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt            DateTime @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(6)
+
+  agency      Agency      @relation(fields: [agencyId], references: [id], onDelete: Restrict)
+  campaign    Campaign    @relation(fields: [campaignId], references: [id], onDelete: Restrict)
+  supervisor  User        @relation(fields: [supervisorId], references: [id], onDelete: Restrict)
+  pointOfSale PointOfSale @relation(fields: [pointOfSaleId], references: [id], onDelete: Restrict)
+
+  photos VisitPhoto[]
+  issues Issue[]
+
+  @@index([supervisorId, visitedAt])
+  @@map("supervisor_visits")
+}
+
+/// Pure join table.
+model VisitPhoto {
+  visitId   String   @map("visit_id") @db.Uuid
+  fileId    String   @map("file_id") @db.Uuid
+  agencyId  String   @map("agency_id") @db.Uuid
+  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
+
+  visit  SupervisorVisit @relation(fields: [visitId], references: [id], onDelete: Cascade)
+  file   File            @relation(fields: [fileId], references: [id], onDelete: Cascade)
+  agency Agency          @relation(fields: [agencyId], references: [id], onDelete: Restrict)
+
+  @@id([visitId, fileId])
+  @@map("visit_photos")
+}
+
+// ─── 4. Sales, customers and gift entitlements (4) ────────────────────────────
+
+/// One customer per phone per campaign: `customers_campaign_phone` (hand-written, Q-11).
+model Customer {
+  id             String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  agencyId       String    @map("agency_id") @db.Uuid
+  campaignId     String    @map("campaign_id") @db.Uuid
+  fullName       String?   @map("full_name")
+  phone          String?
+  consentTombola Boolean   @default(false) @map("consent_tombola")
+  consentAt      DateTime? @map("consent_at") @db.Timestamptz(6)
+  createdById    String    @map("created_by") @db.Uuid
+  anonymizedAt   DateTime? @map("anonymized_at") @db.Timestamptz(6)
+  createdAt      DateTime  @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt      DateTime  @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(6)
+
+  agency    Agency   @relation(fields: [agencyId], references: [id], onDelete: Restrict)
+  campaign  Campaign @relation(fields: [campaignId], references: [id], onDelete: Restrict)
+  createdBy User     @relation(fields: [createdById], references: [id], onDelete: Restrict)
+
+  sales          Sale[]
+  tombolaEntries TombolaEntry[]
+
+  @@map("customers")
+}
+
+model Sale {
+  id            String     @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  agencyId      String     @map("agency_id") @db.Uuid
+  campaignId    String     @map("campaign_id") @db.Uuid
+  assignmentId  String     @map("assignment_id") @db.Uuid
+  pointOfSaleId String     @map("point_of_sale_id") @db.Uuid
+  /// Snapshot from the assignment at sale time.
+  animateurId   String     @map("animateur_id") @db.Uuid
+  /// Snapshot from the assignment at sale time.
+  supervisorId  String     @map("supervisor_id") @db.Uuid
+  customerId    String?    @map("customer_id") @db.Uuid
+  ruleSetId     String     @map("rule_set_id") @db.Uuid
+  soldAt        DateTime   @default(now()) @map("sold_at") @db.Timestamptz(6)
+  workDate      DateTime   @map("work_date") @db.Date
+  invoiceRef    String?    @map("invoice_ref")
+  proofFileId   String?    @map("proof_file_id") @db.Uuid
+  status        SaleStatus @default(recorded)
+  voidedById    String?    @map("voided_by") @db.Uuid
+  voidedAt      DateTime?  @map("voided_at") @db.Timestamptz(6)
+  voidReason    String?    @map("void_reason")
+  createdAt     DateTime   @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt     DateTime   @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(6)
+
+  agency      Agency      @relation(fields: [agencyId], references: [id], onDelete: Restrict)
+  campaign    Campaign    @relation(fields: [campaignId], references: [id], onDelete: Restrict)
+  assignment  Assignment  @relation(fields: [assignmentId], references: [id], onDelete: Restrict)
+  pointOfSale PointOfSale @relation(fields: [pointOfSaleId], references: [id], onDelete: Restrict)
+  animateur   User        @relation("SaleAnimateur", fields: [animateurId], references: [id], onDelete: Restrict)
+  supervisor  User        @relation("SaleSupervisor", fields: [supervisorId], references: [id], onDelete: Restrict)
+  customer    Customer?   @relation(fields: [customerId], references: [id], onDelete: Restrict)
+  ruleSet     RuleSet     @relation(fields: [ruleSetId], references: [id], onDelete: Restrict)
+  proofFile   File?       @relation(fields: [proofFileId], references: [id], onDelete: Restrict)
+  voidedBy    User?       @relation("SaleVoidedBy", fields: [voidedById], references: [id], onDelete: Restrict)
+
+  items            SaleItem[]
+  giftEntitlements GiftEntitlement[]
+  tombolaEntries   TombolaEntry[]
+
+  @@index([campaignId, workDate])
+  @@index([animateurId, workDate])
+  @@index([supervisorId, workDate])
+  @@index([pointOfSaleId, workDate])
+  @@index([customerId])
+  @@map("sales")
+}
+
+/// Quantity only, no price (Q-12).
+model SaleItem {
+  id        String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  agencyId  String   @map("agency_id") @db.Uuid
+  saleId    String   @map("sale_id") @db.Uuid
+  productId String   @map("product_id") @db.Uuid
+  quantity  Int
+  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
+
+  agency  Agency  @relation(fields: [agencyId], references: [id], onDelete: Restrict)
+  sale    Sale    @relation(fields: [saleId], references: [id], onDelete: Restrict)
+  product Product @relation(fields: [productId], references: [id], onDelete: Restrict)
+
+  @@unique([saleId, productId])
+  @@map("sale_items")
+}
+
+/// Computed by the system. `campaign_id` added (approved adjustment) for `entitlements_undelivered`.
+model GiftEntitlement {
+  id              String            @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  agencyId        String            @map("agency_id") @db.Uuid
+  campaignId      String            @map("campaign_id") @db.Uuid
+  saleId          String            @map("sale_id") @db.Uuid
+  promotionId     String            @map("promotion_id") @db.Uuid
+  promotionTierId String            @map("promotion_tier_id") @db.Uuid
+  stockItemId     String            @map("stock_item_id") @db.Uuid
+  quantity        Int
+  status          EntitlementStatus @default(pending)
+  createdAt       DateTime          @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt       DateTime          @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(6)
+
+  agency        Agency        @relation(fields: [agencyId], references: [id], onDelete: Restrict)
+  campaign      Campaign      @relation(fields: [campaignId], references: [id], onDelete: Restrict)
+  sale          Sale          @relation(fields: [saleId], references: [id], onDelete: Restrict)
+  promotion     Promotion     @relation(fields: [promotionId], references: [id], onDelete: Restrict)
+  promotionTier PromotionTier @relation(fields: [promotionTierId], references: [id], onDelete: Restrict)
+  stockItem     StockItem     @relation(fields: [stockItemId], references: [id], onDelete: Restrict)
+
+  /// The distribution movement that delivered this entitlement (at most one).
+  distributionMovement StockMovement?
+
+  @@unique([saleId, promotionId])
+  @@map("gift_entitlements")
+}
+
+// ─── 5. Inventory: double-entry ledger (5) ────────────────────────────────────
+
+model StockLocation {
+  id         String            @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  agencyId   String            @map("agency_id") @db.Uuid
+  campaignId String            @map("campaign_id") @db.Uuid
+  kind       StockLocationKind
+  userId     String?           @map("user_id") @db.Uuid
+  createdAt  DateTime          @default(now()) @map("created_at") @db.Timestamptz(6)
+
+  agency   Agency   @relation(fields: [agencyId], references: [id], onDelete: Restrict)
+  campaign Campaign @relation(fields: [campaignId], references: [id], onDelete: Restrict)
+  user     User?    @relation(fields: [userId], references: [id], onDelete: Restrict)
+
+  movementsFrom StockMovement[]    @relation("StockMovementFrom")
+  movementsTo   StockMovement[]    @relation("StockMovementTo")
+  ledgerEntries StockLedgerEntry[]
+  balances      StockBalance[]
+
+  /// Recreated as NULLS NOT DISTINCT in the db_constraints migration.
+  @@unique([campaignId, kind, userId], map: "stock_locations_unique")
+  @@map("stock_locations")
+}
+
+model StockMovement {
+  id                 String              @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  agencyId           String              @map("agency_id") @db.Uuid
+  campaignId         String              @map("campaign_id") @db.Uuid
+  type               StockMovementType
+  status             StockMovementStatus
+  fromLocationId     String              @map("from_location_id") @db.Uuid
+  toLocationId       String              @map("to_location_id") @db.Uuid
+  /// Delivery note number for stock-in.
+  reference          String?
+  note               String?
+  /// One entitlement, one distribution. Recreated as a partial unique index in its migration.
+  giftEntitlementId  String?             @unique(map: "stock_movements_one_per_entitlement") @map("gift_entitlement_id") @db.Uuid
+  issueId            String?             @map("issue_id") @db.Uuid
+  resolvesMovementId String?             @map("resolves_movement_id") @db.Uuid
+  proofFileId        String?             @map("proof_file_id") @db.Uuid
+  createdById        String              @map("created_by") @db.Uuid
+  confirmedById      String?             @map("confirmed_by") @db.Uuid
+  confirmedAt        DateTime?           @map("confirmed_at") @db.Timestamptz(6)
+  approvedById       String?             @map("approved_by") @db.Uuid
+  approvedAt         DateTime?           @map("approved_at") @db.Timestamptz(6)
+  createdAt          DateTime            @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt          DateTime            @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(6)
+
+  agency           Agency           @relation(fields: [agencyId], references: [id], onDelete: Restrict)
+  campaign         Campaign         @relation(fields: [campaignId], references: [id], onDelete: Restrict)
+  fromLocation     StockLocation    @relation("StockMovementFrom", fields: [fromLocationId], references: [id], onDelete: Restrict)
+  toLocation       StockLocation    @relation("StockMovementTo", fields: [toLocationId], references: [id], onDelete: Restrict)
+  giftEntitlement  GiftEntitlement? @relation(fields: [giftEntitlementId], references: [id], onDelete: Restrict)
+  issue            Issue?           @relation(fields: [issueId], references: [id], onDelete: Restrict)
+  resolvesMovement StockMovement?   @relation("StockMovementResolution", fields: [resolvesMovementId], references: [id], onDelete: Restrict)
+  proofFile        File?            @relation(fields: [proofFileId], references: [id], onDelete: Restrict)
+  createdBy        User             @relation("StockMovementCreatedBy", fields: [createdById], references: [id], onDelete: Restrict)
+  confirmedBy      User?            @relation("StockMovementConfirmedBy", fields: [confirmedById], references: [id], onDelete: Restrict)
+  approvedBy       User?            @relation("StockMovementApprovedBy", fields: [approvedById], references: [id], onDelete: Restrict)
+
+  resolvedBy    StockMovement[]     @relation("StockMovementResolution")
+  lines         StockMovementLine[]
+  ledgerEntries StockLedgerEntry[]
+
+  @@map("stock_movements")
+}
+
+model StockMovementLine {
+  id               String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  agencyId         String   @map("agency_id") @db.Uuid
+  movementId       String   @map("movement_id") @db.Uuid
+  stockItemId      String   @map("stock_item_id") @db.Uuid
+  quantity         Int
+  quantityReceived Int?     @map("quantity_received")
+  createdAt        DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt        DateTime @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(6)
+
+  agency    Agency        @relation(fields: [agencyId], references: [id], onDelete: Restrict)
+  movement  StockMovement @relation(fields: [movementId], references: [id], onDelete: Restrict)
+  stockItem StockItem     @relation(fields: [stockItemId], references: [id], onDelete: Restrict)
+
+  ledgerEntries StockLedgerEntry[]
+
+  @@unique([movementId, stockItemId])
+  @@map("stock_movement_lines")
+}
+
+/// Append-only ledger (BR-40). Entries of each movement line sum to zero at commit.
+model StockLedgerEntry {
+  id             BigInt   @id @default(autoincrement())
+  agencyId       String   @map("agency_id") @db.Uuid
+  campaignId     String   @map("campaign_id") @db.Uuid
+  movementId     String   @map("movement_id") @db.Uuid
+  movementLineId String   @map("movement_line_id") @db.Uuid
+  locationId     String   @map("location_id") @db.Uuid
+  stockItemId    String   @map("stock_item_id") @db.Uuid
+  quantityDelta  Int      @map("quantity_delta")
+  createdAt      DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
+
+  agency       Agency            @relation(fields: [agencyId], references: [id], onDelete: Restrict)
+  campaign     Campaign          @relation(fields: [campaignId], references: [id], onDelete: Restrict)
+  movement     StockMovement     @relation(fields: [movementId], references: [id], onDelete: Restrict)
+  movementLine StockMovementLine @relation(fields: [movementLineId], references: [id], onDelete: Restrict)
+  location     StockLocation     @relation(fields: [locationId], references: [id], onDelete: Restrict)
+  stockItem    StockItem         @relation(fields: [stockItemId], references: [id], onDelete: Restrict)
+
+  @@index([locationId, stockItemId, id])
+  @@index([movementId])
+  @@map("stock_ledger_entries")
+}
+
+/// Derived balance, updated in the ledger transaction after SELECT … FOR UPDATE.
+/// Never negative for holder/warehouse/in_transit: `stock_balances_non_negative` (BR-41).
+model StockBalance {
+  locationId   String            @map("location_id") @db.Uuid
+  stockItemId  String            @map("stock_item_id") @db.Uuid
+  agencyId     String            @map("agency_id") @db.Uuid
+  /// Copied from stock_locations.kind.
+  locationKind StockLocationKind @map("location_kind")
+  quantity     Int               @default(0)
+  createdAt    DateTime          @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt    DateTime          @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(6)
+
+  location  StockLocation @relation(fields: [locationId], references: [id], onDelete: Restrict)
+  stockItem StockItem     @relation(fields: [stockItemId], references: [id], onDelete: Restrict)
+  agency    Agency        @relation(fields: [agencyId], references: [id], onDelete: Restrict)
+
+  @@id([locationId, stockItemId])
+  @@map("stock_balances")
+}
+
+// ─── 6. Tombola (4) ───────────────────────────────────────────────────────────
+
+model Tombola {
+  id                    String        @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  agencyId              String        @map("agency_id") @db.Uuid
+  campaignId            String        @map("campaign_id") @db.Uuid
+  name                  String
+  /// per_sale | per_unit (validated with Zod)
+  entryBasis            String        @map("entry_basis")
+  entriesPerBasis       Int           @map("entries_per_basis")
+  maxEntriesPerCustomer Int?          @map("max_entries_per_customer")
+  requiresPurchase      Boolean       @map("requires_purchase")
+  registrationEndsAt    DateTime      @map("registration_ends_at") @db.Timestamptz(6)
+  drawScheduledAt       DateTime      @map("draw_scheduled_at") @db.Timestamptz(6)
+  winnersCount          Int           @map("winners_count")
+  reservesCount         Int           @map("reserves_count")
+  status                TombolaStatus @default(open)
+  createdAt             DateTime      @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt             DateTime      @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(6)
+
+  agency   Agency   @relation(fields: [agencyId], references: [id], onDelete: Restrict)
+  campaign Campaign @relation(fields: [campaignId], references: [id], onDelete: Restrict)
+
+  entries TombolaEntry[]
+  draw    TombolaDraw?
+
+  @@unique([campaignId, name])
+  @@map("tombolas")
+}
+
+/// Frozen once the tombola is drawn: `tombola_entries_locked` trigger (BR-51).
+model TombolaEntry {
+  id             String             @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  agencyId       String             @map("agency_id") @db.Uuid
+  tombolaId      String             @map("tombola_id") @db.Uuid
+  entryNumber    Int                @map("entry_number")
+  customerId     String             @map("customer_id") @db.Uuid
+  saleId         String?            @map("sale_id") @db.Uuid
+  status         TombolaEntryStatus @default(valid)
+  excludedReason String?            @map("excluded_reason")
+  createdAt      DateTime           @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt      DateTime           @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(6)
+
+  agency   Agency   @relation(fields: [agencyId], references: [id], onDelete: Restrict)
+  tombola  Tombola  @relation(fields: [tombolaId], references: [id], onDelete: Restrict)
+  customer Customer @relation(fields: [customerId], references: [id], onDelete: Restrict)
+  sale     Sale?    @relation(fields: [saleId], references: [id], onDelete: Restrict)
+
+  winners TombolaWinner[]
+
+  @@unique([tombolaId, entryNumber])
+  @@index([tombolaId, customerId])
+  @@map("tombola_entries")
+}
+
+/// One draw per tombola (BR-51). Reproducible from `seed` + the frozen entry list.
+model TombolaDraw {
+  id            String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  agencyId      String   @map("agency_id") @db.Uuid
+  tombolaId     String   @unique @map("tombola_id") @db.Uuid
+  seed          String
+  algorithm     String
+  eligibleCount Int      @map("eligible_count")
+  /// SHA-256 of the sorted entry numbers.
+  entriesHash   String   @map("entries_hash")
+  drawnById     String   @map("drawn_by") @db.Uuid
+  drawnAt       DateTime @map("drawn_at") @db.Timestamptz(6)
+  createdAt     DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
+
+  agency  Agency  @relation(fields: [agencyId], references: [id], onDelete: Restrict)
+  tombola Tombola @relation(fields: [tombolaId], references: [id], onDelete: Restrict)
+  drawnBy User    @relation(fields: [drawnById], references: [id], onDelete: Restrict)
+
+  winners TombolaWinner[]
+
+  @@map("tombola_draws")
+}
+
+/// After the draw only delivery_status / delivered_at may change: `tombola_winners_locked` (BR-51).
+model TombolaWinner {
+  id             String              @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  agencyId       String              @map("agency_id") @db.Uuid
+  drawId         String              @map("draw_id") @db.Uuid
+  entryId        String              @map("entry_id") @db.Uuid
+  rank           Int
+  isReserve      Boolean             @map("is_reserve")
+  prizeLabel     String?             @map("prize_label")
+  deliveryStatus PrizeDeliveryStatus @default(pending) @map("delivery_status")
+  deliveredAt    DateTime?           @map("delivered_at") @db.Timestamptz(6)
+  createdAt      DateTime            @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt      DateTime            @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(6)
+
+  agency Agency       @relation(fields: [agencyId], references: [id], onDelete: Restrict)
+  draw   TombolaDraw  @relation(fields: [drawId], references: [id], onDelete: Restrict)
+  entry  TombolaEntry @relation(fields: [entryId], references: [id], onDelete: Restrict)
+
+  @@unique([drawId, rank])
+  @@unique([drawId, entryId])
+  @@map("tombola_winners")
+}
+
+// ─── 7. Issues, announcements, notifications, files, audit, AI (10) ──────────
+
+model Issue {
+  id             String      @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  agencyId       String      @map("agency_id") @db.Uuid
+  campaignId     String      @map("campaign_id") @db.Uuid
+  pointOfSaleId  String?     @map("point_of_sale_id") @db.Uuid
+  stockItemId    String?     @map("stock_item_id") @db.Uuid
+  visitId        String?     @map("visit_id") @db.Uuid
+  /// stock_shortage | pos_problem | absence | equipment | other (validated with Zod)
+  category       String
+  title          String
+  description    String?
+  status         IssueStatus @default(open)
+  reportedById   String      @map("reported_by") @db.Uuid
+  assignedToId   String?     @map("assigned_to") @db.Uuid
+  resolvedById   String?     @map("resolved_by") @db.Uuid
+  resolvedAt     DateTime?   @map("resolved_at") @db.Timestamptz(6)
+  resolutionNote String?     @map("resolution_note")
+  version        Int         @default(1)
+  createdAt      DateTime    @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt      DateTime    @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(6)
+
+  agency      Agency           @relation(fields: [agencyId], references: [id], onDelete: Restrict)
+  campaign    Campaign         @relation(fields: [campaignId], references: [id], onDelete: Restrict)
+  pointOfSale PointOfSale?     @relation(fields: [pointOfSaleId], references: [id], onDelete: Restrict)
+  stockItem   StockItem?       @relation(fields: [stockItemId], references: [id], onDelete: Restrict)
+  visit       SupervisorVisit? @relation(fields: [visitId], references: [id], onDelete: Restrict)
+  reportedBy  User             @relation("IssueReportedBy", fields: [reportedById], references: [id], onDelete: Restrict)
+  assignedTo  User?            @relation("IssueAssignedTo", fields: [assignedToId], references: [id], onDelete: Restrict)
+  resolvedBy  User?            @relation("IssueResolvedBy", fields: [resolvedById], references: [id], onDelete: Restrict)
+
+  comments       IssueComment[]
+  attachments    IssueAttachment[]
+  stockMovements StockMovement[]
+
+  @@index([campaignId, status])
+  @@index([assignedToId, status])
+  @@map("issues")
+}
+
+model IssueComment {
+  id        String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  agencyId  String   @map("agency_id") @db.Uuid
+  issueId   String   @map("issue_id") @db.Uuid
+  authorId  String   @map("author_id") @db.Uuid
+  body      String
+  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
+
+  agency Agency @relation(fields: [agencyId], references: [id], onDelete: Restrict)
+  issue  Issue  @relation(fields: [issueId], references: [id], onDelete: Restrict)
+  author User   @relation(fields: [authorId], references: [id], onDelete: Restrict)
+
+  @@index([issueId, createdAt])
+  @@map("issue_comments")
+}
+
+/// Pure join table.
+model IssueAttachment {
+  issueId   String   @map("issue_id") @db.Uuid
+  fileId    String   @map("file_id") @db.Uuid
+  agencyId  String   @map("agency_id") @db.Uuid
+  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
+
+  issue  Issue  @relation(fields: [issueId], references: [id], onDelete: Cascade)
+  file   File   @relation(fields: [fileId], references: [id], onDelete: Cascade)
+  agency Agency @relation(fields: [agencyId], references: [id], onDelete: Restrict)
+
+  @@id([issueId, fileId])
+  @@map("issue_attachments")
+}
+
+model Announcement {
+  id          String     @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  agencyId    String     @map("agency_id") @db.Uuid
+  campaignId  String?    @map("campaign_id") @db.Uuid
+  authorId    String     @map("author_id") @db.Uuid
+  title       String
+  body        String
+  targetRoles UserRole[] @map("target_roles")
+  wilayaId    Int?       @map("wilaya_id") @db.SmallInt
+  publishedAt DateTime?  @map("published_at") @db.Timestamptz(6)
+  createdAt   DateTime   @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt   DateTime   @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(6)
+
+  agency   Agency    @relation(fields: [agencyId], references: [id], onDelete: Restrict)
+  campaign Campaign? @relation(fields: [campaignId], references: [id], onDelete: Restrict)
+  author   User      @relation(fields: [authorId], references: [id], onDelete: Restrict)
+  wilaya   Wilaya?   @relation(fields: [wilayaId], references: [id], onDelete: Restrict)
+
+  reads AnnouncementRead[]
+
+  @@map("announcements")
+}
+
+/// Join table (with read time).
+model AnnouncementRead {
+  announcementId String   @map("announcement_id") @db.Uuid
+  userId         String   @map("user_id") @db.Uuid
+  agencyId       String   @map("agency_id") @db.Uuid
+  readAt         DateTime @default(now()) @map("read_at") @db.Timestamptz(6)
+  createdAt      DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
+
+  announcement Announcement @relation(fields: [announcementId], references: [id], onDelete: Cascade)
+  user         User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  agency       Agency       @relation(fields: [agencyId], references: [id], onDelete: Restrict)
+
+  @@id([announcementId, userId])
+  @@map("announcement_reads")
+}
+
+/// `entity_type` / `entity_id` are a display-only polymorphic reference (no FK).
+model Notification {
+  id         String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  agencyId   String    @map("agency_id") @db.Uuid
+  userId     String    @map("user_id") @db.Uuid
+  type       String
+  entityType String?   @map("entity_type")
+  entityId   String?   @map("entity_id") @db.Uuid
+  payload    Json?
+  readAt     DateTime? @map("read_at") @db.Timestamptz(6)
+  createdAt  DateTime  @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt  DateTime  @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(6)
+
+  agency Agency @relation(fields: [agencyId], references: [id], onDelete: Restrict)
+  user   User   @relation(fields: [userId], references: [id], onDelete: Restrict)
+
+  @@map("notifications")
+}
+
+model File {
+  id           String         @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  agencyId     String         @map("agency_id") @db.Uuid
+  kind         String
+  storageKey   String         @unique @map("storage_key")
+  thumbnailKey String?        @map("thumbnail_key")
+  mimeType     String         @map("mime_type")
+  sizeBytes    BigInt         @map("size_bytes")
+  sha256       String
+  width        Int?
+  height       Int?
+  visibility   FileVisibility @default(internal)
+  uploadedById String         @map("uploaded_by") @db.Uuid
+  deletedAt    DateTime?      @map("deleted_at") @db.Timestamptz(6)
+  createdAt    DateTime       @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt    DateTime       @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(6)
+
+  agency     Agency @relation(fields: [agencyId], references: [id], onDelete: Restrict)
+  uploadedBy User   @relation(fields: [uploadedById], references: [id], onDelete: Restrict)
+
+  campaignDocuments   CampaignDocument[]
+  attendanceRecords   AttendanceRecord[]
+  visitPhotos         VisitPhoto[]
+  saleProofs          Sale[]
+  stockMovementProofs StockMovement[]
+  issueAttachments    IssueAttachment[]
+
+  @@index([agencyId, sha256])
+  @@map("files")
+}
+
+/// Append-only (BR-40). `actor_id` and `entity_*` are polymorphic references (no FK).
+model AuditLog {
+  id         BigInt    @id @default(autoincrement())
+  agencyId   String    @map("agency_id") @db.Uuid
+  actorType  ActorType @map("actor_type")
+  actorId    String?   @map("actor_id") @db.Uuid
+  action     String
+  entityType String    @map("entity_type")
+  entityId   String    @map("entity_id") @db.Uuid
+  before     Json?
+  after      Json?
+  ip         String?   @db.Inet
+  requestId  String?   @map("request_id")
+  createdAt  DateTime  @default(now()) @map("created_at") @db.Timestamptz(6)
+
+  agency Agency @relation(fields: [agencyId], references: [id], onDelete: Restrict)
+
+  @@index([entityType, entityId, id])
+  @@index([actorId, createdAt])
+  @@map("audit_logs")
+}
+
+/// Same key with a different request = 422. Purged 48 h after creation.
+model IdempotencyKey {
+  userId         String   @map("user_id") @db.Uuid
+  key            String
+  agencyId       String   @map("agency_id") @db.Uuid
+  endpoint       String
+  requestHash    String   @map("request_hash")
+  responseStatus Int?     @map("response_status")
+  responseBody   Json?    @map("response_body")
+  expiresAt      DateTime @map("expires_at") @db.Timestamptz(6)
+  createdAt      DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt      DateTime @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(6)
+
+  user   User   @relation(fields: [userId], references: [id], onDelete: Restrict)
+  agency Agency @relation(fields: [agencyId], references: [id], onDelete: Restrict)
+
+  @@id([userId, key])
+  @@map("idempotency_keys")
+}
+
+/// Integration point for the external AI team. `subject_*` is a polymorphic reference (no FK).
+model AiSuggestion {
+  id           String             @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  agencyId     String             @map("agency_id") @db.Uuid
+  capability   String
+  subjectType  String             @map("subject_type")
+  subjectId    String             @map("subject_id") @db.Uuid
+  requestId    String             @unique @map("request_id")
+  modelVersion String             @map("model_version")
+  confidence   Decimal?           @db.Decimal(4, 3)
+  output       Json
+  status       AiSuggestionStatus @default(pending_review)
+  reviewedById String?            @map("reviewed_by") @db.Uuid
+  reviewedAt   DateTime?          @map("reviewed_at") @db.Timestamptz(6)
+  createdAt    DateTime           @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt    DateTime           @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(6)
+
+  agency     Agency @relation(fields: [agencyId], references: [id], onDelete: Restrict)
+  reviewedBy User?  @relation(fields: [reviewedById], references: [id], onDelete: Restrict)
+
+  @@index([subjectType, subjectId])
+  @@map("ai_suggestions")
+}

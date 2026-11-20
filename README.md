@@ -25,19 +25,28 @@ docker/           Local PostgreSQL init scripts
 ## Setup
 
 ```sh
-npm install
+npm install      # also generates the Prisma client (postinstall)
 
 # Environment files: copy the examples, then adjust if needed
 cp .env.example .env                    # PostgreSQL credentials for docker compose
 cp apps/api/.env.example apps/api/.env  # API config (DATABASE_URL must match the root .env)
 cp apps/web/.env.example apps/web/.env  # optional: API_PORT / WEB_PORT for the dev server
 
-npm run db:up    # PostgreSQL 17 on 127.0.0.1:5432 with fieldflow_dev and fieldflow_test
-npm run dev      # API on http://localhost:4000, web on http://localhost:5173
+npm run db:up       # PostgreSQL 17 on 127.0.0.1:5432 with fieldflow_dev and fieldflow_test
+npm run db:migrate  # apply migrations to fieldflow_dev
+npm run db:seed     # 1 agency, 69 wilayas, 1,541 communes
+npm run dev         # API on http://localhost:4000, web on http://localhost:5173
 ```
 
-Open http://localhost:5173: the `/app` page shows the API health card. Use the EN / العربية switch
-in the header to change language (Arabic switches the layout to right-to-left).
+Open http://localhost:5173: the `/app` page shows the API and database health card. Use the
+EN / العربية switch in the header to change language (Arabic switches the layout to right-to-left).
+
+Tests use `fieldflow_test` (`DATABASE_URL_TEST`): `npm test` applies the migrations to it
+automatically and empties the business tables before each API test file.
+
+Database notes: [`apps/api/prisma/README.md`](apps/api/prisma/README.md) (Prisma setup),
+[`apps/api/prisma/CONSTRAINTS.md`](apps/api/prisma/CONSTRAINTS.md) (hand-written constraints and
+their tests).
 
 If port 5432 is already used (for example by a locally installed PostgreSQL), set another
 `POSTGRES_PORT` in `.env` and use the same port in `DATABASE_URL` / `DATABASE_URL_TEST` in
@@ -49,14 +58,20 @@ you started PostgreSQL before this script existed, run `docker compose -f docker
 
 ## Commands
 
-| Command           | What it does                                                   |
-| ----------------- | -------------------------------------------------------------- |
-| `npm run dev`     | API (`node --watch`) and web (Vite) in watch mode              |
-| `npm run lint`    | ESLint + Prettier check over the whole repo                    |
-| `npm run format`  | Prettier write                                                 |
-| `npm test`        | All Vitest projects (api, web, shared)                         |
-| `npm run db:up`   | Start the dev/test PostgreSQL container and wait until healthy |
-| `npm run db:down` | Stop it (data is kept in the `postgres-data` volume)           |
+| Command                     | What it does                                                    |
+| --------------------------- | --------------------------------------------------------------- |
+| `npm run dev`               | API (`node --watch`) and web (Vite) in watch mode               |
+| `npm run lint`              | ESLint + Prettier check over the whole repo                     |
+| `npm run format`            | Prettier write                                                  |
+| `npm test`                  | All Vitest projects (api, web, shared)                          |
+| `npm run db:up`             | Start the dev/test PostgreSQL container and wait until healthy  |
+| `npm run db:down`           | Stop it (data is kept in the `postgres-data` volume)            |
+| `npm run db:generate`       | Regenerate the Prisma client (runs on install too)              |
+| `npm run db:migrate`        | `prisma migrate dev` on the dev database (must report no drift) |
+| `npm run db:migrate:deploy` | `prisma migrate deploy` (CI, production)                        |
+| `npm run db:reset`          | Drop, re-migrate and re-seed the dev database                   |
+| `npm run db:seed`           | Reference data: agency, 69 wilayas, 1,541 communes (idempotent) |
+| `npm run db:studio`         | Prisma Studio                                                   |
 
 Per workspace: `npm test -w @fieldflow/api`, `npm run build -w @fieldflow/web`, etc.
 
@@ -73,6 +88,8 @@ Per workspace: `npm test -w @fieldflow/api`, `npm run build -w @fieldflow/web`, 
 | `CORS_ORIGINS`      | `apps/api/.env` | Comma-separated origins allowed with credentials          |
 | `DATABASE_URL`      | `apps/api/.env` | PostgreSQL connection string                              |
 | `DATABASE_URL_TEST` | `apps/api/.env` | Test database (required when `NODE_ENV=test`)             |
+| `SEED_AGENCY_NAME`  | `apps/api/.env` | Name of the agency created by `db:seed`                   |
+| `SEED_AGENCY_CODE`  | `apps/api/.env` | Its code (`^[A-Z0-9-]{2,20}$`)                            |
 | `API_PORT`          | `apps/web/.env` | Port the Vite dev proxy forwards `/api` to (default 4000) |
 | `WEB_PORT`          | `apps/web/.env` | Vite dev server port (default 5173)                       |
 
@@ -82,4 +99,5 @@ The API refuses to start and lists every invalid variable when its configuration
 
 - Success: `{ data, meta? }`. Error: `{ error: { code, message, details?, requestId } }`.
 - Every response carries an `X-Request-Id` header (a valid incoming UUID is reused).
-- `GET /api/v1/health` → `{ data: { status: 'ok', version, uptimeSeconds } }`.
+- `GET /api/v1/health` → `200 { data: { status: 'ok', db: 'up', version, uptimeSeconds } }`, or
+  `503` with `status: 'degraded', db: 'down'` when PostgreSQL is unreachable.

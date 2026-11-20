@@ -2,6 +2,7 @@ import { SHUTDOWN_TIMEOUT_MS } from './config/constants.js';
 import { env } from './config/env.js';
 import { logger } from './config/logger.js';
 import { createApp } from './app.js';
+import { disconnectDatabase } from './db/client.js';
 
 function start() {
   const app = createApp();
@@ -26,13 +27,17 @@ function start() {
     }, SHUTDOWN_TIMEOUT_MS);
     forceExit.unref();
 
-    server.close((err) => {
-      if (err) {
-        logger.error({ err }, 'Error while closing the HTTP server');
+    server.close(async (err) => {
+      if (err) logger.error({ err }, 'Error while closing the HTTP server');
+      else logger.info('HTTP server closed');
+      try {
+        await disconnectDatabase();
+        logger.info('Database disconnected');
+      } catch (dbErr) {
+        logger.error({ err: dbErr }, 'Error while disconnecting the database');
         process.exit(1);
       }
-      logger.info('HTTP server closed');
-      process.exit(0);
+      process.exit(err ? 1 : 0);
     });
     server.closeIdleConnections();
   }

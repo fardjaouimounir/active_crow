@@ -1,5 +1,6 @@
 import { INTERNAL_ERROR, VALIDATION_FAILED } from '@fieldflow/shared';
 import { logger } from '../../config/logger.js';
+import { mapDbError } from '../../db/dbErrors.js';
 import { AppError } from './AppError.js';
 import { NotFoundError } from './httpErrors.js';
 
@@ -38,7 +39,8 @@ export function notFoundHandler(req, _res, next) {
 export function errorHandler(err, req, res, next) {
   if (res.headersSent) return next(err);
 
-  const known = err instanceof AppError ? err : fromBodyParser(err);
+  const mapped = mapDbError(err);
+  const known = mapped instanceof AppError ? mapped : fromBodyParser(err);
   const log = req.log ?? logger;
 
   if (!known) {

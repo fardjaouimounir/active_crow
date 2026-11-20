@@ -1,16 +1,24 @@
 import { Router } from 'express';
 import { API_PREFIX, APP_VERSION } from './config/constants.js';
-import { ok } from './core/http/index.js';
 
-/** Mounts every API route under /api/v1. Modules register their routers here. */
-export function createRoutes() {
+/**
+ * Mounts every API route under /api/v1. Modules register their routers here.
+ * @param {{ checkDatabase: () => Promise<boolean> }} deps
+ */
+export function createRoutes({ checkDatabase }) {
   const api = Router();
 
-  api.get('/health', (_req, res) => {
-    ok(res, {
-      status: 'ok',
-      version: APP_VERSION,
-      uptimeSeconds: Math.floor(process.uptime()),
+  // 200 when everything is up; 503 (same envelope) when the database is unreachable,
+  // so load balancers and the web app can tell the API is running but degraded.
+  api.get('/health', async (_req, res) => {
+    const dbUp = await checkDatabase();
+    res.status(dbUp ? 200 : 503).json({
+      data: {
+        status: dbUp ? 'ok' : 'degraded',
+        db: dbUp ? 'up' : 'down',
+        version: APP_VERSION,
+        uptimeSeconds: Math.floor(process.uptime()),
+      },
     });
   });
 

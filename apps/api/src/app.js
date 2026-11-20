@@ -12,10 +12,14 @@ import { env } from './config/env.js';
 import { logger } from './config/logger.js';
 import { errorHandler, notFoundHandler, RateLimitError } from './core/errors/index.js';
 import { requestId } from './core/http/index.js';
+import { pingDatabase } from './db/client.js';
 import { createRoutes } from './routes.js';
 
-/** Builds the Express application without binding a port (used by server.js and by tests). */
-export function createApp() {
+/**
+ * Builds the Express application without binding a port (used by server.js and by tests).
+ * @param {{ checkDatabase?: () => Promise<boolean> }} [options]
+ */
+export function createApp({ checkDatabase = () => pingDatabase() } = {}) {
   const app = express();
 
   app.disable('x-powered-by');
@@ -51,7 +55,7 @@ export function createApp() {
   );
   app.use(express.json({ limit: JSON_BODY_LIMIT }));
 
-  app.use(createRoutes());
+  app.use(createRoutes({ checkDatabase }));
 
   app.use(notFoundHandler);
   app.use(errorHandler);

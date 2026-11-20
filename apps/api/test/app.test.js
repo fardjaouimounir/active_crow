@@ -5,6 +5,7 @@ import { z } from 'zod';
 import { createApp } from '../src/app.js';
 import { errorHandler, notFoundHandler } from '../src/core/errors/index.js';
 import { ok, requestId, validate } from '../src/core/http/index.js';
+import { createPrismaClient, pingDatabase } from '../src/db/client.js';
 
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/;
 
@@ -22,14 +23,35 @@ function createTestApp(mount) {
 }
 
 describe('GET /api/v1/health', () => {
-  it('returns 200 with the success envelope', async () => {
+  it('returns 200 with the success envelope and db: up against the test database', async () => {
     const res = await request(createApp()).get('/api/v1/health');
 
     expect(res.status).toBe(200);
     expect(res.body).toEqual({
-      data: { status: 'ok', version: expect.any(String), uptimeSeconds: expect.any(Number) },
+      data: {
+        status: 'ok',
+        db: 'up',
+        version: expect.any(String),
+        uptimeSeconds: expect.any(Number),
+      },
     });
     expect(res.headers['x-request-id']).toMatch(UUID);
+  });
+
+  it('returns 503 with db: down when the database URL is unreachable', async () => {
+    const unreachable = createPrismaClient({
+      url: 'postgresql://nobody:nothing@127.0.0.1:1/none',
+      pool: { max: 1, connectionTimeoutMillis: 1_000 },
+    });
+    try {
+      const app = createApp({ checkDatabase: () => pingDatabase(unreachable) });
+      const res = await request(app).get('/api/v1/health');
+
+      expect(res.status).toBe(503);
+      expect(res.body.data).toMatchObject({ status: 'degraded', db: 'down' });
+    } finally {
+      await unreachable.$disconnect();
+    }
   });
 });
 

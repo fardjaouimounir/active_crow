@@ -1,7 +1,8 @@
 import { AxiosError } from 'axios';
 import { describe, expect, it } from 'vitest';
 import { shouldRetry } from '../src/app/queryClient.js';
-import { ApiError, NETWORK_ERROR, normalizeError } from '../src/shared/api/client.js';
+import { fetchHealth } from '../src/features/system/api.js';
+import { ApiError, NETWORK_ERROR, apiClient, normalizeError } from '../src/shared/api/client.js';
 
 /** @param {number} status @param {unknown} data */
 function httpError(status, data) {
@@ -53,6 +54,31 @@ describe('normalizeError', () => {
       code: 'INTERNAL_ERROR',
       requestId: 'header-id',
     });
+  });
+});
+
+describe('fetchHealth', () => {
+  /** Answers every request with `status` / `data` through Axios' own status validation. */
+  function stubAdapter(status, data) {
+    return (config) =>
+      new Promise((resolve, reject) => {
+        const response = { status, data, headers: {}, statusText: '', config };
+        if (config.validateStatus(status)) resolve(response);
+        else reject(new AxiosError('Request failed', 'ERR_BAD_RESPONSE', config, null, response));
+      });
+  }
+
+  it('returns the degraded payload of a 503 instead of failing', async () => {
+    const original = apiClient.defaults.adapter;
+    const degraded = { status: 'degraded', db: 'down', version: '0.1.0', uptimeSeconds: 1 };
+    apiClient.defaults.adapter = stubAdapter(503, { data: degraded });
+    try {
+      await expect(fetchHealth()).resolves.toEqual(degraded);
+      apiClient.defaults.adapter = stubAdapter(500, '');
+      await expect(fetchHealth()).rejects.toMatchObject({ code: 'INTERNAL_ERROR', status: 500 });
+    } finally {
+      apiClient.defaults.adapter = original;
+    }
   });
 });
 

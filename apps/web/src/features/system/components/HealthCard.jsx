@@ -1,5 +1,5 @@
 import { INTERNAL_ERROR } from '@fieldflow/shared';
-import { CircleCheck } from 'lucide-react';
+import { CircleCheck, TriangleAlert } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { getIntlLocale } from '../../../shared/i18n/index.js';
 import { Card } from '../../../shared/ui/Card.jsx';
@@ -35,13 +35,23 @@ export function HealthCard() {
       unitDisplay: 'long',
     }).format(data.uptimeSeconds);
 
+    const dbUp = data.db === 'up';
+    const StatusIcon = dbUp ? CircleCheck : TriangleAlert;
+
     body = (
       <div className="space-y-4">
-        <p className="flex items-center gap-2 font-medium text-emerald-700">
-          <CircleCheck aria-hidden="true" className="size-5 shrink-0" />
-          {t('health.healthy')}
+        <p
+          role="status"
+          className={`flex items-center gap-2 font-medium ${dbUp ? 'text-emerald-700' : 'text-amber-700'}`}
+        >
+          <StatusIcon aria-hidden="true" className="size-5 shrink-0" />
+          {dbUp ? t('health.healthy') : t('health.degraded')}
         </p>
         <dl className="grid grid-cols-[auto_1fr] gap-x-6 gap-y-1 text-sm">
+          <dt className="text-slate-500">{t('health.database')}</dt>
+          <dd className={dbUp ? 'text-emerald-700' : 'font-medium text-amber-700'}>
+            {dbUp ? t('health.dbUp') : t('health.dbDown')}
+          </dd>
           <dt className="text-slate-500">{t('health.version')}</dt>
           <dd className="font-mono" dir="ltr">
             {data.version}
