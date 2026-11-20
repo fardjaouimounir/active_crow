@@ -4,7 +4,11 @@ export default defineProject({
   test: {
     name: 'api',
     environment: 'node',
-    include: ['test/**/*.test.js', 'src/**/__tests__/**/*.test.js'],
+    include: [
+      'test/**/*.test.js',
+      'src/**/__tests__/**/*.test.js',
+      'scripts/**/__tests__/**/*.test.js',
+    ],
     // Applies migrations to DATABASE_URL_TEST once per run.
     globalSetup: ['./test/globalSetup.js'],
     // Per file: truncate business tables before, disconnect after.
@@ -16,6 +20,8 @@ export default defineProject({
     // LOG_LEVEL is passed explicitly, e.g. `LOG_LEVEL=debug npm test` (see src/config/env.js).
     env: {
       NODE_ENV: 'test',
+      // Test-only signing key: tests never use the secret from apps/api/.env.
+      JWT_ACCESS_SECRET: 'test-only-access-secret-0123456789abcdef',
     },
   },
 });

@@ -31,11 +31,37 @@ const envSchema = z
       .pipe(z.array(z.url()).min(1)),
     DATABASE_URL: postgresUrl,
     DATABASE_URL_TEST: postgresUrl.optional(),
+    // HS256 key for access tokens. Generate one with:
+    // node -e "console.log(require('node:crypto').randomBytes(48).toString('base64url'))"
+    JWT_ACCESS_SECRET: z.string().min(32, 'must be at least 32 characters'),
+    ACCESS_TOKEN_TTL: z
+      .string()
+      .regex(/^d+[smh]$/, 'must look like 900s, 15m or 1h')
+      .default('15m')
+      .transform(toSeconds)
+      .pipe(z.number().int().min(60).max(86_400)),
+    REFRESH_TOKEN_TTL_DAYS: z.coerce.number().int().min(1).max(90).default(7),
+    // Unset: Secure cookies everywhere except development (plain http://localhost).
+    COOKIE_SECURE: z
+      .enum(['true', 'false'])
+      .optional()
+      .transform((value) => (value === undefined ? undefined : value === 'true')),
   })
   .refine((env) => env.NODE_ENV !== 'test' || env.DATABASE_URL_TEST, {
     path: ['DATABASE_URL_TEST'],
     message: 'is required when NODE_ENV=test',
-  });
+  })
+  .transform((env) => ({
+    ...env,
+    COOKIE_SECURE: env.COOKIE_SECURE ?? env.NODE_ENV !== 'development',
+  }));
+
+const UNIT_SECONDS = { s: 1, m: 60, h: 3600 };
+
+/** '15m' → 900 */
+function toSeconds(value) {
+  return Number(value.slice(0, -1)) * UNIT_SECONDS[value.at(-1)];
+}
 
 /**
  * @param {NodeJS.ProcessEnv} source

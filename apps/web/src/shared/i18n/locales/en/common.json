@@ -11,7 +11,8 @@
     "ar": "العربية"
   },
   "actions": {
-    "retry": "Try again"
+    "retry": "Try again",
+    "logout": "Sign out"
   },
   "status": {
     "loading": "Loading…"
@@ -29,7 +30,24 @@
       "BUSINESS_RULE_VIOLATION": "This action breaks one of the campaign rules.",
       "RATE_LIMITED": "Too many requests. Please wait a moment and try again.",
       "INTERNAL_ERROR": "The server ran into a problem. Please try again later.",
-      "NETWORK_ERROR": "Cannot reach the server. Check your connection."
+      "NETWORK_ERROR": "Cannot reach the server. Check your connection.",
+      "INVALID_CREDENTIALS": "Incorrect email or password.",
+      "PASSWORD_CHANGE_REQUIRED": "You must change your password before continuing.",
+      "SESSION_EXPIRED": "Your session has expired. Please sign in again.",
+      "REFRESH_TOKEN_REUSED": "Your session was ended for security reasons. Please sign in again.",
+      "WEAK_PASSWORD": "The new password does not meet the requirements.",
+      "CURRENT_PASSWORD_INCORRECT": "The current password is incorrect."
     }
+  },
+  "roles": {
+    "director": "Director",
+    "general_manager": "Responsable Général",
+    "regional_manager": "Responsable Régional",
+    "supervisor": "Superviseur",
+    "animateur": "Animateur",
+    "client": "Client"
+  },
+  "user": {
+    "label": "Signed-in user"
   }
 }

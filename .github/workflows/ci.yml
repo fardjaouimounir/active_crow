@@ -35,6 +35,8 @@ jobs:
     env:
       DATABASE_URL: postgresql://fieldflow:fieldflow@localhost:5432/fieldflow_test
       DATABASE_URL_TEST: postgresql://fieldflow:fieldflow@localhost:5432/fieldflow_test
+      # CI-only key so the API config validates in the migrate/seed steps (tests set their own).
+      JWT_ACCESS_SECRET: ci-only-access-secret-not-used-anywhere-else
 
     steps:
       - uses: actions/checkout@v5

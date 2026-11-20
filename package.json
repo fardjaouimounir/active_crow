@@ -25,6 +25,7 @@
     "db:migrate:deploy": "npm run db:migrate:deploy -w @fieldflow/api",
     "db:reset": "npm run db:reset -w @fieldflow/api",
     "db:seed": "npm run db:seed -w @fieldflow/api",
+    "db:bootstrap": "npm run db:bootstrap -w @fieldflow/api --",
     "db:studio": "npm run db:studio -w @fieldflow/api"
   },
   "devDependencies": {

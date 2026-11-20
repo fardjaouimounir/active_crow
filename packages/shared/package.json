@@ -5,8 +5,10 @@
   "type": "module",
   "exports": {
     ".": "./src/index.js",
+    "./auth": "./src/auth.js",
     "./enums": "./src/enums.js",
-    "./errors": "./src/errors.js"
+    "./errors": "./src/errors.js",
+    "./permissions": "./src/permissions.js"
   },
   "scripts": {
     "test": "vitest run"

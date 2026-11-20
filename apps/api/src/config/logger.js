@@ -7,7 +7,16 @@ export const logger = pino({
     paths: [
       'req.headers.authorization',
       'req.headers.cookie',
+      'res.headers["set-cookie"]',
       '*.password',
+      '*.currentPassword',
+      '*.newPassword',
+      '*.passwordHash',
+      '*.tokenHash',
+      '*.accessToken',
+      '*.refreshToken',
+      'JWT_ACCESS_SECRET',
+      '*.JWT_ACCESS_SECRET',
       '*.phone',
       // Connection strings carry credentials (pg pool config, env dumps).
       'DATABASE_URL',

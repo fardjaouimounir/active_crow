@@ -172,6 +172,7 @@ npm run db:migrate          # prisma migrate dev (dev DB; must report no drift)
 npm run db:migrate:deploy   # prisma migrate deploy (CI / production)
 npm run db:reset            # drop, re-migrate and re-seed the dev DB
 npm run db:seed             # reference data: 1 agency, 69 wilayas, 1,541 communes (idempotent)
+npm run db:bootstrap -- --email <e> --name "<n>"  # first director of the seeded agency (once; prints a temporary password)
 npm run db:studio           # Prisma Studio
 ```
 
@@ -194,3 +195,6 @@ npm run db:studio           # Prisma Studio
 | 2026-11-20 | Customers belong to one campaign. No gift distribution without a confirmed holder balance. |
 | 2026-11-20 | Algeria has 69 wilayas and 1,541 communes (Law 26-06, JO n° 25 of 5 April 2026). |
 | 2026-11-20 | Prisma 7.10.x pinned (~7.10) with prisma-client-js (JS output); prisma-client generator rejected (TS-only output). |
+| 2026-11-20 | Access tokens: `jose` (HS256, 15 min, claims sub/agencyId/role/clientId/tv/mcp). Refresh tokens: 32 random bytes, SHA-256 in `refresh_tokens`, rotated per use, reuse revokes the family. |
+| 2026-11-20 | Passwords: `@node-rs/argon2` (argon2id, m=19 MiB, t=2, p=1; prebuilt binaries, no native build on Windows). Cookies parsed with `cookie-parser`. |
+| 2026-11-20 | Self-service auth routes (`/auth/me`, `/auth/logout`, …) use `anyAuthenticated()` instead of a catalog permission; the permission catalog is unchanged. |

@@ -1,7 +1,9 @@
 import i18n from 'i18next';
 import { initReactI18next } from 'react-i18next';
+import arAuth from './locales/ar/auth.json';
 import arCommon from './locales/ar/common.json';
 import arSystem from './locales/ar/system.json';
+import enAuth from './locales/en/auth.json';
 import enCommon from './locales/en/common.json';
 import enSystem from './locales/en/system.json';
 
@@ -17,8 +19,8 @@ const STORAGE_KEY = 'fieldflow.language';
 
 // One namespace per feature (plus `common`), so features own their strings.
 export const resources = {
-  en: { common: enCommon, system: enSystem },
-  ar: { common: arCommon, system: arSystem },
+  en: { common: enCommon, auth: enAuth, system: enSystem },
+  ar: { common: arCommon, auth: arAuth, system: arSystem },
 };
 
 function readStoredLanguage() {

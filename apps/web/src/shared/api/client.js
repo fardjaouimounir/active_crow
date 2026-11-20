@@ -23,12 +23,22 @@ export class ApiError extends Error {
 
 /**
  * Normalises an Axios error into `{ code, message, details, requestId }` (+ HTTP `status`).
+ * The request config is kept as a non-enumerable `config` so the auth interceptor can retry it.
  * @param {unknown} error
  * @returns {ApiError | unknown} cancellations are passed through untouched
  */
 export function normalizeError(error) {
   if (error instanceof ApiError || axios.isCancel(error)) return error;
+  const normalized = toApiError(error);
+  Object.defineProperty(normalized, 'config', {
+    value: /** @type {import('axios').AxiosError} */ (error)?.config,
+    enumerable: false,
+  });
+  return normalized;
+}
 
+/** @param {unknown} error @returns {ApiError} */
+function toApiError(error) {
   const response = /** @type {import('axios').AxiosError} */ (error)?.response;
   if (!response) {
     return new ApiError({

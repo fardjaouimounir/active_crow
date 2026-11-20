@@ -1,3 +1,4 @@
+import cookieParser from 'cookie-parser';
 import cors from 'cors';
 import express from 'express';
 import rateLimit from 'express-rate-limit';
@@ -54,6 +55,7 @@ export function createApp({ checkDatabase = () => pingDatabase() } = {}) {
     }),
   );
   app.use(express.json({ limit: JSON_BODY_LIMIT }));
+  app.use(cookieParser());
 
   app.use(createRoutes({ checkDatabase }));
 
