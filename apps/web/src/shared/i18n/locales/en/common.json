@@ -84,7 +84,22 @@
       "REASON_REQUIRED": "Give a reason for this action.",
       "FIELD_NOT_EDITABLE_IN_STATUS": "This cannot be changed in the campaign’s current status.",
       "PRODUCT_REMOVAL_LOCKED": "Products cannot be removed from a campaign that is running.",
-      "CAMPAIGN_HAS_STOCK": "Return the stock before cancelling this campaign."
+      "CAMPAIGN_HAS_STOCK": "Return the stock before cancelling this campaign.",
+      "CAMPAIGN_NOT_ACCEPTING_ASSIGNMENTS": "The campaign does not allow this assignment action.",
+      "POS_NOT_IN_CAMPAIGN": "The point of sale is outside the campaign.",
+      "SUPERVISOR_NOT_ON_WILAYA_STAFF": "Choose a supervisor assigned to this wilaya.",
+      "NOT_AN_ANIMATEUR": "Choose an Animateur.",
+      "DATES_OUTSIDE_CAMPAIGN": "Choose dates inside the campaign period.",
+      "START_DATE_IN_PAST": "The start date cannot be in the past.",
+      "WORK_DAYS_INVALID": "Choose at least one distinct work day.",
+      "SHIFT_INVALID": "Enter both shift times in order.",
+      "ASSIGNMENT_OVERLAP": "The Animateur already has an overlapping assignment.",
+      "NOT_ASSIGNMENT_APPROVER": "You cannot decide assignments in this wilaya.",
+      "ASSIGNMENT_NOT_PROPOSED": "This assignment is no longer proposed.",
+      "ASSIGNMENT_ALREADY_STARTED": "This assignment has already started.",
+      "INVALID_END_DATE": "Choose a valid early end date.",
+      "REPLACEMENT_DATE_INVALID": "Choose a valid replacement date and Animateur.",
+      "NOTE_REQUIRED": "A rejection note is required."
     }
   },
   "roles": {
@@ -189,7 +204,13 @@
     "endDate": "End date",
     "budgetAmount": "Budget (DZD)",
     "assignmentApproverRole": "Assignment approver",
-    "label": "Label"
+    "label": "Label",
+    "approvals": "Approvals",
+    "point": "Point de Vente",
+    "animateur": "Animateur",
+    "supervisor": "Superviseur",
+    "shiftStart": "Shift starts",
+    "shiftEnd": "Shift ends"
   },
   "catalog": {
     "newClient": "New client",
@@ -253,7 +274,8 @@
       "products": "Products",
       "documents": "Documents",
       "history": "History",
-      "rules": "Rules"
+      "rules": "Rules",
+      "assignments": "Assignments"
     },
     "counts": {
       "wilayas": "Wilayas",
@@ -431,6 +453,32 @@
       "promotions": "{{count}} promotion(s)",
       "missing": "Required rules are missing: {{types}}.",
       "confirm": "Approve and apply"
+    }
+  },
+  "assignments": {
+    "propose": "Propose assignment",
+    "addProposal": "Add to batch",
+    "submitBatch": "Submit {{count}} proposals",
+    "unavailable": "Unavailable from {{from}} to {{to}}",
+    "workDays": "Working days",
+    "staffing": "Staffing by wilaya",
+    "coverage": "{{approved}} approved / {{required}} required",
+    "proposedCount": "Proposed {{count}}",
+    "uncovered": "Uncovered points of sale",
+    "selection": "Select",
+    "actions": "Actions",
+    "approve": "Approve",
+    "reject": "Reject",
+    "cancel": "Cancel assignment",
+    "end": "End early",
+    "replace": "Replace",
+    "replacement": "Replacement",
+    "selected": "Selected assignments {{count}}",
+    "status": {
+      "proposed": "Proposed",
+      "approved": "Approved",
+      "rejected": "Rejected",
+      "cancelled": "Cancelled"
     }
   }
 }

@@ -9,6 +9,7 @@ import { Tabs } from '../../../shared/ui/Tabs.jsx';
 import { useApiError } from '../../../shared/ui/useApiError.js';
 import { actionStyle } from '../../organization/components/Fields.jsx';
 import { formatMoney } from '../../catalog/money.js';
+import { AssignmentsTab } from '../../assignments/AssignmentsTab.jsx';
 import { useCampaign } from '../api.js';
 import { CampaignForm } from '../components/CampaignForm.jsx';
 import { CampaignStatus, formatPeriod } from '../components/CampaignStatus.jsx';
@@ -20,7 +21,16 @@ import { PointsOfSaleTab } from '../components/PointsOfSaleTab.jsx';
 import { ProductsTab } from '../components/ProductsTab.jsx';
 import { RulesTab } from '../components/RulesTab.jsx';
 
-const TABS = ['overview', 'coverage', 'pointsOfSale', 'products', 'rules', 'documents', 'history'];
+const TABS = [
+  'overview',
+  'coverage',
+  'pointsOfSale',
+  'products',
+  'rules',
+  'assignments',
+  'documents',
+  'history',
+];
 /** The edit-policy area each tab changes (the overview form decides field by field). */
 const TAB_AREA = {
   coverage: 'coverage',
@@ -90,10 +100,12 @@ export function CampaignDetailPage() {
   const location = useLocation();
   const { t } = useTranslation('common');
   const canManage = useCan('campaign.manage');
+  const showAssignments = useCan('assignment.read');
   const { filters, setFilters } = useFilters();
   const query = useCampaign(id);
   const { message } = useApiError(query.error);
-  const tab = TABS.includes(filters.tab) ? filters.tab : 'overview';
+  const tabs = TABS.filter((item) => showAssignments || item !== 'assignments');
+  const tab = tabs.includes(filters.tab) ? filters.tab : 'overview';
   if (query.isPending) return <p role="status">{t('admin.loading')}</p>;
   if (query.isError) return <Toast error message={message} />;
   const campaign = query.data.data;
@@ -125,7 +137,7 @@ export function CampaignDetailPage() {
       <Tabs
         label={campaign.name}
         value={tab}
-        tabs={TABS.map((value) => ({ value, label: t('campaigns.tabs.' + value) }))}
+        tabs={tabs.map((value) => ({ value, label: t('campaigns.tabs.' + value) }))}
         onChange={(value) => setFilters({ tab: value })}
       >
         {lockedNote}
@@ -143,6 +155,7 @@ export function CampaignDetailPage() {
         )}
         {tab === 'rules' && <RulesTab campaign={campaign} canEdit={allowed('ruleSet')} />}
         {tab === 'documents' && <DocumentsTab campaign={campaign} canEdit={allowed('documents')} />}
+        {tab === 'assignments' && <AssignmentsTab campaign={campaign} />}
         {tab === 'history' && <HistoryTab campaignId={campaign.id} />}
       </Tabs>
     </>

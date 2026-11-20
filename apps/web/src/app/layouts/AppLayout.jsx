@@ -12,6 +12,7 @@ const navigation = [
   { key: 'points', to: '/app/points-of-sale', permission: 'org.pos.read', hiddenFor: 'supervisor' },
   { key: 'clients', to: '/app/clients', permission: 'catalog.read' },
   { key: 'campaigns', to: '/app/campaigns', permission: 'campaign.read' },
+  { key: 'approvals', to: '/app/approvals', permission: 'assignment.approve' },
 ];
 
 /** Agency staff surface with organization and catalog navigation. */

@@ -123,6 +123,13 @@ export const routes = [
                 }),
               },
               {
+                path: 'approvals',
+                lazy: async () => ({
+                  Component: (await import('../features/assignments/ApprovalsPage.jsx'))
+                    .ApprovalsPage,
+                }),
+              },
+              {
                 path: 'campaigns',
                 lazy: async () => ({
                   Component: (await import('../features/campaigns/pages/CampaignsPage.jsx'))

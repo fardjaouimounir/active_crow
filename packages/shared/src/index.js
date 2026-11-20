@@ -12,3 +12,4 @@ export * from './rules/index.js';
 export * from './promotions/index.js';
 export * from './lifecycle.js';
 export * from './campaignPolicy.js';
+export * from './assignments.js';

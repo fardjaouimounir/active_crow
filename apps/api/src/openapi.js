@@ -1,4 +1,5 @@
 import { createOpenApiRegistry, operation } from './core/http/openapi.js';
+import { registerAssignmentsOpenApi } from './modules/assignments/assignments.openapi.js';
 import { registerAuthOpenApi } from './modules/auth/auth.openapi.js';
 import { registerCampaignsOpenApi } from './modules/campaigns/campaigns.openapi.js';
 import { registerRuleSetsOpenApi } from './modules/campaigns/ruleSets.openapi.js';
@@ -17,5 +18,6 @@ export function openApiDocument() {
   registerFilesOpenApi(registry);
   registerCampaignsOpenApi(registry);
   registerRuleSetsOpenApi(registry);
+  registerAssignmentsOpenApi(registry);
   return registry.document();
 }

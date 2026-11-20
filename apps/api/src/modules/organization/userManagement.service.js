@@ -9,6 +9,7 @@ import {
   NotFoundError,
   ValidationError,
 } from '../../core/errors/index.js';
+import { assignmentService } from '../assignments/assignments.service.js';
 import { businessDate } from '../../core/time/clock.js';
 import { prisma } from '../../db/client.js';
 import { withTransaction } from '../../db/transaction.js';
@@ -186,6 +187,8 @@ function changeStatus(scope, actor, id, status) {
     }
     if (status !== 'active') await revokeAllSessions(tx, id);
     const after = await repository.updateUser(tx, scope, id, { status });
+    if (status === 'left' && before.role === 'animateur')
+      await assignmentService.endAllForUser(tx, actor, id, at.toISOString().slice(0, 10));
     await audit(tx, actor, 'org.user_status_changed', id, { status: before.status }, { status });
     return after;
   });

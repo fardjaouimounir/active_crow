@@ -84,7 +84,22 @@
       "REASON_REQUIRED": "اذكر سببًا لهذا الإجراء.",
       "FIELD_NOT_EDITABLE_IN_STATUS": "لا يمكن تغيير هذا في الحالة الحالية للحملة.",
       "PRODUCT_REMOVAL_LOCKED": "لا يمكن إزالة المنتجات من حملة قيد التنفيذ.",
-      "CAMPAIGN_HAS_STOCK": "أعد المخزون قبل إلغاء هذه الحملة."
+      "CAMPAIGN_HAS_STOCK": "أعد المخزون قبل إلغاء هذه الحملة.",
+      "CAMPAIGN_NOT_ACCEPTING_ASSIGNMENTS": "لا تسمح حالة الحملة بهذا الإجراء.",
+      "POS_NOT_IN_CAMPAIGN": "نقطة البيع خارج الحملة.",
+      "SUPERVISOR_NOT_ON_WILAYA_STAFF": "اختر مشرفًا مكلّفًا بهذه الولاية.",
+      "NOT_AN_ANIMATEUR": "اختر منشطًا.",
+      "DATES_OUTSIDE_CAMPAIGN": "اختر تواريخ ضمن فترة الحملة.",
+      "START_DATE_IN_PAST": "لا يمكن أن يكون تاريخ البداية في الماضي.",
+      "WORK_DAYS_INVALID": "اختر يوم عمل واحدًا على الأقل دون تكرار.",
+      "SHIFT_INVALID": "أدخل وقتي بدء الدوام وانتهائه بالترتيب.",
+      "ASSIGNMENT_OVERLAP": "للمنشط تعيين آخر يتداخل مع هذه الفترة.",
+      "NOT_ASSIGNMENT_APPROVER": "ليست لديك صلاحية اعتماد التعيينات في هذه الولاية.",
+      "ASSIGNMENT_NOT_PROPOSED": "هذا التعيين لم يعد مقترحًا.",
+      "ASSIGNMENT_ALREADY_STARTED": "بدأ هذا التعيين بالفعل.",
+      "INVALID_END_DATE": "اختر تاريخ إنهاء مبكر صالحًا.",
+      "REPLACEMENT_DATE_INVALID": "اختر تاريخًا ومنشطًا صالحين للاستبدال.",
+      "NOTE_REQUIRED": "سبب الرفض مطلوب."
     }
   },
   "roles": {
@@ -189,7 +204,13 @@
     "endDate": "تاريخ النهاية",
     "budgetAmount": "الميزانية (دج)",
     "assignmentApproverRole": "معتمد التعيينات",
-    "label": "التسمية"
+    "label": "التسمية",
+    "approvals": "الموافقات",
+    "point": "نقطة البيع",
+    "animateur": "المنشط",
+    "supervisor": "المشرف",
+    "shiftStart": "بداية الدوام",
+    "shiftEnd": "نهاية الدوام"
   },
   "catalog": {
     "newClient": "عميل جديد",
@@ -253,7 +274,8 @@
       "products": "المنتجات",
       "documents": "المستندات",
       "history": "السجل",
-      "rules": "القواعد"
+      "rules": "القواعد",
+      "assignments": "التعيينات"
     },
     "counts": {
       "wilayas": "الولايات",
@@ -431,6 +453,32 @@
       "promotions": "{{count}} عرض",
       "missing": "قواعد إلزامية مفقودة: {{types}}.",
       "confirm": "اعتماد وتطبيق"
+    }
+  },
+  "assignments": {
+    "propose": "اقتراح تعيين",
+    "addProposal": "إضافة إلى الدفعة",
+    "submitBatch": "إرسال {{count}} اقتراحات",
+    "unavailable": "غير متاح من {{from}} إلى {{to}}",
+    "workDays": "أيام العمل",
+    "staffing": "التغطية حسب الولاية",
+    "coverage": "{{approved}} معتمد / {{required}} مطلوب",
+    "proposedCount": "المقترحة {{count}}",
+    "uncovered": "نقاط البيع دون تعيين",
+    "selection": "تحديد",
+    "actions": "الإجراءات",
+    "approve": "اعتماد",
+    "reject": "رفض",
+    "cancel": "إلغاء التعيين",
+    "end": "إنهاء مبكر",
+    "replace": "استبدال",
+    "replacement": "تعيين بديل",
+    "selected": "التعيينات المحددة {{count}}",
+    "status": {
+      "proposed": "مقترح",
+      "approved": "معتمد",
+      "rejected": "مرفوض",
+      "cancelled": "ملغى"
     }
   }
 }

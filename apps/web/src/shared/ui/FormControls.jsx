@@ -63,13 +63,15 @@ export function SearchSelect({ useOptions, value, selectedLabel, onChange, ...pr
       <Select
         {...props}
         value={value ?? ''}
-        onChange={(event) => onChange(event.target.value)}
+        onChange={(event) =>
+          onChange(event.target.value, event.target.selectedOptions[0]?.textContent)
+        }
         aria-busy={pending}
       >
         <option value="">{t(pending ? 'admin.loading' : 'admin.choose')}</option>
         {retained && <option value={value}>{selectedLabel ?? value}</option>}
-        {options.map(({ value: id, label }) => (
-          <option key={id} value={id}>
+        {options.map(({ value: id, label, disabled }) => (
+          <option key={id} value={id} disabled={disabled}>
             {label}
           </option>
         ))}

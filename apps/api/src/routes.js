@@ -1,6 +1,7 @@
 import { Router } from 'express';
 import { API_PREFIX, APP_VERSION } from './config/constants.js';
 import { publicRoute } from './core/authz/index.js';
+import { createAssignmentsRouter } from './modules/assignments/assignments.routes.js';
 import { createAuthRouter } from './modules/auth/auth.routes.js';
 import { createCampaignsRouter } from './modules/campaigns/campaigns.routes.js';
 import { createCatalogRouter } from './modules/catalog/catalog.routes.js';
@@ -39,6 +40,7 @@ export function createRoutes({ checkDatabase }) {
   api.use('/users', createUsersRouter());
   api.use('/clients', createCatalogRouter());
   api.use('/files', createFilesRouter());
+  api.use(createAssignmentsRouter());
   api.use('/campaigns', createCampaignsRouter());
   api.use(createStructureRouter());
 
