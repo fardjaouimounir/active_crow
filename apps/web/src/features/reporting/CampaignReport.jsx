@@ -3,7 +3,9 @@ import { useTranslation } from 'react-i18next';
 import { PrintBrand, buttonClass } from '../../ui/primitives.jsx';
 import { useAuth } from '../../shared/auth/hooks.js';
 import { CampaignAiActions, CampaignAiCards } from '../ai/AiUi.jsx';
+import { StaticChoropleth } from '../../ui/map/StaticChoropleth.jsx';
 import { useReport } from './api.js';
+import { useWilayaName } from './useWilayaName.js';
 import {
   BreakdownTable,
   Cards,
@@ -21,6 +23,13 @@ export function CampaignReport() {
   const { t: common } = useTranslation('common');
   const permitted = ['director', 'general_manager'].includes(user.role);
   const { data, isError, isPending } = useReport(`/campaigns/${id}/summary`, {}, permitted);
+  // The map covers the campaign period, which the report summary tells us.
+  const geo = useReport(
+    '/geo/wilayas',
+    { campaignIds: [id], metric: 'sales_units', ...(data?.kpis.period ?? {}) },
+    permitted && Boolean(data),
+  );
+  const wilayaName = useWilayaName();
   const date = (value) =>
     new Intl.DateTimeFormat(language + '-u-nu-latn', {
       timeZone: 'Africa/Algiers',
@@ -87,6 +96,7 @@ export function CampaignReport() {
       </header>
       <Cards values={kpis} />
       <CampaignAiCards campaignId={id} period={kpis.period} />
+      {geo.data && <StaticChoropleth data={geo.data} wilayaName={wilayaName} />}
       <DailyChart rows={daily} />
       <BreakdownTable rows={wilayas} title="byWilaya" />
       <BreakdownTable rows={stores} title="byStore" />

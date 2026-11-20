@@ -192,8 +192,14 @@ export function Avatar({ name = '', size = 'md', className }) {
 
 /* --------------------------------------------------------------- Skeleton */
 
-export function Skeleton({ className }) {
-  return <div aria-hidden="true" className={cn('animate-pulse rounded-md bg-sunken', className)} />;
+export function Skeleton({ className, style }) {
+  return (
+    <div
+      aria-hidden="true"
+      style={style}
+      className={cn('animate-pulse rounded-md bg-sunken', className)}
+    />
+  );
 }
 
 /* ------------------------------------------------------------------ Delta */

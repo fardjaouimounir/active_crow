@@ -345,8 +345,16 @@ export async function detail(actor, id) {
     assignmentId: row.assignmentId,
     workDate: row.workDate,
   });
+  const place = row.assignment.pointOfSale;
   return {
     ...viewRecord(row),
+    // For the staff proof drawer mini-map only (never sent to the field app).
+    store: {
+      name: place.name,
+      latitude: place.latitude == null ? null : Number(place.latitude),
+      longitude: place.longitude == null ? null : Number(place.longitude),
+    },
+    maxDistanceMeters: attendanceRuleOf(row.ruleSet)?.maxDistanceMeters ?? null,
     reviewHistory,
     absences: absences.map((item) => ({ ...item, workDate: dateText(item.workDate) })),
   };

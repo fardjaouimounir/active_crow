@@ -96,6 +96,18 @@ describe('token contrast (WCAG 2.1 AA)', () => {
     });
   }
 
+  it('map scales step monotonically in lightness, so classes can be told apart', () => {
+    for (const [name, tokens] of Object.entries({ dark: themes.dark, light: themes.light })) {
+      const lightness = [1, 2, 3, 4, 5].map((step) => luminance(tokens['scale-' + step]));
+      for (let index = 1; index < lightness.length; index += 1) {
+        const gap = lightness[index] - lightness[index - 1];
+        expect(name === 'dark' ? gap : -gap, name + ' step ' + index).toBeGreaterThan(0.02);
+      }
+      // The polygon outline and the selection ring are visible against every fill they touch.
+      expect(contrast(tokens['map-select'], tokens.surface)).toBeGreaterThanOrEqual(3);
+    }
+  });
+
   it('spring-700 is readable as text on white (≥ 4.5:1) while raw spring is not', () => {
     expect(contrast(root['spring-700'], '#ffffff')).toBeGreaterThanOrEqual(4.5);
     expect(contrast(root.spring, '#ffffff')).toBeLessThan(3);

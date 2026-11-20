@@ -107,6 +107,12 @@ export async function breakdown(actor, id, dimension) {
   return reportingService.portalAggregates(campaign, dimension);
 }
 
+/** Wilaya choropleth or store map data for one campaign, redacted to the client view. */
+export async function geo(actor, id, kind, metric) {
+  const campaign = await campaignFor(actor, id);
+  return reportingService.portalGeo(campaign, kind, metric);
+}
+
 /** Visit photos the agency shared: date, wilaya and store only. */
 export async function proof(actor, id) {
   const campaign = await campaignFor(actor, id);
@@ -168,6 +174,7 @@ export const portalService = Object.freeze({
   get,
   kpis,
   breakdown,
+  geo,
   proof,
   documents,
   campaignFor,

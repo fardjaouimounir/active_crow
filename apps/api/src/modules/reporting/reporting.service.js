@@ -1,4 +1,5 @@
 import { calculateKpis } from '@fieldflow/shared';
+import { POLYGON_WILAYAS, geoMetricValue, polygonOf } from '@fieldflow/shared/wilayaPolygons';
 import { ScopeService } from '../../core/authz/index.js';
 import { campaignWhere, scoped, userWhere } from '../../core/authz/scopeFilters.js';
 import { AppError, NotFoundError } from '../../core/errors/index.js';
@@ -389,4 +390,250 @@ export const reportingService = {
   exportData,
   aggregates,
   portalAggregates,
+  geoWilayas,
+  geoStores,
+  geoHeatmap,
+  portalGeo,
 };
+
+/* ------------------------------------------------------------------------- geography */
+
+const pad = (id) => String(id).padStart(2, '0');
+const sumTotals = (list) =>
+  list.reduce((sum, totals) => {
+    for (const [key, value] of Object.entries(totals))
+      if (value != null && !Number.isNaN(Number(value))) sum[key] = (sum[key] ?? 0) + Number(value);
+    return sum;
+  }, {});
+/** The KPIs a geography tooltip shows, from the same bundle every other view uses. */
+const geoKpis = (kpis) => ({
+  salesUnits: kpis.sales.units,
+  buyers: kpis.customers.buyers,
+  conversionRate: kpis.customers.conversionRate,
+  attendanceRate: kpis.attendance.rate,
+  giftDistributionRate: kpis.gifts.distributionRate,
+  storeCoverage: kpis.visits.storeCoverage,
+  undeliveredUnits: kpis.gifts.undeliveredUnits,
+});
+/** What a client may see of a geography bundle. */
+const clientKpis = (kpis) => ({
+  salesUnits: kpis.salesUnits,
+  buyers: kpis.buyers,
+  conversionRate: kpis.conversionRate,
+  giftDistributionRate: kpis.giftDistributionRate,
+});
+
+/** Rank 1 = highest value; equal values keep a stable order; null values are not ranked. */
+function ranked(rows, key) {
+  const order = rows
+    .filter((row) => row.value != null && row.value > 0)
+    .sort((a, b) => b.value - a.value || String(a[key]).localeCompare(String(b[key])));
+  order.forEach((row, index) => {
+    row.rank = index + 1;
+  });
+  for (const row of rows) row.rank ??= null;
+  return rows;
+}
+
+/**
+ * One metric per wilaya and per map polygon. Wilayas created after the open boundary data (49-69)
+ * are summed into the polygon they were carved out of, from raw totals (so ratios are recomputed,
+ * not averaged), and `included` lists them for the tooltip.
+ */
+async function wilayaGeo(ctx, metric) {
+  const [rows, all, wilayas] = await Promise.all([
+    read(ctx, 'wilaya'),
+    read(ctx),
+    prisma.wilaya.findMany({ select: { id: true, nameEn: true, nameAr: true } }),
+  ]);
+  const names = new Map(wilayas.map((item) => [item.id, item]));
+  const kpisOf = (raw) => calculateKpis(period(ctx.filters), raw);
+  const entry = (id) => ({
+    id,
+    nameEn: names.get(id)?.nameEn ?? null,
+    nameAr: names.get(id)?.nameAr ?? null,
+  });
+  const present = rows.filter(({ bucket }) => bucket);
+  const perWilaya = ranked(
+    present.map(({ bucket, totals: raw }) => {
+      const id = Number(bucket);
+      const kpis = kpisOf(raw);
+      return {
+        wilayaId: id,
+        code: pad(id),
+        polygonCode: polygonOf(id),
+        ...entry(id),
+        value: geoMetricValue(kpis, metric),
+        kpis: geoKpis(kpis),
+      };
+    }),
+    'wilayaId',
+  );
+  const groups = new Map();
+  for (const { bucket, totals: raw } of present) {
+    const code = polygonOf(Number(bucket));
+    if (code) groups.set(code, [...(groups.get(code) ?? []), raw]);
+  }
+  const polygons = ranked(
+    [...groups].map(([polygonCode, list]) => {
+      const kpis = kpisOf(sumTotals(list));
+      const members = POLYGON_WILAYAS[polygonCode].map(entry);
+      return {
+        polygonCode,
+        wilayaIds: members.map(({ id }) => id),
+        members,
+        included: members.filter(({ id }) => pad(id) !== polygonCode),
+        value: geoMetricValue(kpis, metric),
+        kpis: geoKpis(kpis),
+      };
+    }),
+    'polygonCode',
+  );
+  const total = kpisOf(totals(all));
+  return {
+    metric,
+    period: period(ctx.filters),
+    total: { value: geoMetricValue(total, metric), kpis: geoKpis(total) },
+    wilayas: perWilaya,
+    polygons,
+  };
+}
+
+export async function geoWilayas(actor, query) {
+  const { metric, ...filters } = query;
+  return wilayaGeo(await context(actor, filters), metric);
+}
+
+const coordinate = (value) => (value == null ? null : Number(value));
+/** A usable point: both set, on Earth, and not the 0,0 default of a missing location. */
+const isLocated = ({ latitude, longitude }) =>
+  latitude != null &&
+  longitude != null &&
+  Math.abs(latitude) <= 90 &&
+  Math.abs(longitude) <= 180 &&
+  !(latitude === 0 && longitude === 0);
+const STORE_PLACE = {
+  id: true,
+  name: true,
+  latitude: true,
+  longitude: true,
+  wilaya: { select: { id: true, nameEn: true, nameAr: true } },
+};
+
+/**
+ * Stores in scope with their coordinates and the numbers the store and live maps show. Stores
+ * without coordinates come back in `unlocated`, never at 0,0.
+ */
+export async function geoStores(actor, filters) {
+  const ctx = await context(actor, filters);
+  const rows = await grouped(ctx, 'point_of_sale');
+  const ids = rows.map(({ id }) => id).filter(Boolean);
+  const [records, visits, openIssues, today] = await Promise.all([
+    prisma.pointOfSale.findMany({
+      where: { id: { in: ids }, agencyId: ctx.scope.agencyId, deletedAt: null },
+      select: { ...STORE_PLACE, code: true },
+    }),
+    repository.lastVisits(prisma, ctx.scope, ctx.filters, ids),
+    repository.openIssuesByStore(prisma, ctx.scope, ctx.filters),
+    repository.todayAttendanceByStore(prisma, ctx.scope, ctx.filters, ids, ctx.instant),
+  ]);
+  const byId = new Map(records.map((record) => [record.id, record]));
+  const visitOf = new Map(visits.map(({ id, lastVisit }) => [id, lastVisit]));
+  const issuesOf = new Map(openIssues.map(({ id, count }) => [id, count]));
+  const todayOf = new Map(today.map(({ id, ...counts }) => [id, counts]));
+  const stores = rows.flatMap((row) => {
+    const record = byId.get(row.id);
+    if (!record) return [];
+    return [
+      {
+        id: record.id,
+        name: record.name,
+        code: record.code,
+        wilaya: record.wilaya,
+        latitude: coordinate(record.latitude),
+        longitude: coordinate(record.longitude),
+        salesUnits: row.sales.units,
+        buyers: row.customers.buyers,
+        attendanceRate: row.attendance.rate,
+        lastVisit: visitOf.get(row.id) ? dateText(new Date(visitOf.get(row.id))) : null,
+        openIssues: issuesOf.get(row.id) ?? 0,
+        today: todayOf.get(row.id) ?? null,
+      },
+    ];
+  });
+  return {
+    period: period(ctx.filters),
+    stores: stores.filter(isLocated),
+    unlocated: stores.filter((store) => !isLocated(store)),
+  };
+}
+
+/** Counts per ISO weekday (1 = Monday) x Algiers hour (0-23), as a 7 x 24 matrix. */
+export async function geoHeatmap(actor, query) {
+  const { kind, ...filters } = query;
+  const ctx = await context(actor, filters);
+  const cells = await repository.timeHeatmap(prisma, ctx.scope, ctx.filters, kind);
+  const matrix = Array.from({ length: 7 }, () => Array(24).fill(0));
+  for (const { weekday, hour, count } of cells) matrix[weekday - 1][hour] += count;
+  const flat = matrix.flat();
+  return {
+    kind,
+    period: period(ctx.filters),
+    matrix,
+    total: flat.reduce((sum, value) => sum + value, 0),
+    max: Math.max(0, ...flat),
+  };
+}
+
+/**
+ * Client view of one campaign (already proven to belong to the client): wilayas, or stores, with
+ * sales, buyers, conversion and gift distribution only. Never attendance, visits, issues, staff or
+ * stock handling.
+ */
+export async function portalGeo(campaign, kind, metric = 'sales_units') {
+  const ctx = {
+    scope: { level: 'agency', agencyId: campaign.agencyId },
+    instant: clock.now(),
+    filters: {
+      campaignIds: [campaign.id],
+      from: dateText(campaign.startDate),
+      to: dateText(campaign.endDate),
+    },
+  };
+  if (kind === 'stores') {
+    const rows = await grouped(ctx, 'point_of_sale');
+    const records = await prisma.pointOfSale.findMany({
+      where: {
+        id: { in: rows.map(({ id }) => id).filter(Boolean) },
+        agencyId: campaign.agencyId,
+        deletedAt: null,
+      },
+      select: STORE_PLACE,
+    });
+    const byId = new Map(records.map((record) => [record.id, record]));
+    const stores = rows.flatMap((row) => {
+      const record = byId.get(row.id);
+      if (!record) return [];
+      return [
+        {
+          id: record.id,
+          name: record.name,
+          wilaya: record.wilaya,
+          latitude: coordinate(record.latitude),
+          longitude: coordinate(record.longitude),
+          salesUnits: row.sales.units,
+          buyers: row.customers.buyers,
+        },
+      ];
+    });
+    return { stores: stores.filter(isLocated), unlocated: stores.filter((s) => !isLocated(s)) };
+  }
+  const result = await wilayaGeo(ctx, metric);
+  const strip = (row) => ({ ...row, kpis: clientKpis(row.kpis) });
+  return {
+    ...result,
+    total: { value: result.total.value, kpis: clientKpis(result.total.kpis) },
+    wilayas: result.wilayas.map(strip),
+    polygons: result.polygons.map(strip),
+  };
+}

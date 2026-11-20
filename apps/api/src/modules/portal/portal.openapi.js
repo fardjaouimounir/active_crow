@@ -1,6 +1,6 @@
 import { operation } from '../../core/http/openapi.js';
 import { XLSX } from '../reporting/reporting.columns.js';
-import { breakdownQuery, params } from './portal.routes.js';
+import { breakdownQuery, geoWilayasQuery, params } from './portal.routes.js';
 
 export function registerPortalOpenApi(registry) {
   const get = (path, summary, permission, options) =>
@@ -14,6 +14,13 @@ export function registerPortalOpenApi(registry) {
     params,
     query: breakdownQuery,
     array: true,
+  });
+  get('/campaigns/{id}/geo/wilayas', 'Client view of one metric per wilaya', 'report.read', {
+    params,
+    query: geoWilayasQuery,
+  });
+  get('/campaigns/{id}/geo/stores', 'Client view of the stores on a map', 'report.read', {
+    params,
   });
   get('/campaigns/{id}/proof', 'Visit photos shared with the client', 'report.read', {
     params,

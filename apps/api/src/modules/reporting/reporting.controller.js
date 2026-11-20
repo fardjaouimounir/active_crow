@@ -18,6 +18,18 @@ export async function breakdown(req, res) {
   res.json({ data: await reportingService.breakdown(req.actor, filters, dimension) });
 }
 
+export async function geoWilayas(req, res) {
+  res.json({ data: await reportingService.geoWilayas(req.actor, req.query) });
+}
+
+export async function geoStores(req, res) {
+  res.json({ data: await reportingService.geoStores(req.actor, req.query) });
+}
+
+export async function heatmap(req, res) {
+  res.json({ data: await reportingService.geoHeatmap(req.actor, req.query) });
+}
+
 export async function summary(req, res) {
   res.json({ data: await reportingService.summary(req.actor, req.params.id) });
 }

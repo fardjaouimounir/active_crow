@@ -465,7 +465,8 @@
       "sales": "Sales",
       "tombola": "Tombola",
       "issues": "Issues",
-      "stock": "Stock"
+      "stock": "Stock",
+      "map": "Map"
     },
     "counts": {
       "wilayas": "Wilayas",

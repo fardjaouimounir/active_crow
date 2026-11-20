@@ -101,6 +101,20 @@
   --heat-1: #0c2a19;
   --heat-2: #124a2a;
   --heat-3: #1b7a43;
+  /* Maps: sequential scale (low to high), diverging scale (change), polygon line, no data */
+  --scale-1: #12301f;
+  --scale-2: #165b36;
+  --scale-3: #1c8a4d;
+  --scale-4: #28c566;
+  --scale-5: #3afb7c;
+  --scale-none: #151a21;
+  --div-neg-2: #e5384a;
+  --div-neg-1: #6e2833;
+  --div-0: #232932;
+  --div-pos-1: #165b36;
+  --div-pos-2: #3afb7c;
+  --map-line: #394150;
+  --map-select: #ffffff;
 }
 
 /* ---- Light ---- */
@@ -151,6 +165,19 @@
   --heat-1: #e4f8ea;
   --heat-2: #adfec8;
   --heat-3: #5bd98a;
+  --scale-1: #e4f8ea;
+  --scale-2: #b9efcb;
+  --scale-3: #7fdca2;
+  --scale-4: #3fc177;
+  --scale-5: #12a05a;
+  --scale-none: #eef0f3;
+  --div-neg-2: #b3202e;
+  --div-neg-1: #e8a0a6;
+  --div-0: #eceef2;
+  --div-pos-1: #7fdca2;
+  --div-pos-2: #12a05a;
+  --map-line: #9aa2b0;
+  --map-select: #0a0d11;
 }
 
 /* ---- Field: light, high contrast (outdoor sunlight) — only values that differ ---- */

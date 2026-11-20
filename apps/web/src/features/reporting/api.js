@@ -10,7 +10,7 @@ export const reportParams = (filters) =>
     ]),
   );
 
-export function useReport(path, filters = {}, enabled = true) {
+export function useReport(path, filters = {}, enabled = true, options = {}) {
   const { user } = useAuth();
   return useQuery({
     queryKey: ['reports', user?.id, path, filters],
@@ -18,6 +18,8 @@ export function useReport(path, filters = {}, enabled = true) {
       (await apiClient.get('/reports' + path, { signal, params: reportParams(filters) })).data.data,
     enabled,
     staleTime: 30_000,
+    refetchInterval: options.refetchInterval,
+    refetchIntervalInBackground: false,
   });
 }
 

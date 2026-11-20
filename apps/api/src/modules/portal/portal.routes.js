@@ -1,4 +1,5 @@
 import { ERROR_CODES } from '@fieldflow/shared';
+import { CLIENT_GEO_METRICS } from '@fieldflow/shared/wilayaPolygons';
 import { Router } from 'express';
 import { z } from 'zod';
 import { authenticate } from '../../core/auth/index.js';
@@ -11,6 +12,9 @@ import { portalService } from './portal.service.js';
 const empty = z.strictObject({});
 export const params = z.strictObject({ id: z.uuid() });
 export const breakdownQuery = z.strictObject({ dimension: z.string().optional() });
+export const geoWilayasQuery = z.strictObject({
+  metric: z.enum(CLIENT_GEO_METRICS).default('sales_units'),
+});
 export const PORTAL_DIMENSIONS = ['day', 'wilaya', 'point_of_sale', 'product'];
 
 const data = (fn) => async (req, res) => res.json({ data: await fn(req) });
@@ -58,6 +62,18 @@ export function createPortalRouter() {
         });
       return portalService.breakdown(req.actor, req.params.id, req.query.dimension);
     }),
+  );
+  get(
+    '/campaigns/:id/geo/wilayas',
+    'report.read',
+    geoWilayasQuery,
+    data((req) => portalService.geo(req.actor, req.params.id, 'wilayas', req.query.metric)),
+  );
+  get(
+    '/campaigns/:id/geo/stores',
+    'report.read',
+    empty,
+    data((req) => portalService.geo(req.actor, req.params.id, 'stores')),
   );
   get(
     '/campaigns/:id/proof',

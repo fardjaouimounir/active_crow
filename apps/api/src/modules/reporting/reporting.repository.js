@@ -371,7 +371,11 @@ export async function historicalAssignments(db, scope) {
     )`;
 }
 
-export async function issues(db, scope, filters) {
+/**
+ * Issues visible to the scope in the period. `select`/`where`/`group` shape the result: the report
+ * lists them by category and status, the store map counts the open ones per store.
+ */
+function issueQuery(db, scope, filters, { select, where = Prisma.empty, group, order }) {
   assertScope(scope);
   const { agencyId, userId, level } = scope;
   const { from, to } = filters;
@@ -414,11 +418,140 @@ export async function issues(db, scope, filters) {
         ${whereIds(Prisma.sql`i.campaign_id`, filters.campaignIds)}
         ${whereIds(Prisma.sql`c.client_id`, filters.clientId ? [filters.clientId] : undefined)}
     )
-    SELECT i.category, i.status::text, count(*)::int AS count
+    SELECT ${select}
     FROM issue_rows i
     LEFT JOIN points_of_sale p ON p.id = i.point_of_sale_id AND p.agency_id = i.agency_id
     LEFT JOIN region_wilayas rw ON rw.wilaya_id = p.wilaya_id AND rw.agency_id = i.agency_id
-    WHERE true ${nativeVisibility} ${issueOperation} ${facets(filters, Prisma.sql`i`)}
-    GROUP BY i.category, i.status ORDER BY i.category, i.status
+    WHERE true ${nativeVisibility} ${issueOperation} ${facets(filters, Prisma.sql`i`)} ${where}
+    GROUP BY ${group} ORDER BY ${order}
   `;
+}
+
+export function issues(db, scope, filters) {
+  return issueQuery(db, scope, filters, {
+    select: Prisma.sql`i.category, i.status::text, count(*)::int AS count`,
+    group: Prisma.sql`i.category, i.status`,
+    order: Prisma.sql`i.category, i.status`,
+  });
+}
+
+/** Open issues (created in the period, not resolved or closed) per store. */
+export function openIssuesByStore(db, scope, filters) {
+  return issueQuery(db, scope, filters, {
+    select: Prisma.sql`i.point_of_sale_id::text AS id, count(*)::int AS count`,
+    where: Prisma.sql`AND i.status IN ('open', 'in_progress') AND i.point_of_sale_id IS NOT NULL`,
+    group: Prisma.sql`i.point_of_sale_id`,
+    order: Prisma.sql`i.point_of_sale_id`,
+  });
+}
+
+const selectedCampaigns = (agencyId, filters) => Prisma.sql`selected_campaigns AS (
+  SELECT c.id, c.agency_id, c.start_date, c.end_date, c.status
+  FROM campaigns c WHERE c.agency_id = ${agencyId}::uuid
+  ${whereIds(Prisma.sql`c.id`, filters.campaignIds)}
+  ${whereIds(Prisma.sql`c.client_id`, filters.clientId ? [filters.clientId] : undefined)}
+)`;
+
+/**
+ * Last supervisor visit per store, within what the scope may see. Animateurs see visits they were
+ * observed in; supervisors their own; regional managers their team's (and separately staffed points).
+ */
+export async function lastVisits(db, scope, filters, storeIds) {
+  assertScope(scope);
+  if (!storeIds.length) return [];
+  const { agencyId, userId } = scope;
+  const visitDate = Prisma.sql`(v.visited_at AT TIME ZONE 'Africa/Algiers')::date`;
+  const visible =
+    scope.level === 'agency'
+      ? Prisma.empty
+      : scope.level === 'self'
+        ? Prisma.sql`AND ${userId}::uuid = ANY(v.observed_animateur_ids)`
+        : scope.level === 'supervisor'
+          ? Prisma.sql`AND v.supervisor_id = ${userId}::uuid`
+          : scope.level === 'regional'
+            ? Prisma.sql`AND (
+              EXISTS (SELECT 1 FROM team WHERE team.user_id = v.supervisor_id
+                AND team.starts <= ${visitDate} AND team.ends > ${visitDate})
+              OR ${visitInRegion(scope)}
+            )`
+            : Prisma.sql`AND false`;
+  return db.$queryRaw`
+    WITH RECURSIVE ${teamIntervals(scope)}, ${selectedCampaigns(agencyId, filters)}
+    SELECT v.point_of_sale_id::text AS id, max(v.visited_at) AS "lastVisit"
+    FROM supervisor_visits v JOIN selected_campaigns c ON c.id = v.campaign_id
+    JOIN points_of_sale p ON p.id = v.point_of_sale_id AND p.agency_id = v.agency_id
+    WHERE v.agency_id = ${agencyId}::uuid ${whereIds(Prisma.sql`v.point_of_sale_id`, storeIds)} ${visible}
+    GROUP BY v.point_of_sale_id`;
+}
+
+/**
+ * Today's attendance per store (live map): one count per approved assignment working today, by what
+ * its Animateur has done so far. No names, no coordinates: only counts per store.
+ */
+export async function todayAttendanceByStore(db, scope, filters, storeIds, instant) {
+  assertScope(scope);
+  if (!storeIds.length) return [];
+  const { agencyId } = scope;
+  return db.$queryRaw`
+    WITH RECURSIVE ${teamIntervals(scope)}, ${selectedCampaigns(agencyId, filters)},
+    today AS (SELECT (${instant}::timestamptz AT TIME ZONE 'Africa/Algiers')::date AS d),
+    todays AS (
+      SELECT a.id, a.campaign_id, a.point_of_sale_id, a.animateur_id, a.supervisor_id, a.work_date
+      FROM (SELECT x.*, t.d AS work_date FROM assignments x CROSS JOIN today t) a
+      JOIN selected_campaigns c ON c.id = a.campaign_id
+      WHERE a.agency_id = ${agencyId}::uuid AND a.status = 'approved' AND c.status = 'active'
+        AND a.start_date <= a.work_date AND a.end_date >= a.work_date
+        AND c.start_date <= a.work_date AND c.end_date >= a.work_date
+        AND (coalesce(cardinality(a.work_days), 0) = 0 OR extract(isodow FROM a.work_date)::int = ANY(a.work_days))
+        ${whereIds(Prisma.sql`a.point_of_sale_id`, storeIds)}
+        ${operationScope(scope, Prisma.sql`a`)}
+    )
+    SELECT a.point_of_sale_id::text AS id,
+      count(*)::int AS animateurs,
+      count(*) FILTER (WHERE ab.id IS NOT NULL)::int AS absent,
+      count(*) FILTER (WHERE ab.id IS NULL AND r.id IS NULL)::int AS "notSent",
+      count(*) FILTER (WHERE ab.id IS NULL AND r.id IS NOT NULL AND r.is_late)::int AS late,
+      count(*) FILTER (WHERE ab.id IS NULL AND r.id IS NOT NULL AND NOT r.is_late)::int AS present,
+      array_agg(DISTINCT a.campaign_id::text) AS "campaignIds"
+    FROM todays a
+    LEFT JOIN LATERAL (
+      SELECT x.id FROM absences x WHERE x.assignment_id = a.id AND x.work_date = a.work_date
+        AND x.voided_at IS NULL AND x.agency_id = ${agencyId}::uuid LIMIT 1
+    ) ab ON true
+    LEFT JOIN LATERAL (
+      SELECT x.id, x.is_late FROM attendance_records x
+      WHERE x.assignment_id = a.id AND x.work_date = a.work_date AND x.status <> 'rejected'
+        AND x.agency_id = ${agencyId}::uuid ORDER BY x.recorded_at LIMIT 1
+    ) r ON true
+    GROUP BY a.point_of_sale_id`;
+}
+
+/**
+ * Counts per ISO weekday x Algiers hour (the day cuts at local midnight, no DST in Algeria):
+ * recorded sales, or late attendance check-ins, in the period.
+ */
+export async function timeHeatmap(db, scope, filters, kind) {
+  assertScope(scope);
+  const { agencyId } = scope;
+  const { from, to } = filters;
+  const source =
+    kind === 'sales'
+      ? Prisma.sql`
+        SELECT s.sold_at AS at, s.agency_id, s.animateur_id, s.supervisor_id, s.point_of_sale_id, s.work_date
+        FROM sales s JOIN selected_campaigns c ON c.id = s.campaign_id
+        WHERE s.agency_id = ${agencyId}::uuid AND s.status = 'recorded'
+          AND s.work_date BETWEEN ${from}::date AND ${to}::date`
+      : Prisma.sql`
+        SELECT x.recorded_at AS at, x.agency_id, x.animateur_id, r.supervisor_id, x.point_of_sale_id, x.work_date
+        FROM attendance_records x JOIN selected_campaigns c ON c.id = x.campaign_id
+        JOIN assignments r ON r.id = x.assignment_id AND r.agency_id = x.agency_id
+        WHERE x.agency_id = ${agencyId}::uuid AND x.is_late
+          AND x.work_date BETWEEN ${from}::date AND ${to}::date`;
+  return db.$queryRaw`
+    WITH RECURSIVE ${teamIntervals(scope)}, ${selectedCampaigns(agencyId, filters)}, events AS (${source})
+    SELECT extract(isodow FROM e.at AT TIME ZONE 'Africa/Algiers')::int AS weekday,
+      extract(hour FROM e.at AT TIME ZONE 'Africa/Algiers')::int AS hour, count(*)::int AS count
+    FROM events e ${location(Prisma.sql`e`)}
+    WHERE true ${operationScope(scope, Prisma.sql`e`)} ${facets(filters, Prisma.sql`e`)}
+    GROUP BY 1, 2 ORDER BY 1, 2`;
 }

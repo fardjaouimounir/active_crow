@@ -1,9 +1,15 @@
+import { lazy, Suspense } from 'react';
 import { Link, useParams } from 'react-router';
 import { useCan } from '../../shared/auth/hooks.js';
 import { BreakdownTable, Cards, DailyChart } from '../../features/reporting/ReportingUi.jsx';
 import '../../features/reporting/report-print.css';
 import { usePortalExport, usePortalQuery, usePortalText } from './api.js';
 import { ProofGallery } from './ProofGallery.jsx';
+const PortalGeography = lazy(() =>
+  import('./PortalGeography.jsx').then((module) => ({ default: module.PortalGeography })),
+);
+import { StaticChoropleth } from '../../ui/map/StaticChoropleth.jsx';
+import { useWilayaName } from '../../features/reporting/useWilayaName.js';
 
 /** Where the links of a portal page lead: the portal itself, or the director's preview. */
 export const portalPaths = (preview, campaignId) =>
@@ -136,6 +142,12 @@ export function PortalCampaign({ preview = false, variant = 'page' }) {
     dimension: 'point_of_sale',
   });
   const product = usePortalQuery(`/portal/campaigns/${id}/breakdown`, { dimension: 'product' });
+  const geo = usePortalQuery(
+    `/portal/campaigns/${id}/geo/wilayas`,
+    { metric: 'sales_units' },
+    variant === 'report',
+  );
+  const wilayaName = useWilayaName();
   const download = usePortalExport(language);
   const paths = portalPaths(preview, id);
   const report = variant === 'report';
@@ -197,6 +209,12 @@ export function PortalCampaign({ preview = false, variant = 'page' }) {
       </header>
       <Cards values={data.kpis} view="client" />
       <Commentary commentary={data.commentary} />
+      {!report && (
+        <Suspense fallback={null}>
+          <PortalGeography campaignId={id} />
+        </Suspense>
+      )}
+      {report && geo.data && <StaticChoropleth data={geo.data} wilayaName={wilayaName} />}
       {day.data && <DailyChart rows={day.data} />}
       {wilaya.data && <BreakdownTable rows={wilaya.data} title="byWilaya" view="client" />}
       {store.data && <BreakdownTable rows={store.data} title="byStore" view="client" />}

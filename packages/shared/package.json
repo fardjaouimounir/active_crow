@@ -8,7 +8,8 @@
     "./auth": "./src/auth.js",
     "./enums": "./src/enums.js",
     "./errors": "./src/errors.js",
-    "./permissions": "./src/permissions.js"
+    "./permissions": "./src/permissions.js",
+    "./wilayaPolygons": "./src/wilayaPolygons.js"
   },
   "scripts": {
     "test": "vitest run"

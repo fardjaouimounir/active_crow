@@ -10,6 +10,13 @@ export function registerReportingOpenApi(registry) {
     query: input.breakdown,
     array: true,
   });
+  get('/geo/wilayas', 'Read one metric per wilaya and map polygon', 'reports.read', {
+    query: input.geoWilayas,
+  });
+  get('/geo/stores', 'Read stores with coordinates and map figures', 'reports.read', {
+    query: input.geoStores,
+  });
+  get('/heatmap', 'Read a weekday by hour heatmap', 'reports.read', { query: input.heatmap });
   get('/campaigns/{id}/summary', 'Read the final campaign report', 'reports.read', {
     params: input.params,
   });

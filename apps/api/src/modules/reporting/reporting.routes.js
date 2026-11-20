@@ -27,6 +27,9 @@ export function createReportingRouter() {
     );
   get('/kpis', 'reports.read', input.kpis, controller.kpis);
   get('/breakdown', 'reports.read', input.breakdown, controller.breakdown);
+  get('/geo/wilayas', 'reports.read', input.geoWilayas, controller.geoWilayas);
+  get('/geo/stores', 'reports.read', input.geoStores, controller.geoStores);
+  get('/heatmap', 'reports.read', input.heatmap, controller.heatmap);
   get('/campaigns/:id/summary', 'reports.read', input.empty, controller.summary);
   get('/export.xlsx', 'reports.export', input.dashboardExport, controller.exportDashboard);
   get('/campaigns/:id/export.xlsx', 'reports.export', input.empty, controller.exportCampaign);

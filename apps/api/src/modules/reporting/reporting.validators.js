@@ -1,4 +1,5 @@
 import { reportingFilterFields, reportingFilters } from '@fieldflow/shared';
+import { GEO_METRICS, HEATMAP_KINDS } from '@fieldflow/shared/wilayaPolygons';
 import { z } from 'zod';
 
 export const empty = z.strictObject({});
@@ -16,3 +17,17 @@ export const dashboardExport = z
     path: ['to'],
     message: 'Invalid period',
   });
+
+const withPeriod = (shape) =>
+  z
+    .strictObject(shape)
+    .refine(
+      ({ metric: _metric, kind: _kind, ...filters }) => reportingFilters.safeParse(filters).success,
+      { path: ['to'], message: 'Invalid period' },
+    );
+export const geoWilayas = withPeriod({
+  ...reportingFilterFields,
+  metric: z.enum(GEO_METRICS).default('sales_units'),
+});
+export const geoStores = reportingFilters;
+export const heatmap = withPeriod({ ...reportingFilterFields, kind: z.enum(HEATMAP_KINDS) });

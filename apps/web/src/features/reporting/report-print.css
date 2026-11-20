@@ -29,6 +29,13 @@
     box-shadow: none !important;
   }
 
+  /* Legend colour keys must print: they are the only way to read the map. */
+  .campaign-print-report .legend-swatch {
+    background: var(--swatch) !important;
+    print-color-adjust: exact;
+    border: 0.5pt solid black;
+  }
+
   .campaign-print-report th {
     border-bottom: 1.5pt solid black;
     print-color-adjust: exact;

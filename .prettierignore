@@ -10,3 +10,4 @@ CLAUDE.md
 
 # Local agent tooling (skills, scripts), not project source
 .claude/
+apps/web/src/assets/geo/dz-wilayas.json

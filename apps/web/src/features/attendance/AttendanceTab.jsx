@@ -1,6 +1,6 @@
 import { absenceInput, attendanceReason, hasAbsenceReason, today } from '@fieldflow/shared';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { useState } from 'react';
+import { lazy, Suspense, useMemo, useState } from 'react';
 import { useForm, useWatch } from 'react-hook-form';
 import { useTranslation } from 'react-i18next';
 import {
@@ -39,6 +39,10 @@ const STATUS_ICONS = {
   absent_justified: UserRoundCheck,
   absent_unjustified: UserRoundX,
 };
+// The mini-map (and MapLibre behind it) loads only when a proof drawer with a check-in point opens.
+const CheckinMap = lazy(() =>
+  import('../../ui/map/CheckinMap.jsx').then((module) => ({ default: module.CheckinMap })),
+);
 const flags = ['late', 'far_from_pos', 'low_gps_accuracy', 'pos_without_location'];
 export const button = buttonClass({ variant: 'secondary', size: 'sm' });
 export const field = controlClass + ' h-auto py-1.5';
@@ -81,6 +85,12 @@ function Proof({ id, close }) {
   const [action, setAction] = useState('');
   const { register, handleSubmit } = useForm({ resolver: zodResolver(attendanceReason) });
   const row = proof.data?.data;
+  const latitude = row?.latitude;
+  const longitude = row?.longitude;
+  const checkin = useMemo(
+    () => (latitude == null || longitude == null ? null : { latitude, longitude }),
+    [latitude, longitude],
+  );
   const submit = ({ reason }) => {
     const body =
       action === 'reject'
@@ -106,15 +116,25 @@ function Proof({ id, close }) {
             })}
           </p>
           <p>{row.flags.map((flag) => t('attendance.flags.' + flag)).join(' · ')}</p>
-          {row.latitude != null && row.longitude != null && (
-            <a
-              target="_blank"
-              rel="noreferrer"
-              href={`https://www.openstreetmap.org/?mlat=${row.latitude}&mlon=${row.longitude}#map=17/${row.latitude}/${row.longitude}`}
-            >
-              {t('attendance.map')}
-            </a>
-          )}
+          {checkin &&
+            (row.store?.latitude == null ? (
+              <a
+                target="_blank"
+                rel="noreferrer"
+                href={`https://www.openstreetmap.org/?mlat=${checkin.latitude}&mlon=${checkin.longitude}#map=17/${checkin.latitude}/${checkin.longitude}`}
+              >
+                {t('attendance.map')}
+              </a>
+            ) : (
+              <Suspense fallback={<p role="status">{t('admin.loading')}</p>}>
+                <CheckinMap
+                  store={row.store}
+                  checkin={checkin}
+                  radius={row.maxDistanceMeters}
+                  distance={row.distanceM}
+                />
+              </Suspense>
+            ))}
           {row.reviewNote && <p>{row.reviewNote}</p>}
           {row.status === 'pending' && canReview && (
             <div className="flex gap-2">
@@ -306,9 +326,25 @@ export function AttendanceTab({ campaign }) {
     Boolean(cell.status) &&
     (!filters.status || cell.status === filters.status) &&
     (!filters.flag || cell.flags.includes(filters.flag));
+  // Arriving from the live map: only the rows of one store.
+  const visibleRows = rows.filter(
+    (row) =>
+      (!filters.store || row.pointOfSale.id === filters.store) && row.checkpoints.some(matches),
+  );
+  const storeName = rows.find((row) => row.pointOfSale.id === filters.store)?.pointOfSale.name;
   return (
     <section className="grid gap-4">
       <div className="flex flex-wrap items-end gap-2">
+        {filters.store && (
+          <button
+            type="button"
+            className={button + ' border-accent-line bg-accent-soft text-accent-text'}
+            onClick={() => setFilters({ store: '' })}
+          >
+            {storeName ?? '…'} <span aria-hidden="true">×</span>
+            <span className="sr-only">{t('admin.close')}</span>
+          </button>
+        )}
         <label className="grid">
           {t('attendance.date')}
           <input
@@ -398,7 +434,7 @@ export function AttendanceTab({ campaign }) {
               <span className="tnum font-semibold">{query.data.data.counters.late}</span>
             </span>
           </div>
-          {rows.some((row) => row.checkpoints.some(matches)) ? (
+          {visibleRows.length > 0 ? (
             <TableFrame>
               <div className="overflow-x-auto">
                 <table className={tableClass.table}>
@@ -418,105 +454,99 @@ export function AttendanceTab({ campaign }) {
                     </tr>
                   </thead>
                   <tbody>
-                    {rows
-                      .filter((row) => row.checkpoints.some(matches))
-                      .map((row) => (
-                        <tr key={row.assignmentId} className={tableClass.row()}>
-                          <th
-                            scope="row"
-                            className="sticky start-0 z-10 min-w-40 bg-surface px-3 py-1.5 text-start text-sm font-medium"
-                          >
-                            {row.animateur.fullName}
-                            <span className="block text-xs font-normal text-fg-3">
-                              {row.pointOfSale.name} ·{' '}
-                              {
-                                row.pointOfSale.wilaya?.[
-                                  i18n.language === 'ar' ? 'nameAr' : 'nameEn'
-                                ]
-                              }
-                            </span>
-                            <span className="block text-xs font-normal text-fg-3">
-                              {row.supervisor.fullName}
-                            </span>
-                          </th>
-                          {checkpoints
-                            .map(
-                              ({ code }) =>
-                                row.checkpoints.find((cell) => cell.code === code) ?? { code },
-                            )
-                            .map((cell) => (
-                              <td key={cell.code} className="min-w-36 px-2 py-1.5 align-top">
-                                {matches(cell) && (
-                                  <div
-                                    className={
-                                      tones[cell.status] +
-                                      ' flex items-center gap-1.5 rounded-md border px-2 py-1 text-xs'
-                                    }
-                                  >
-                                    {canReview && cell.status === 'pending' && (
-                                      <input
-                                        type="checkbox"
-                                        checked={selected.includes(cell.record.id)}
-                                        aria-label={t('attendance.select', {
-                                          name: row.animateur.fullName,
-                                          checkpoint: cell.code,
-                                        })}
-                                        onChange={(event) =>
-                                          select((ids) =>
-                                            event.target.checked
-                                              ? [...ids, cell.record.id].slice(0, 200)
-                                              : ids.filter((id) => id !== cell.record.id),
-                                          )
-                                        }
-                                      />
-                                    )}
-                                    {(() => {
-                                      const Icon = STATUS_ICONS[cell.status];
-                                      return (
-                                        <Icon aria-hidden="true" size={14} className="shrink-0" />
-                                      );
-                                    })()}
-                                    {cell.record ? (
-                                      <button
-                                        className="text-start underline-offset-2 hover:underline"
-                                        onClick={() => openProof(cell.record.id)}
-                                      >
-                                        {t('attendance.status.' + cell.status)}
-                                        <span className="tnum ms-1.5 opacity-80">
-                                          {time(cell.record.recordedAt, i18n.language)}
-                                        </span>
-                                      </button>
-                                    ) : (
-                                      <span>{t('attendance.status.' + cell.status)}</span>
-                                    )}
-                                    {cell.flags.map((flag) => (
-                                      <span
-                                        key={flag}
-                                        title={t('attendance.flags.' + flag)}
-                                        aria-label={t('attendance.flags.' + flag)}
-                                      >
-                                        <Flag aria-hidden="true" size={12} />
+                    {visibleRows.map((row) => (
+                      <tr key={row.assignmentId} className={tableClass.row()}>
+                        <th
+                          scope="row"
+                          className="sticky start-0 z-10 min-w-40 bg-surface px-3 py-1.5 text-start text-sm font-medium"
+                        >
+                          {row.animateur.fullName}
+                          <span className="block text-xs font-normal text-fg-3">
+                            {row.pointOfSale.name} ·{' '}
+                            {row.pointOfSale.wilaya?.[i18n.language === 'ar' ? 'nameAr' : 'nameEn']}
+                          </span>
+                          <span className="block text-xs font-normal text-fg-3">
+                            {row.supervisor.fullName}
+                          </span>
+                        </th>
+                        {checkpoints
+                          .map(
+                            ({ code }) =>
+                              row.checkpoints.find((cell) => cell.code === code) ?? { code },
+                          )
+                          .map((cell) => (
+                            <td key={cell.code} className="min-w-36 px-2 py-1.5 align-top">
+                              {matches(cell) && (
+                                <div
+                                  className={
+                                    tones[cell.status] +
+                                    ' flex items-center gap-1.5 rounded-md border px-2 py-1 text-xs'
+                                  }
+                                >
+                                  {canReview && cell.status === 'pending' && (
+                                    <input
+                                      type="checkbox"
+                                      checked={selected.includes(cell.record.id)}
+                                      aria-label={t('attendance.select', {
+                                        name: row.animateur.fullName,
+                                        checkpoint: cell.code,
+                                      })}
+                                      onChange={(event) =>
+                                        select((ids) =>
+                                          event.target.checked
+                                            ? [...ids, cell.record.id].slice(0, 200)
+                                            : ids.filter((id) => id !== cell.record.id),
+                                        )
+                                      }
+                                    />
+                                  )}
+                                  {(() => {
+                                    const Icon = STATUS_ICONS[cell.status];
+                                    return (
+                                      <Icon aria-hidden="true" size={14} className="shrink-0" />
+                                    );
+                                  })()}
+                                  {cell.record ? (
+                                    <button
+                                      className="text-start underline-offset-2 hover:underline"
+                                      onClick={() => openProof(cell.record.id)}
+                                    >
+                                      {t('attendance.status.' + cell.status)}
+                                      <span className="tnum ms-1.5 opacity-80">
+                                        {time(cell.record.recordedAt, i18n.language)}
                                       </span>
-                                    ))}
-                                  </div>
-                                )}
-                              </td>
-                            ))}
-                          <td className="px-3 py-1.5">
-                            {row.absenceHistory?.length > 0 && (
-                              <button className={button} onClick={() => openAbsenceHistory(row)}>
-                                {t('attendance.absenceHistory')}
+                                    </button>
+                                  ) : (
+                                    <span>{t('attendance.status.' + cell.status)}</span>
+                                  )}
+                                  {cell.flags.map((flag) => (
+                                    <span
+                                      key={flag}
+                                      title={t('attendance.flags.' + flag)}
+                                      aria-label={t('attendance.flags.' + flag)}
+                                    >
+                                      <Flag aria-hidden="true" size={12} />
+                                    </span>
+                                  ))}
+                                </div>
+                              )}
+                            </td>
+                          ))}
+                        <td className="px-3 py-1.5">
+                          {row.absenceHistory?.length > 0 && (
+                            <button className={button} onClick={() => openAbsenceHistory(row)}>
+                              {t('attendance.absenceHistory')}
+                            </button>
+                          )}
+                          {canRecordAbsence &&
+                            !row.absenceHistory?.some((item) => !item.voidedAt) && (
+                              <button className={button} onClick={() => openAbsence(row)}>
+                                {t('attendance.absence')}
                               </button>
                             )}
-                            {canRecordAbsence &&
-                              !row.absenceHistory?.some((item) => !item.voidedAt) && (
-                                <button className={button} onClick={() => openAbsence(row)}>
-                                  {t('attendance.absence')}
-                                </button>
-                              )}
-                          </td>
-                        </tr>
-                      ))}
+                        </td>
+                      </tr>
+                    ))}
                   </tbody>
                 </table>
               </div>

@@ -4,7 +4,7 @@ import { VisitsTab } from '../../attendance/VisitsTab.jsx';
 import { SalesTab } from '../../sales/SalesTab.jsx';
 import { TombolaTab } from '../../sales/TombolaTab.jsx';
 import { canEdit as canEditArea } from '@fieldflow/shared';
-import { useState } from 'react';
+import { lazy, Suspense, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Link, useLocation, useParams } from 'react-router';
 import { useAuth, useCan } from '../../../shared/auth/hooks.js';
@@ -26,6 +26,11 @@ import { usePageCrumb } from '../../../ui/controls.jsx';
 import { PointsOfSaleTab } from '../components/PointsOfSaleTab.jsx';
 import { ProductsTab } from '../components/ProductsTab.jsx';
 import { StockTab } from '../../inventory/StockTab.jsx';
+const StoreMapPanel = lazy(() =>
+  import('../../reporting/GeographySection.jsx').then((module) => ({
+    default: module.StoreMapPanel,
+  })),
+);
 import { RulesTab } from '../components/RulesTab.jsx';
 
 const TABS = [
@@ -41,6 +46,7 @@ const TABS = [
   'tombola',
   'issues',
   'stock',
+  'map',
   'documents',
   'history',
 ];
@@ -121,6 +127,7 @@ export function CampaignDetailPage() {
   const showVisits = useCan('visit.read');
   const showSales = useCan('sale.read');
   const showTombola = useCan('tombola.read');
+  const showReports = useCan('reports.read');
   const { filters, setFilters } = useFilters();
   const query = useCampaign(id);
   const { message } = useApiError(query.error);
@@ -133,7 +140,8 @@ export function CampaignDetailPage() {
       (showVisits || item !== 'visits') &&
       (showSales || item !== 'sales') &&
       (showTombola || item !== 'tombola') &&
-      (showStock || item !== 'stock'),
+      (showStock || item !== 'stock') &&
+      (showReports || item !== 'map'),
   );
   const tab = tabs.includes(filters.tab) ? filters.tab : 'overview';
   if (query.isPending) return <p role="status">{t('admin.loading')}</p>;
@@ -196,6 +204,17 @@ export function CampaignDetailPage() {
         {tab === 'rules' && <RulesTab campaign={campaign} canEdit={allowed('ruleSet')} />}
         {tab === 'documents' && <DocumentsTab campaign={campaign} canEdit={allowed('documents')} />}
         {tab === 'stock' && <StockTab campaign={campaign} />}
+        {tab === 'map' && (
+          <Suspense fallback={<p role="status">{t('admin.loading')}</p>}>
+            <StoreMapPanel
+              filters={{
+                campaignIds: [campaign.id],
+                from: campaign.startDate.slice(0, 10),
+                to: campaign.endDate.slice(0, 10),
+              }}
+            />
+          </Suspense>
+        )}
         {tab === 'issues' && <IssuesPage campaignId={id} />}
         {tab === 'assignments' && <AssignmentsTab campaign={campaign} />}
         {tab === 'attendance' && <AttendanceTab campaign={campaign} />}

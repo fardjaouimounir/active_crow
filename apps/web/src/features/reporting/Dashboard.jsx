@@ -1,4 +1,5 @@
 import { reportingFilterFields, reportingFilters, today } from '@fieldflow/shared';
+import { lazy, Suspense } from 'react';
 import { useSearchParams } from 'react-router';
 import { TriangleAlert } from 'lucide-react';
 import { useAuth, useCan } from '../../shared/auth/hooks.js';
@@ -10,6 +11,13 @@ import {
   CampaignAiCards,
 } from '../ai/AiUi.jsx';
 import { useReport } from './api.js';
+// The map sections (boundary data, store maps) load only when the dashboard shows them.
+const GeographySection = lazy(() =>
+  import('./GeographySection.jsx').then((module) => ({ default: module.GeographySection })),
+);
+const LiveFieldSection = lazy(() =>
+  import('./GeographySection.jsx').then((module) => ({ default: module.LiveFieldSection })),
+);
 import {
   BreakdownTable,
   Cards,
@@ -247,6 +255,10 @@ export function Dashboard() {
           </section>
         </>
       )}
+      <Suspense fallback={null}>
+        {parsed.success && (supervisor || regional) && <LiveFieldSection filters={filters} />}
+        {parsed.success && !supervisor && <GeographySection filters={filters} update={update} />}
+      </Suspense>
       {!supervisor && series.data && (
         <div className="grid gap-4 xl:grid-cols-2">
           <DailyChart rows={series.data} />
