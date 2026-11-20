@@ -20,6 +20,7 @@ export function mockApi(routes) {
     calls.push({
       key,
       authorization: config.headers.get('Authorization') ?? undefined,
+      idempotencyKey: config.headers.get('Idempotency-Key') ?? undefined,
       body: config.data ? JSON.parse(config.data) : undefined,
     });
     const handler = routes[key];

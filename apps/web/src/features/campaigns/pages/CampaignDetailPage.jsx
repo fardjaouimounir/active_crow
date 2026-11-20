@@ -20,6 +20,7 @@ import { HistoryTab } from '../components/HistoryTab.jsx';
 import { LifecyclePanel } from '../components/LifecyclePanel.jsx';
 import { PointsOfSaleTab } from '../components/PointsOfSaleTab.jsx';
 import { ProductsTab } from '../components/ProductsTab.jsx';
+import { StockTab } from '../../inventory/StockTab.jsx';
 import { RulesTab } from '../components/RulesTab.jsx';
 
 const TABS = [
@@ -30,6 +31,7 @@ const TABS = [
   'rules',
   'assignments',
   'issues',
+  'stock',
   'documents',
   'history',
 ];
@@ -104,11 +106,15 @@ export function CampaignDetailPage() {
   const canManage = useCan('campaign.manage');
   const showIssues = useCan('issue.read');
   const showAssignments = useCan('assignment.read');
+  const showStock = useCan('inventory.read');
   const { filters, setFilters } = useFilters();
   const query = useCampaign(id);
   const { message } = useApiError(query.error);
   const tabs = TABS.filter(
-    (item) => (showAssignments || item !== 'assignments') && (showIssues || item !== 'issues'),
+    (item) =>
+      (showAssignments || item !== 'assignments') &&
+      (showIssues || item !== 'issues') &&
+      (showStock || item !== 'stock'),
   );
   const tab = tabs.includes(filters.tab) ? filters.tab : 'overview';
   if (query.isPending) return <p role="status">{t('admin.loading')}</p>;
@@ -160,6 +166,7 @@ export function CampaignDetailPage() {
         )}
         {tab === 'rules' && <RulesTab campaign={campaign} canEdit={allowed('ruleSet')} />}
         {tab === 'documents' && <DocumentsTab campaign={campaign} canEdit={allowed('documents')} />}
+        {tab === 'stock' && <StockTab campaign={campaign} />}
         {tab === 'issues' && <IssuesPage campaignId={id} />}
         {tab === 'assignments' && <AssignmentsTab campaign={campaign} />}
         {tab === 'history' && <HistoryTab campaignId={campaign.id} />}

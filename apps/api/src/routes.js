@@ -1,3 +1,4 @@
+import { createInventoryRouter } from './modules/inventory/inventory.routes.js';
 import { createNotificationsRouter } from './modules/notifications/notifications.routes.js';
 import { createIssuesRouter } from './modules/issues/issues.routes.js';
 import { createAnnouncementsRouter } from './modules/announcements/announcements.routes.js';
@@ -44,6 +45,7 @@ export function createRoutes({ checkDatabase }) {
   api.use('/clients', createCatalogRouter());
   api.use('/files', createFilesRouter());
   api.use(createAssignmentsRouter());
+  api.use(createInventoryRouter());
   api.use('/campaigns', createCampaignsRouter());
   api.use(createNotificationsRouter());
   api.use(createIssuesRouter());

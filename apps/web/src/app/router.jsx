@@ -157,6 +157,12 @@ export const routes = [
                 }),
               },
               {
+                path: 'my-stock',
+                lazy: async () => ({
+                  Component: (await import('../features/inventory/MyStockPage.jsx')).MyStockPage,
+                }),
+              },
+              {
                 path: 'approvals',
                 lazy: async () => ({
                   Component: (await import('../features/assignments/ApprovalsPage.jsx'))

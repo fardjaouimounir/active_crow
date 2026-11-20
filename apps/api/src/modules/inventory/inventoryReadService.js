@@ -18,8 +18,6 @@ async function hasOpenHoldings(tx, userId) {
 
 /** Locations that physically hold stock; external, customers and losses are bookkeeping counterparts. */
 const PHYSICAL_LOCATIONS = ['warehouse', 'holder', 'in_transit'];
-/** Movements still waiting for someone's decision. */
-const OPEN_MOVEMENT_STATUSES = ['pending', 'disputed', 'pending_approval'];
 
 /** Non-zero balances of the campaign in physical locations. */
 function countPhysicalBalances(db, campaignId) {
@@ -32,10 +30,19 @@ function countPhysicalBalances(db, campaignId) {
   });
 }
 
-/** Movements of the campaign still pending, disputed or waiting for approval. */
+/**
+ * Movements still waiting for someone's decision: pending shipments, adjustments awaiting approval
+ * and disputed shipments that no adjustment has settled yet (a resolved dispute no longer blocks).
+ */
 function countOpenMovements(db, campaignId) {
   return db.stockMovement.count({
-    where: { campaignId, status: { in: OPEN_MOVEMENT_STATUSES } },
+    where: {
+      campaignId,
+      OR: [
+        { status: { in: ['pending', 'pending_approval'] } },
+        { status: 'disputed', resolvedBy: { none: {} } },
+      ],
+    },
   });
 }
 

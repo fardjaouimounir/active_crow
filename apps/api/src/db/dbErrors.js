@@ -1,7 +1,12 @@
 // Maps PostgreSQL errors (as surfaced by Prisma 7 + @prisma/adapter-pg, or by pg directly) to AppErrors.
 // Kept free of Prisma imports so the global error handler can use it.
 import { AppError } from '../core/errors/AppError.js';
+import { logger } from '../config/logger.js';
+import { ERROR_CODES } from '@fieldflow/shared';
 import { BusinessRuleError, ConflictError } from '../core/errors/httpErrors.js';
+
+const STOCK_BALANCE_CONSTRAINT = 'stock_balances_non_negative';
+const UNBALANCED_LEDGER = /^unbalanced ledger for line (\S+)/;
 
 export const PG_ERROR = Object.freeze({
   UNIQUE_VIOLATION: '23505',
@@ -51,6 +56,21 @@ export function mapDbError(err) {
   if (err instanceof AppError) return err;
   const pg = readPgError(err);
   if (!pg) return err;
+
+  // BR-41: backstop of the engine's own check (which also reports the quantities).
+  if (pg.code === PG_ERROR.CHECK_VIOLATION && pg.constraint === STOCK_BALANCE_CONSTRAINT) {
+    return new AppError({
+      status: 422,
+      code: ERROR_CODES.INSUFFICIENT_STOCK,
+      message: 'Not enough stock at this location',
+    });
+  }
+  // The double-entry trigger firing means a bug: log it and let the handler answer a generic 500.
+  const unbalanced = pg.code === PG_ERROR.RAISE_EXCEPTION && UNBALANCED_LEDGER.exec(pg.message);
+  if (unbalanced) {
+    logger.error({ movementLineId: unbalanced[1] }, 'Unbalanced stock ledger rejected at commit');
+    return err;
+  }
 
   const details = pg.constraint ? { constraint: pg.constraint } : undefined;
   switch (pg.code) {

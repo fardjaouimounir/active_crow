@@ -18,7 +18,14 @@ const fieldByCode = {
 export function useApiError(error) {
   const { t } = useTranslation('common');
   if (!error) return { message: '', fields: {} };
+  // Scalar details (e.g. `available`, `requested`) fill the placeholders of the message.
+  const values = Object.fromEntries(
+    Object.entries(Array.isArray(error.details) ? {} : (error.details ?? {})).filter(([, value]) =>
+      ['number', 'string'].includes(typeof value),
+    ),
+  );
   const message = t('errors.codes.' + error.code, {
+    ...values,
     defaultValue: t('errors.codes.INTERNAL_ERROR'),
   });
   const fields = {};

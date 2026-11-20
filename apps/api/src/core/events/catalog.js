@@ -10,6 +10,7 @@ const issue = z.strictObject({
   assigneeId: id.nullable().optional(),
   commentAt: z.iso.datetime().optional(),
 });
+const stock = z.strictObject({ ...base, campaignId: id, movementId: id });
 export const eventCatalog = Object.freeze({
   'campaign.status_changed': campaign,
   'assignment.proposed': assignment,
@@ -22,6 +23,10 @@ export const eventCatalog = Object.freeze({
   'issue.assigned': issue,
   'issue.status_changed': issue,
   'issue.commented': issue,
+  'stock.transfer_created': stock,
+  'stock.transfer_disputed': stock,
+  'stock.adjustment_requested': stock,
+  'stock.adjustment_decided': stock.extend({ decision: z.enum(['approved', 'rejected']) }),
   'announcement.published': z.strictObject({
     ...base,
     announcementId: id,

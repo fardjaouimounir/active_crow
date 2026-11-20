@@ -1,3 +1,4 @@
+import { registerInventoryOpenApi } from './modules/inventory/inventory.openapi.js';
 import { registerNotificationsOpenApi } from './modules/notifications/notifications.openapi.js';
 import { registerIssuesOpenApi } from './modules/issues/issues.openapi.js';
 import { registerAnnouncementsOpenApi } from './modules/announcements/announcements.openapi.js';
@@ -22,6 +23,7 @@ export function openApiDocument() {
   registerCampaignsOpenApi(registry);
   registerRuleSetsOpenApi(registry);
   registerAssignmentsOpenApi(registry);
+  registerInventoryOpenApi(registry);
   registerNotificationsOpenApi(registry);
   registerIssuesOpenApi(registry);
   registerAnnouncementsOpenApi(registry);

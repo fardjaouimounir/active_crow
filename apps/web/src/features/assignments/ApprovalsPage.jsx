@@ -7,6 +7,7 @@ import { EmptyState, PageHeader, Toast } from '../../shared/ui/PageParts.jsx';
 import { useApiError } from '../../shared/ui/useApiError.js';
 import { actionStyle } from '../organization/components/Fields.jsx';
 import { usePendingAssignments } from './api.js';
+import { StockApprovals } from '../inventory/StockApprovals.jsx';
 import { DecisionDialog } from './DecisionDialog.jsx';
 
 export function ApprovalsPage() {
@@ -109,6 +110,7 @@ export function ApprovalsPage() {
           {t('admin.next')}
         </button>
       </div>
+      <StockApprovals />
       {action && (
         <DecisionDialog
           action={action}

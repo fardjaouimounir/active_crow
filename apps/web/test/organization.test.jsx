@@ -167,6 +167,7 @@ describe('organization administration', () => {
           "الحملات",
           "البلاغات",
           "الإعلانات",
+          "مخزوني",
         ],
       }
     `);

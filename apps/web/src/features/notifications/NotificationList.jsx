@@ -1,4 +1,4 @@
-import { Bell, CalendarDays, CircleAlert, Megaphone, Users } from 'lucide-react';
+import { Bell, Package, CalendarDays, CircleAlert, Megaphone, Users } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { Link } from 'react-router';
 import { EmptyState, Toast } from '../../shared/ui/PageParts.jsx';
@@ -10,6 +10,7 @@ const icons = {
   campaign: CalendarDays,
   issue: CircleAlert,
   announcement: Megaphone,
+  stock_movement: Package,
 };
 function destination(item) {
   switch (item.entityType) {
@@ -19,6 +20,12 @@ function destination(item) {
         : '/app/campaigns/' + item.payload.campaignId + '?tab=assignments';
     case 'campaign':
       return '/app/campaigns/' + item.entityId;
+    case 'stock_movement':
+      if (['stock.adjustment_requested', 'stock.transfer_disputed'].includes(item.type))
+        return '/app/approvals';
+      return item.type === 'stock.transfer_created'
+        ? '/app/my-stock'
+        : '/app/campaigns/' + item.payload.campaignId + '?tab=stock';
     case 'issue':
       return '/app/issues/' + item.entityId;
     case 'announcement':

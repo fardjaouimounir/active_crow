@@ -1,3 +1,4 @@
+import { AppError } from '../../core/errors/index.js';
 // One block per row of Prompt 02 section 8: the database itself rejects the forbidden state and
 // accepts the nearest valid one.
 import { BUSINESS_RULE_VIOLATION } from '@fieldflow/shared';
@@ -261,14 +262,15 @@ describe('Double entry: the ledger entries of each movement line sum to zero at 
     move = await createMovement(ctx, { from, to, stockItem: item });
   });
 
-  it('rejects entries of −5 / +4 at commit, as a 422 business rule error', async () => {
+  it('rejects entries of −5 / +4 at commit and is never shown to the client (generic 500)', async () => {
     const error = await withTransaction(async (tx) => {
       await tx.stockLedgerEntry.create({ data: ledgerEntry(ctx, move, from.id, -5) });
       await tx.stockLedgerEntry.create({ data: ledgerEntry(ctx, move, to.id, 4) });
     }).catch((err) => err);
 
-    expect(error).toMatchObject({ status: 422, code: BUSINESS_RULE_VIOLATION });
-    expect(error.details.reason).toMatch(/unbalanced ledger for line/);
+    // A bug, not a user error: mapDbError logs it and leaves it unmapped, so the handler answers 500.
+    expect(error).not.toBeInstanceOf(AppError);
+    expect(error.cause?.originalMessage ?? error.message).toMatch(/unbalanced ledger for line/);
     expect(await prisma.stockLedgerEntry.count({ where: { movementLineId: move.line.id } })).toBe(
       0,
     );

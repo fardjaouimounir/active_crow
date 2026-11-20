@@ -107,7 +107,22 @@
       "RESOLUTION_NOTE_REQUIRED": "A resolution or closing note is required.",
       "EMPTY_AUDIENCE": "No active users match this audience.",
       "AUDIENCE_NOT_ALLOWED": "This audience is outside your publishing scope.",
-      "TOO_MANY_ATTACHMENTS": "Attach no more than three files."
+      "TOO_MANY_ATTACHMENTS": "Attach no more than three files.",
+      "INSUFFICIENT_STOCK": "Not enough stock: {{available}} available, {{requested}} requested.",
+      "INVALID_RECIPIENT": "This person cannot receive this stock.",
+      "ITEM_NOT_OF_CLIENT": "One of the items does not belong to the campaign’s client.",
+      "TRANSFER_NOT_PENDING": "This transfer is no longer pending.",
+      "TRANSFER_NOT_DISPUTED": "This transfer is not in dispute.",
+      "NOT_RECIPIENT": "Only the recipient can confirm this transfer.",
+      "QUANTITY_EXCEEDS_SENT": "The received quantity is higher than the quantity sent.",
+      "MOVEMENT_NOT_ALLOWED_IN_STATUS": "This stock action is not allowed in the campaign’s status.",
+      "DISPUTE_ALREADY_RESOLVED": "This dispute was already resolved.",
+      "ADJUSTMENT_NOT_PENDING": "This adjustment was already decided.",
+      "NOT_ADJUSTMENT_APPROVER": "You cannot decide on this stock.",
+      "PROOF_REQUIRED": "A photo is required for lost or stolen stock.",
+      "IDEMPOTENCY_KEY_REQUIRED": "The request is missing its unique key. Reload the page.",
+      "IDEMPOTENCY_KEY_REUSED": "This request was already sent with different content. Reload the page.",
+      "ENTITLEMENT_NOT_DISTRIBUTABLE": "This gift was already handled."
     }
   },
   "roles": {
@@ -224,7 +239,8 @@
     "announcements": "Announcements",
     "category": "Category",
     "stockItem": "Stock item",
-    "title": "Title"
+    "title": "Title",
+    "myStock": "My stock"
   },
   "catalog": {
     "newClient": "New client",
@@ -290,7 +306,8 @@
       "history": "History",
       "rules": "Rules",
       "assignments": "Assignments",
-      "issues": "Issues"
+      "issues": "Issues",
+      "stock": "Stock"
     },
     "counts": {
       "wilayas": "Wilayas",
@@ -552,7 +569,124 @@
       "issue_assigned": "Issue assigned to you",
       "issue_status_changed": "Issue status changed",
       "issue_commented": "New issue comment",
-      "announcement_published": "New announcement"
+      "announcement_published": "New announcement",
+      "stock_transfer_created": "Stock sent to you",
+      "stock_transfer_disputed": "Stock shortfall reported",
+      "stock_adjustment_requested": "Stock adjustment awaiting approval",
+      "stock_adjustment_decided": "Stock adjustment decided"
+    }
+  },
+  "stock": {
+    "tab": "Stock",
+    "myStock": "My stock",
+    "views": {
+      "balances": "Balances",
+      "movements": "Movements",
+      "reconciliation": "Reconciliation"
+    },
+    "actions": {
+      "stockIn": "Stock-in",
+      "transfer": "Transfer",
+      "return": "Return",
+      "confirm": "Confirm receipt",
+      "cancel": "Cancel transfer",
+      "adjust": "Request adjustment",
+      "resolve": "Resolve dispute",
+      "approve": "Approve",
+      "reject": "Reject",
+      "submit": "Submit"
+    },
+    "location": "Location",
+    "item": "Item",
+    "quantity": "Quantity",
+    "available": "Available: {{count}}",
+    "total": "Total",
+    "sent": "Sent",
+    "received": "Received",
+    "kinds": {
+      "warehouse": "Warehouse",
+      "in_transit": "In transit",
+      "customers": "Customers",
+      "losses": "Losses",
+      "external": "Client",
+      "holder": "Holder"
+    },
+    "types": {
+      "stock_in": "Stock-in",
+      "transfer": "Transfer",
+      "distribution": "Distribution",
+      "return": "Return",
+      "adjustment": "Adjustment"
+    },
+    "statuses": {
+      "posted": "Posted",
+      "pending": "Pending",
+      "confirmed": "Confirmed",
+      "disputed": "Disputed",
+      "cancelled": "Cancelled",
+      "pending_approval": "Awaiting approval",
+      "rejected": "Rejected"
+    },
+    "reasons": {
+      "damaged": "Damaged",
+      "lost": "Lost",
+      "stolen": "Stolen",
+      "count_correction": "Count correction"
+    },
+    "decisions": {
+      "return_to_sender": "Return to sender",
+      "loss": "Write off as loss"
+    },
+    "reference": "Delivery note number",
+    "note": "Note",
+    "proof": "Proof (photo or PDF)",
+    "recipient": "Recipient",
+    "destination": "Destination",
+    "destinations": {
+      "user": "A person",
+      "warehouse": "Warehouse",
+      "client": "Back to the client"
+    },
+    "addLine": "Add a line",
+    "removeLine": "Remove line",
+    "from": "From",
+    "to": "To",
+    "date": "Date",
+    "reason": "Reason",
+    "holder": "Holder",
+    "details": "Movement details",
+    "entries": "Ledger entries",
+    "increaseNote": "Stock cannot be increased by an adjustment. Use a new stock-in or a return instead.",
+    "noRecipients": "No valid recipient for this action.",
+    "reconciliation": {
+      "received": "Received",
+      "sent": "Sent",
+      "returned": "Returned",
+      "distributed": "Distributed",
+      "adjusted": "Adjusted",
+      "balance": "Balance",
+      "inTransitFrom": "In transit from",
+      "inTransitTo": "In transit to",
+      "check": "Check",
+      "ok": "OK",
+      "failed": "Mismatch {{count}}",
+      "stockIn": "Stock-in",
+      "returnedToClient": "Returned to client",
+      "customers": "Customers",
+      "losses": "Losses",
+      "physical": "Physical remaining"
+    },
+    "mine": {
+      "balances": "My balances",
+      "toConfirm": "Transfers to confirm",
+      "outgoing": "My pending transfers",
+      "confirmTitle": "Confirm receipt",
+      "sentQuantity": "Sent: {{count}}"
+    },
+    "approvals": {
+      "title": "Stock approvals",
+      "adjustments": "Adjustments",
+      "disputes": "Disputes"
     }
   }
 }

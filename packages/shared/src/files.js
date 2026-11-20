@@ -17,6 +17,10 @@ export const FILE_KIND_RULES = Object.freeze({
     { mimeTypes: IMAGE_MIME_TYPES, maxBytes: 5 * MB },
     { mimeTypes: PDF, maxBytes: 10 * MB },
   ]),
+  stock_document: Object.freeze([
+    { mimeTypes: PDF, maxBytes: 10 * MB },
+    { mimeTypes: IMAGE_MIME_TYPES, maxBytes: 10 * MB },
+  ]),
   stock_adjustment_proof: Object.freeze([{ mimeTypes: IMAGE_MIME_TYPES, maxBytes: 5 * MB }]),
 });
 

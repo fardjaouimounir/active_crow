@@ -15,6 +15,7 @@ const navigation = [
   { key: 'campaigns', to: '/app/campaigns', permission: 'campaign.read' },
   { key: 'issues', to: '/app/issues', permission: 'issue.read' },
   { key: 'announcements', to: '/app/announcements', permission: 'announcement.read' },
+  { key: 'myStock', to: '/app/my-stock', permission: 'inventory.transfer' },
   { key: 'approvals', to: '/app/approvals', permission: 'assignment.approve' },
 ];
 

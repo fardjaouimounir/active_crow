@@ -107,7 +107,22 @@
       "RESOLUTION_NOTE_REQUIRED": "ملاحظة الحل أو الإغلاق مطلوبة.",
       "EMPTY_AUDIENCE": "لا يوجد مستخدمون نشطون يطابقون الجمهور.",
       "AUDIENCE_NOT_ALLOWED": "هذا الجمهور خارج نطاق صلاحية النشر.",
-      "TOO_MANY_ATTACHMENTS": "يمكن إرفاق ثلاثة ملفات كحد أقصى."
+      "TOO_MANY_ATTACHMENTS": "يمكن إرفاق ثلاثة ملفات كحد أقصى.",
+      "INSUFFICIENT_STOCK": "المخزون غير كافٍ: المتاح {{available}} والمطلوب {{requested}}.",
+      "INVALID_RECIPIENT": "لا يمكن لهذا الشخص استلام هذا المخزون.",
+      "ITEM_NOT_OF_CLIENT": "أحد الأصناف لا يخص عميل الحملة.",
+      "TRANSFER_NOT_PENDING": "لم يعد هذا النقل معلّقاً.",
+      "TRANSFER_NOT_DISPUTED": "هذا النقل ليس محل نزاع.",
+      "NOT_RECIPIENT": "المستلِم وحده يؤكد هذا النقل.",
+      "QUANTITY_EXCEEDS_SENT": "الكمية المستلمة أكبر من المُرسَلة.",
+      "MOVEMENT_NOT_ALLOWED_IN_STATUS": "هذا الإجراء غير مسموح في حالة الحملة الحالية.",
+      "DISPUTE_ALREADY_RESOLVED": "تم حسم هذا النزاع من قبل.",
+      "ADJUSTMENT_NOT_PENDING": "تم البتّ في هذه التسوية من قبل.",
+      "NOT_ADJUSTMENT_APPROVER": "لا يمكنك البتّ في هذا المخزون.",
+      "PROOF_REQUIRED": "الصورة مطلوبة للمخزون المفقود أو المسروق.",
+      "IDEMPOTENCY_KEY_REQUIRED": "الطلب ينقصه المعرّف الفريد. أعد تحميل الصفحة.",
+      "IDEMPOTENCY_KEY_REUSED": "أُرسل هذا الطلب سابقاً بمحتوى مختلف. أعد تحميل الصفحة.",
+      "ENTITLEMENT_NOT_DISTRIBUTABLE": "تمت معالجة هذه الهدية من قبل."
     }
   },
   "roles": {
@@ -224,7 +239,8 @@
     "announcements": "الإعلانات",
     "category": "الفئة",
     "stockItem": "عنصر المخزون",
-    "title": "العنوان"
+    "title": "العنوان",
+    "myStock": "مخزوني"
   },
   "catalog": {
     "newClient": "عميل جديد",
@@ -290,7 +306,8 @@
       "history": "السجل",
       "rules": "القواعد",
       "assignments": "التعيينات",
-      "issues": "البلاغات"
+      "issues": "البلاغات",
+      "stock": "المخزون"
     },
     "counts": {
       "wilayas": "الولايات",
@@ -552,7 +569,124 @@
       "issue_assigned": "أُسند إليك بلاغ",
       "issue_status_changed": "تغيّرت حالة البلاغ",
       "issue_commented": "تعليق جديد على البلاغ",
-      "announcement_published": "إعلان جديد"
+      "announcement_published": "إعلان جديد",
+      "stock_transfer_created": "مخزون مُرسَل إليك",
+      "stock_transfer_disputed": "تم الإبلاغ عن نقص في المخزون",
+      "stock_adjustment_requested": "تسوية مخزون بانتظار الاعتماد",
+      "stock_adjustment_decided": "تم البتّ في تسوية المخزون"
+    }
+  },
+  "stock": {
+    "tab": "المخزون",
+    "myStock": "مخزوني",
+    "views": {
+      "balances": "الأرصدة",
+      "movements": "الحركات",
+      "reconciliation": "التسوية"
+    },
+    "actions": {
+      "stockIn": "استلام من العميل",
+      "transfer": "نقل",
+      "return": "إرجاع",
+      "confirm": "تأكيد الاستلام",
+      "cancel": "إلغاء النقل",
+      "adjust": "طلب تسوية",
+      "resolve": "حسم النزاع",
+      "approve": "اعتماد",
+      "reject": "رفض",
+      "submit": "إرسال"
+    },
+    "location": "المكان",
+    "item": "الصنف",
+    "quantity": "الكمية",
+    "available": "المتاح: {{count}}",
+    "total": "المجموع",
+    "sent": "المُرسَل",
+    "received": "المُستلَم",
+    "kinds": {
+      "warehouse": "المستودع",
+      "in_transit": "في الطريق",
+      "customers": "الزبائن",
+      "losses": "الخسائر",
+      "external": "العميل",
+      "holder": "الحائز"
+    },
+    "types": {
+      "stock_in": "استلام",
+      "transfer": "نقل",
+      "distribution": "توزيع",
+      "return": "إرجاع",
+      "adjustment": "تسوية"
+    },
+    "statuses": {
+      "posted": "مُرحَّل",
+      "pending": "معلّق",
+      "confirmed": "مؤكَّد",
+      "disputed": "متنازع عليه",
+      "cancelled": "ملغى",
+      "pending_approval": "بانتظار الاعتماد",
+      "rejected": "مرفوض"
+    },
+    "reasons": {
+      "damaged": "تالف",
+      "lost": "مفقود",
+      "stolen": "مسروق",
+      "count_correction": "تصحيح جرد"
+    },
+    "decisions": {
+      "return_to_sender": "إعادة للمُرسِل",
+      "loss": "شطب كخسارة"
+    },
+    "reference": "رقم وصل الاستلام",
+    "note": "ملاحظة",
+    "proof": "إثبات (صورة أو PDF)",
+    "recipient": "المستلِم",
+    "destination": "الوجهة",
+    "destinations": {
+      "user": "شخص",
+      "warehouse": "المستودع",
+      "client": "إعادة للعميل"
+    },
+    "addLine": "إضافة سطر",
+    "removeLine": "حذف السطر",
+    "from": "من",
+    "to": "إلى",
+    "date": "التاريخ",
+    "reason": "السبب",
+    "holder": "الحائز",
+    "details": "تفاصيل الحركة",
+    "entries": "قيود الدفتر",
+    "increaseNote": "لا يمكن زيادة المخزون بتسوية. استعمل استلاماً جديداً أو إرجاعاً.",
+    "noRecipients": "لا يوجد مستلِم صالح لهذا الإجراء.",
+    "reconciliation": {
+      "received": "المستلَم",
+      "sent": "المُرسَل",
+      "returned": "المُعاد",
+      "distributed": "الموزَّع",
+      "adjusted": "المسوّى",
+      "balance": "الرصيد",
+      "inTransitFrom": "في الطريق منه",
+      "inTransitTo": "في الطريق إليه",
+      "check": "التحقق",
+      "ok": "سليم",
+      "failed": "فرق {{count}}",
+      "stockIn": "المستلَم من العميل",
+      "returnedToClient": "المُعاد للعميل",
+      "customers": "الزبائن",
+      "losses": "الخسائر",
+      "physical": "المتبقي فعلياً"
+    },
+    "mine": {
+      "balances": "أرصدتي",
+      "toConfirm": "نقل بانتظار تأكيدي",
+      "outgoing": "نقلي المعلّق",
+      "confirmTitle": "تأكيد الاستلام",
+      "sentQuantity": "المُرسَل: {{count}}"
+    },
+    "approvals": {
+      "title": "اعتمادات المخزون",
+      "adjustments": "التسويات",
+      "disputes": "النزاعات"
     }
   }
 }
