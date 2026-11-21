@@ -145,6 +145,8 @@ async function demoCampaign(tx, { agency, number, directorId }) {
         campaignId,
         wilayaId,
         role: 'supervisor',
+        // The wilaya need (3) is the quota of its one supervisor.
+        requiredAnimateurs: 3,
         userId: idOf(email('supervisor', number * 2 - 2 + index + 1)),
       },
     ]),

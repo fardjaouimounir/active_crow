@@ -13,6 +13,25 @@ import { createWorld, offsetDate } from '../../campaigns/__tests__/fixtures.js';
 import { canApproveAssignment } from '../assignments.policies.js';
 
 let world;
+/** Every campaign `setup` made, with the supervisor key it staffed: new members join their team. */
+const made = [];
+
+/** The supervisor's team of a campaign: only its members can be proposed. */
+async function join(campaign, user, supervisor = 'supervisor') {
+  const supervisorId = world.people[supervisor].id;
+  await prisma.campaignAnimateur.upsert({
+    where: { campaignId_animateurId: { campaignId: campaign.id, animateurId: user.id } },
+    update: {},
+    create: {
+      agencyId: world.agency.id,
+      campaignId: campaign.id,
+      supervisorId,
+      animateurId: user.id,
+      addedById: supervisorId,
+    },
+  });
+}
+
 beforeAll(async () => {
   world = await createWorld(createApp());
 });
@@ -51,6 +70,7 @@ async function setup({
     ],
   });
   await linkPointOfSale(campaign, point.id);
+  made.push({ campaign, supervisor });
   return { campaign, point, path: '/campaigns/' + campaign.id };
 }
 
@@ -64,6 +84,9 @@ async function member(supervisor = 'supervisor') {
       validFrom: day(offsetDate(-10)),
     },
   });
+  for (const row of made.filter((item) => item.supervisor === supervisor)) {
+    await join(row.campaign, user, supervisor);
+  }
   return user;
 }
 
@@ -112,6 +135,7 @@ describe('assignment workflows', () => {
     const first = await setup({ supervisor: 'supervisorTwo', regional: 'regionalTwo' });
     const second = await setup();
     const user = await member();
+    await join(first.campaign, user, 'supervisorTwo');
     const original = await ok(
       send(
         'post',
@@ -327,8 +351,9 @@ it('validates proposal business rules before any write', async () => {
 
 it('returns an Animateur’s own approved assignment and replaces a future assignment atomically', async () => {
   const { send, rejected, ok, people } = world;
-  const { path, point } = await setup();
+  const { campaign, path, point } = await setup();
   const employee = people.animateur;
+  await join(campaign, employee);
   const body = input(point, employee, {
     supervisorId: people.supervisor.id,
     shiftStart: '09:00',

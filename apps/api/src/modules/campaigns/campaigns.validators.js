@@ -9,6 +9,9 @@ export {
   campaignPointsOfSaleSchema as pointsOfSale,
   campaignProductsSchema as products,
   documentLabelSchema as documentLabel,
+  staffQuotaSchema as staffQuota,
+  teamAnimateurSchema as teamAnimateur,
+  newTeamAnimateurSchema as newTeamAnimateur,
 } from '@fieldflow/shared';
 
 const integer = (max) => z.string().regex(/^\d+$/).transform(Number).pipe(z.int().min(1).max(max));
@@ -16,6 +19,7 @@ const integer = (max) => z.string().regex(/^\d+$/).transform(Number).pipe(z.int(
 export const empty = z.strictObject({});
 export const params = z.strictObject({ id: z.uuid() });
 export const staffParams = z.strictObject({ id: z.uuid(), staffId: z.uuid() });
+export const teamParams = z.strictObject({ id: z.uuid(), animateurId: z.uuid() });
 export const documentParams = z.strictObject({ id: z.uuid(), documentId: z.uuid() });
 
 export const campaignList = z

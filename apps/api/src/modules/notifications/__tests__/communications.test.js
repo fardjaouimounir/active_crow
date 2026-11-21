@@ -269,6 +269,15 @@ it('notifies the configured approvers and the Animateur through assignment actio
       validFrom: existing.startDate,
     },
   });
+  await prisma.campaignAnimateur.create({
+    data: {
+      agencyId: world.agency.id,
+      campaignId: fixture.campaign.id,
+      supervisorId: world.people.supervisor.id,
+      animateurId: fixture.animateur.id,
+      addedById: world.people.supervisor.id,
+    },
+  });
   const row = await ok(
     send('post', '/campaigns/' + fixture.campaign.id + '/assignments', 'supervisor', {
       animateurId: fixture.animateur.id,

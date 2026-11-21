@@ -2,6 +2,7 @@
 import { z } from 'zod';
 import { moneyInputSchema, moneySchema } from './catalog.js';
 import { campaignStaffRoleSchema, fileVisibilitySchema } from './enums.js';
+import { algerianPhoneSchema } from './organization.js';
 
 /** Q-09: who approves assignment proposals, chosen per campaign. */
 export const APPROVER_ROLES = Object.freeze(['director', 'general_manager', 'regional_manager']);
@@ -45,15 +46,38 @@ export const updateCampaignSchema = z
 
 export const campaignWilayasSchema = z.strictObject({
   wilayas: z
-    .array(z.strictObject({ wilayaId, requiredAnimateurs: z.int().min(0).max(500) }))
+    // `requiredAnimateurs` is ignored: the wilaya need is the sum of its supervisors' quotas.
+    .array(z.strictObject({ wilayaId, requiredAnimateurs: z.int().min(0).max(500).optional() }))
     .max(69)
     .refine((rows) => unique(rows.map((row) => row.wilayaId)), duplicates),
 });
+
+const quota = z.int().min(0).max(500);
 
 export const campaignStaffSchema = z.strictObject({
   userId: z.uuid(),
   wilayaId,
   role: campaignStaffRoleSchema,
+  /** Supervisors only: how many Animateurs they must bring to the campaign. */
+  requiredAnimateurs: quota.optional(),
+});
+
+export const staffQuotaSchema = z.strictObject({ requiredAnimateurs: quota });
+
+/** The supervisor's own Animateurs for a campaign: pick an existing one, or create a new one. */
+export const teamAnimateurSchema = z.strictObject({
+  animateurId: z.uuid(),
+  /** Director / regional manager only: which supervisor's team. */
+  supervisorId: z.uuid().optional(),
+});
+
+export const newTeamAnimateurSchema = z.strictObject({
+  fullName: text(200),
+  email: z.email().max(254).toLowerCase(),
+  phone: algerianPhoneSchema.optional(),
+  wilayaId: z.int().min(1).max(69),
+  communeId: z.int().positive().optional(),
+  supervisorId: z.uuid().optional(),
 });
 
 const idList = (max) => z.array(z.uuid()).max(max).refine(unique, duplicates);

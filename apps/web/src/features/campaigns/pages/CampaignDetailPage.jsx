@@ -19,6 +19,7 @@ import { useCampaign } from '../api.js';
 import { CampaignOverview } from '../components/CampaignOverview.jsx';
 import { CampaignStatus } from '../components/CampaignStatus.jsx';
 import { CoverageTab } from '../components/CoverageTab.jsx';
+import { TeamTab } from '../components/TeamTab.jsx';
 import { DocumentsTab } from '../components/DocumentsTab.jsx';
 import { HistoryTab } from '../components/HistoryTab.jsx';
 import { LifecycleActions } from '../components/LifecycleActions.jsx';
@@ -41,7 +42,7 @@ const GROUPS = [
   { key: 'field', subs: ['attendance', 'visits', 'issues', 'map'] },
   { key: 'sales', subs: ['sales', 'tombola'] },
   { key: 'stock', subs: [] },
-  { key: 'team', subs: ['coverage', 'assignments'] },
+  { key: 'team', subs: ['coverage', 'team', 'assignments'] },
   { key: 'setup', subs: ['general', 'stores', 'products', 'rules', 'documents'] },
   { key: 'activity', subs: [] },
 ];
@@ -164,6 +165,7 @@ export function CampaignDetailPage() {
   const can = {
     issues: useCan('issue.read'),
     assignments: useCan('assignment.read'),
+    team: useCan('assignment.propose'),
     stock: useCan('inventory.read'),
     attendance: useCan('attendance.read'),
     visits: useCan('visit.read'),
@@ -185,6 +187,7 @@ export function CampaignDetailPage() {
     sales: can.sales,
     tombola: can.tombola,
     assignments: can.assignments,
+    team: can.team,
   };
   const groups = GROUPS.map((group) => ({
     ...group,
@@ -258,6 +261,9 @@ export function CampaignDetailPage() {
         {sub === 'tombola' && <TombolaTab campaign={campaign} />}
         {group.key === 'stock' && <StockTab campaign={campaign} />}
         {sub === 'coverage' && <CoverageTab campaign={campaign} canEdit={allowed('coverage')} />}
+        {sub === 'team' && (
+          <TeamTab campaign={campaign} canEdit={canEditArea(campaign, 'coverage').allowed} />
+        )}
         {sub === 'assignments' && <AssignmentsTab campaign={campaign} />}
         {sub === 'general' && <SetupGeneral campaign={campaign} canManage={canManage} />}
         {sub === 'stores' && <PointsOfSaleTab campaign={campaign} canEdit={allowed('coverage')} />}

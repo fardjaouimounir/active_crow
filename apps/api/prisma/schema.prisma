@@ -218,12 +218,12 @@ enum AiSuggestionStatus {
 
 model Agency {
   fieldInteractions FieldInteraction[]
-  id        String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  name      String
-  code      String   @unique
-  settings  Json     @default("{}")
-  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
-  updatedAt DateTime @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(6)
+  id                String             @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  name              String
+  code              String             @unique
+  settings          Json               @default("{}")
+  createdAt         DateTime           @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt         DateTime           @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(6)
 
   users                 User[]
   animateurProfiles     AnimateurProfile[]
@@ -239,6 +239,7 @@ model Agency {
   campaignStatusHistory CampaignStatusHistory[]
   campaignWilayas       CampaignWilaya[]
   campaignStaff         CampaignStaff[]
+  campaignAnimateurs    CampaignAnimateur[]
   campaignPointsOfSale  CampaignPointOfSale[]
   campaignProducts      CampaignProduct[]
   campaignDocuments     CampaignDocument[]
@@ -280,25 +281,25 @@ model Agency {
 }
 
 model User {
-  fieldInteractions FieldInteraction[] @relation("InteractionAnimateur")
+  fieldInteractions   FieldInteraction[] @relation("InteractionAnimateur")
   createdInteractions FieldInteraction[] @relation("InteractionCreator")
-  id                 String     @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  agencyId           String     @map("agency_id") @db.Uuid
-  role               UserRole
-  clientId           String?    @map("client_id") @db.Uuid
-  fullName           String     @map("full_name")
-  email              String     @unique @db.Citext
-  phone              String?
-  wilayaId           Int?       @map("wilaya_id") @db.SmallInt
-  communeId          Int?       @map("commune_id")
-  status             UserStatus @default(active)
-  passwordHash       String     @map("password_hash")
-  mustChangePassword Boolean    @default(true) @map("must_change_password")
-  tokenVersion       Int        @default(0) @map("token_version")
-  lastLoginAt        DateTime?  @map("last_login_at") @db.Timestamptz(6)
-  isDemo             Boolean    @default(false) @map("is_demo")
-  createdAt          DateTime   @default(now()) @map("created_at") @db.Timestamptz(6)
-  updatedAt          DateTime   @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(6)
+  id                  String             @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  agencyId            String             @map("agency_id") @db.Uuid
+  role                UserRole
+  clientId            String?            @map("client_id") @db.Uuid
+  fullName            String             @map("full_name")
+  email               String             @unique @db.Citext
+  phone               String?
+  wilayaId            Int?               @map("wilaya_id") @db.SmallInt
+  communeId           Int?               @map("commune_id")
+  status              UserStatus         @default(active)
+  passwordHash        String             @map("password_hash")
+  mustChangePassword  Boolean            @default(true) @map("must_change_password")
+  tokenVersion        Int                @default(0) @map("token_version")
+  lastLoginAt         DateTime?          @map("last_login_at") @db.Timestamptz(6)
+  isDemo              Boolean            @default(false) @map("is_demo")
+  createdAt           DateTime           @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt           DateTime           @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(6)
 
   agency  Agency   @relation(fields: [agencyId], references: [id], onDelete: Restrict)
   client  Client?  @relation(fields: [clientId], references: [id], onDelete: Restrict)
@@ -311,6 +312,9 @@ model User {
   managedReportingLines   ReportingLine[]         @relation("ReportingLineManager")
   campaignStatusChanges   CampaignStatusHistory[]
   campaignStaff           CampaignStaff[]
+  teamAsSupervisor        CampaignAnimateur[]     @relation("CampaignAnimateurSupervisor")
+  teamAsAnimateur         CampaignAnimateur[]     @relation("CampaignAnimateurUser")
+  teamAdded               CampaignAnimateur[]     @relation("CampaignAnimateurAddedBy")
   approvedRuleSets        RuleSet[]
   animateurAssignments    Assignment[]            @relation("AssignmentAnimateur")
   supervisedAssignments   Assignment[]            @relation("AssignmentSupervisor")
@@ -479,23 +483,23 @@ model ReportingLine {
 
 model PointOfSale {
   fieldInteractions FieldInteraction[]
-  id           String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  agencyId     String    @map("agency_id") @db.Uuid
-  code         String
-  name         String
-  type         String
-  wilayaId     Int       @map("wilaya_id") @db.SmallInt
-  communeId    Int?      @map("commune_id")
-  address      String?
-  latitude     Decimal?  @db.Decimal(9, 6)
-  longitude    Decimal?  @db.Decimal(9, 6)
-  contactName  String?   @map("contact_name")
-  contactPhone String?   @map("contact_phone")
-  version      Int       @default(1)
-  isDemo       Boolean   @default(false) @map("is_demo")
-  deletedAt    DateTime? @map("deleted_at") @db.Timestamptz(6)
-  createdAt    DateTime  @default(now()) @map("created_at") @db.Timestamptz(6)
-  updatedAt    DateTime  @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(6)
+  id                String             @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  agencyId          String             @map("agency_id") @db.Uuid
+  code              String
+  name              String
+  type              String
+  wilayaId          Int                @map("wilaya_id") @db.SmallInt
+  communeId         Int?               @map("commune_id")
+  address           String?
+  latitude          Decimal?           @db.Decimal(9, 6)
+  longitude         Decimal?           @db.Decimal(9, 6)
+  contactName       String?            @map("contact_name")
+  contactPhone      String?            @map("contact_phone")
+  version           Int                @default(1)
+  isDemo            Boolean            @default(false) @map("is_demo")
+  deletedAt         DateTime?          @map("deleted_at") @db.Timestamptz(6)
+  createdAt         DateTime           @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt         DateTime           @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(6)
 
   agency  Agency   @relation(fields: [agencyId], references: [id], onDelete: Restrict)
   wilaya  Wilaya   @relation(fields: [wilayaId], references: [id], onDelete: Restrict)
@@ -589,21 +593,21 @@ model StockItem {
 }
 
 model Campaign {
-  fieldInteractions FieldInteraction[]
-  id                     String         @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  agencyId               String         @map("agency_id") @db.Uuid
-  clientId               String         @map("client_id") @db.Uuid
+  fieldInteractions      FieldInteraction[]
+  id                     String             @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  agencyId               String             @map("agency_id") @db.Uuid
+  clientId               String             @map("client_id") @db.Uuid
   code                   String
   name                   String
   description            String?
-  startDate              DateTime       @map("start_date") @db.Date
-  endDate                DateTime       @map("end_date") @db.Date
-  status                 CampaignStatus @default(draft)
-  budgetAmount           Decimal?       @map("budget_amount") @db.Decimal(14, 2)
-  assignmentApproverRole UserRole       @default(regional_manager) @map("assignment_approver_role")
-  version                Int            @default(1)
-  createdAt              DateTime       @default(now()) @map("created_at") @db.Timestamptz(6)
-  updatedAt              DateTime       @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(6)
+  startDate              DateTime           @map("start_date") @db.Date
+  endDate                DateTime           @map("end_date") @db.Date
+  status                 CampaignStatus     @default(draft)
+  budgetAmount           Decimal?           @map("budget_amount") @db.Decimal(14, 2)
+  assignmentApproverRole UserRole           @default(regional_manager) @map("assignment_approver_role")
+  version                Int                @default(1)
+  createdAt              DateTime           @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt              DateTime           @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(6)
 
   agency Agency @relation(fields: [agencyId], references: [id], onDelete: Restrict)
   client Client @relation(fields: [clientId], references: [id], onDelete: Restrict)
@@ -614,6 +618,7 @@ model Campaign {
   products           CampaignProduct[]
   documents          CampaignDocument[]
   ruleSets           RuleSet[]
+  campaignAnimateurs CampaignAnimateur[]
   assignments        Assignment[]
   attendanceRecords  AttendanceRecord[]
   supervisorVisits   SupervisorVisit[]
@@ -670,15 +675,39 @@ model CampaignWilaya {
   @@map("campaign_wilayas")
 }
 
+/// The Animateurs a supervisor brought to a campaign (chosen from their own, or created by them).
+model CampaignAnimateur {
+  id           String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  agencyId     String   @map("agency_id") @db.Uuid
+  campaignId   String   @map("campaign_id") @db.Uuid
+  supervisorId String   @map("supervisor_id") @db.Uuid
+  animateurId  String   @map("animateur_id") @db.Uuid
+  addedById    String   @map("added_by") @db.Uuid
+  createdAt    DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt    DateTime @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(6)
+
+  agency     Agency   @relation(fields: [agencyId], references: [id], onDelete: Restrict)
+  campaign   Campaign @relation(fields: [campaignId], references: [id], onDelete: Restrict)
+  supervisor User     @relation("CampaignAnimateurSupervisor", fields: [supervisorId], references: [id], onDelete: Restrict)
+  animateur  User     @relation("CampaignAnimateurUser", fields: [animateurId], references: [id], onDelete: Restrict)
+  addedBy    User     @relation("CampaignAnimateurAddedBy", fields: [addedById], references: [id], onDelete: Restrict)
+
+  @@unique([campaignId, animateurId])
+  @@index([campaignId, supervisorId])
+  @@map("campaign_animateurs")
+}
+
 model CampaignStaff {
-  id         String            @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  agencyId   String            @map("agency_id") @db.Uuid
-  campaignId String            @map("campaign_id") @db.Uuid
-  wilayaId   Int               @map("wilaya_id") @db.SmallInt
-  userId     String            @map("user_id") @db.Uuid
-  role       CampaignStaffRole
-  createdAt  DateTime          @default(now()) @map("created_at") @db.Timestamptz(6)
-  updatedAt  DateTime          @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(6)
+  id                 String            @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  agencyId           String            @map("agency_id") @db.Uuid
+  campaignId         String            @map("campaign_id") @db.Uuid
+  wilayaId           Int               @map("wilaya_id") @db.SmallInt
+  userId             String            @map("user_id") @db.Uuid
+  role               CampaignStaffRole
+  /// Supervisors only: how many Animateurs the director asked this supervisor to bring.
+  requiredAnimateurs Int               @default(0) @map("required_animateurs")
+  createdAt          DateTime          @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt          DateTime          @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(6)
 
   agency         Agency         @relation(fields: [agencyId], references: [id], onDelete: Restrict)
   campaignWilaya CampaignWilaya @relation(fields: [campaignId, wilayaId], references: [campaignId, wilayaId], onDelete: Restrict)
@@ -826,27 +855,27 @@ model PromotionTier {
 
 /// No overlapping proposed/approved assignments per Animateur: `assignments_no_overlap` (hand-written, BR-13).
 model Assignment {
-  fieldInteractions FieldInteraction[]
-  id                   String           @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  agencyId             String           @map("agency_id") @db.Uuid
-  campaignId           String           @map("campaign_id") @db.Uuid
-  animateurId          String           @map("animateur_id") @db.Uuid
-  pointOfSaleId        String           @map("point_of_sale_id") @db.Uuid
-  supervisorId         String           @map("supervisor_id") @db.Uuid
-  startDate            DateTime         @map("start_date") @db.Date
-  endDate              DateTime         @map("end_date") @db.Date
+  fieldInteractions    FieldInteraction[]
+  id                   String             @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  agencyId             String             @map("agency_id") @db.Uuid
+  campaignId           String             @map("campaign_id") @db.Uuid
+  animateurId          String             @map("animateur_id") @db.Uuid
+  pointOfSaleId        String             @map("point_of_sale_id") @db.Uuid
+  supervisorId         String             @map("supervisor_id") @db.Uuid
+  startDate            DateTime           @map("start_date") @db.Date
+  endDate              DateTime           @map("end_date") @db.Date
   /// ISO weekdays 1–7; NULL = every day.
-  workDays             Int[]            @map("work_days") @db.SmallInt
-  shiftStart           DateTime?        @map("shift_start") @db.Time(6)
-  shiftEnd             DateTime?        @map("shift_end") @db.Time(6)
-  status               AssignmentStatus @default(proposed)
-  proposedById         String           @map("proposed_by") @db.Uuid
-  decidedById          String?          @map("decided_by") @db.Uuid
-  decidedAt            DateTime?        @map("decided_at") @db.Timestamptz(6)
-  decisionNote         String?          @map("decision_note")
-  replacesAssignmentId String?          @map("replaces_assignment_id") @db.Uuid
-  createdAt            DateTime         @default(now()) @map("created_at") @db.Timestamptz(6)
-  updatedAt            DateTime         @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(6)
+  workDays             Int[]              @map("work_days") @db.SmallInt
+  shiftStart           DateTime?          @map("shift_start") @db.Time(6)
+  shiftEnd             DateTime?          @map("shift_end") @db.Time(6)
+  status               AssignmentStatus   @default(proposed)
+  proposedById         String             @map("proposed_by") @db.Uuid
+  decidedById          String?            @map("decided_by") @db.Uuid
+  decidedAt            DateTime?          @map("decided_at") @db.Timestamptz(6)
+  decisionNote         String?            @map("decision_note")
+  replacesAssignmentId String?            @map("replaces_assignment_id") @db.Uuid
+  createdAt            DateTime           @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt            DateTime           @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(6)
 
   agency              Agency              @relation(fields: [agencyId], references: [id], onDelete: Restrict)
   campaign            Campaign            @relation(fields: [campaignId], references: [id], onDelete: Restrict)
@@ -1010,24 +1039,24 @@ model Customer {
 }
 
 model FieldInteraction {
-  id String @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  agencyId String @map("agency_id") @db.Uuid
-  campaignId String @map("campaign_id") @db.Uuid
-  assignmentId String @map("assignment_id") @db.Uuid
-  animateurId String @map("animateur_id") @db.Uuid
-  pointOfSaleId String @map("point_of_sale_id") @db.Uuid
-  workDate DateTime @map("work_date") @db.Date
-  kind String
-  count Int
-  recordedAt DateTime @default(now()) @map("recorded_at") @db.Timestamptz(6)
-  createdById String @map("created_by") @db.Uuid
+  id            String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  agencyId      String   @map("agency_id") @db.Uuid
+  campaignId    String   @map("campaign_id") @db.Uuid
+  assignmentId  String   @map("assignment_id") @db.Uuid
+  animateurId   String   @map("animateur_id") @db.Uuid
+  pointOfSaleId String   @map("point_of_sale_id") @db.Uuid
+  workDate      DateTime @map("work_date") @db.Date
+  kind          String
+  count         Int
+  recordedAt    DateTime @default(now()) @map("recorded_at") @db.Timestamptz(6)
+  createdById   String   @map("created_by") @db.Uuid
 
-  agency Agency @relation(fields: [agencyId], references: [id], onDelete: Restrict)
-  campaign Campaign @relation(fields: [campaignId], references: [id], onDelete: Restrict)
-  assignment Assignment @relation(fields: [assignmentId], references: [id], onDelete: Restrict)
-  animateur User @relation("InteractionAnimateur", fields: [animateurId], references: [id], onDelete: Restrict)
+  agency      Agency      @relation(fields: [agencyId], references: [id], onDelete: Restrict)
+  campaign    Campaign    @relation(fields: [campaignId], references: [id], onDelete: Restrict)
+  assignment  Assignment  @relation(fields: [assignmentId], references: [id], onDelete: Restrict)
+  animateur   User        @relation("InteractionAnimateur", fields: [animateurId], references: [id], onDelete: Restrict)
   pointOfSale PointOfSale @relation(fields: [pointOfSaleId], references: [id], onDelete: Restrict)
-  createdBy User @relation("InteractionCreator", fields: [createdById], references: [id], onDelete: Restrict)
+  createdBy   User        @relation("InteractionCreator", fields: [createdById], references: [id], onDelete: Restrict)
 
   @@index([campaignId, workDate])
   @@index([animateurId, workDate])
@@ -1121,7 +1150,7 @@ model GiftEntitlement {
 
   /// The distribution movement that delivered this entitlement (at most one).
   distributionMovement StockMovement?
-  shortageIssue Issue? @relation(fields: [shortageIssueId], references: [id], onDelete: Restrict)
+  shortageIssue        Issue?         @relation(fields: [shortageIssueId], references: [id], onDelete: Restrict)
 
   @@unique([saleId, promotionId])
   @@index([shortageIssueId])
@@ -1346,20 +1375,20 @@ model TombolaDraw {
 
 /// After the draw only delivery_status / delivered_at may change: `tombola_winners_locked` (BR-51).
 model TombolaWinner {
-  id             String              @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  agencyId       String              @map("agency_id") @db.Uuid
-  drawId         String              @map("draw_id") @db.Uuid
-  entryId        String              @map("entry_id") @db.Uuid
-  rank           Int
-  isReserve      Boolean             @map("is_reserve")
-  prizeLabel     String?             @map("prize_label")
-  deliveryStatus PrizeDeliveryStatus @default(pending) @map("delivery_status")
-  deliveredAt    DateTime?           @map("delivered_at") @db.Timestamptz(6)
-  unreachableReason String?          @map("unreachable_reason")
+  id                String              @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  agencyId          String              @map("agency_id") @db.Uuid
+  drawId            String              @map("draw_id") @db.Uuid
+  entryId           String              @map("entry_id") @db.Uuid
+  rank              Int
+  isReserve         Boolean             @map("is_reserve")
+  prizeLabel        String?             @map("prize_label")
+  deliveryStatus    PrizeDeliveryStatus @default(pending) @map("delivery_status")
+  deliveredAt       DateTime?           @map("delivered_at") @db.Timestamptz(6)
+  unreachableReason String?             @map("unreachable_reason")
   /// The rank of the unreachable winner this reserve now serves (E-15).
-  servesRank     Int?                @map("serves_rank")
-  createdAt      DateTime            @default(now()) @map("created_at") @db.Timestamptz(6)
-  updatedAt      DateTime            @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(6)
+  servesRank        Int?                @map("serves_rank")
+  createdAt         DateTime            @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt         DateTime            @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(6)
 
   agency Agency       @relation(fields: [agencyId], references: [id], onDelete: Restrict)
   draw   TombolaDraw  @relation(fields: [drawId], references: [id], onDelete: Restrict)
@@ -1403,17 +1432,17 @@ model Issue {
   assignedTo  User?            @relation("IssueAssignedTo", fields: [assignedToId], references: [id], onDelete: Restrict)
   resolvedBy  User?            @relation("IssueResolvedBy", fields: [resolvedById], references: [id], onDelete: Restrict)
 
-  comments       IssueComment[]
-  attachments    IssueAttachment[]
-  stockMovements StockMovement[]
-  assignment Assignment? @relation(fields: [assignmentId], references: [id], onDelete: Restrict)
+  comments             IssueComment[]
+  attachments          IssueAttachment[]
+  stockMovements       StockMovement[]
+  assignment           Assignment?       @relation(fields: [assignmentId], references: [id], onDelete: Restrict)
   shortageEntitlements GiftEntitlement[]
 
+  /// The SQL migration limits this uniqueness to active shortage issues.
+  @@unique([assignmentId, stockItemId], map: "issues_one_open_shortage_per_assignment_item")
   @@index([campaignId, status])
   @@index([assignedToId, status])
   @@index([assignmentId])
-  /// The SQL migration limits this uniqueness to active shortage issues.
-  @@unique([assignmentId, stockItemId], map: "issues_one_open_shortage_per_assignment_item")
   @@map("issues")
 }
 

@@ -184,10 +184,15 @@ describe('transition guards', () => {
       }),
     );
     expect(await blockersOf(campaign, 'plan')).toContainEqual({ code: 'NO_WILAYA_WITH_NEED' });
+    // The need comes from the supervisors' quotas.
     await w.ok(
-      w.send('put', `/campaigns/${campaign.id}/wilayas`, 'director', {
-        wilayas: [{ wilayaId: 16, requiredAnimateurs: 3 }],
+      w.send('post', `/campaigns/${campaign.id}/staff`, 'director', {
+        userId: w.people.supervisor.id,
+        wilayaId: 16,
+        role: 'supervisor',
+        requiredAnimateurs: 3,
       }),
+      201,
     );
     const product = await createProduct(w.agency.id, w.client.id);
     await w.ok(

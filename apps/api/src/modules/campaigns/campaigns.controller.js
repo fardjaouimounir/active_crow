@@ -1,5 +1,6 @@
 import { ScopeService } from '../../core/authz/index.js';
 import { campaignsService as service } from './campaigns.service.js';
+import { teamService } from './team.service.js';
 
 const scope = (req) => ScopeService.forRequest(req);
 
@@ -34,6 +35,31 @@ export async function addStaff(req, res) {
 export async function removeStaff(req, res) {
   await service.removeStaff(scope(req), req.actor, req.params.id, req.params.staffId);
   res.status(204).end();
+}
+
+export async function team(req, res) {
+  res.json({ data: await teamService.list(req.actor, req.params.id) });
+}
+
+export async function addTeamMember(req, res) {
+  res.status(201).json({ data: await teamService.add(req.actor, req.params.id, req.body) });
+}
+
+export async function createTeamMember(req, res) {
+  res
+    .status(201)
+    .json({ data: await teamService.createAndAdd(req.actor, req.params.id, req.body) });
+}
+
+export async function removeTeamMember(req, res) {
+  await teamService.remove(req.actor, req.params.id, req.params.animateurId);
+  res.status(204).end();
+}
+
+export async function setStaffQuota(req, res) {
+  res.json({
+    data: await teamService.setQuota(req.actor, req.params.id, req.params.staffId, req.body),
+  });
 }
 
 export async function documents(req, res) {

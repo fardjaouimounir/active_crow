@@ -25,6 +25,13 @@ const FOREIGN_KEYS = {
   campaign_status_history: ['agency_id>agencies', 'campaign_id>campaigns', 'changed_by>users'],
   campaign_wilayas: ['campaign_id>campaigns', 'wilaya_id>wilayas', 'agency_id>agencies'],
   campaign_staff: ['agency_id>agencies', 'campaign_id,wilaya_id>campaign_wilayas', 'user_id>users'],
+  campaign_animateurs: [
+    'agency_id>agencies',
+    'campaign_id>campaigns',
+    'supervisor_id>users',
+    'animateur_id>users',
+    'added_by>users',
+  ],
   campaign_points_of_sale: [
     'campaign_id>campaigns!',
     'point_of_sale_id>points_of_sale!',
@@ -241,6 +248,7 @@ const UNIQUES = [
   'stock_items(client_id,sku)',
   'campaigns(agency_id,code)',
   'campaign_staff(campaign_id,wilaya_id,user_id)',
+  'campaign_animateurs(campaign_id,animateur_id)',
   'rule_sets(campaign_id,version)',
   'campaign_rules(rule_set_id,rule_type)',
   'promotion_tiers(promotion_id,product_id,min_quantity)',
@@ -320,6 +328,7 @@ const NAMED_INDEXES = {
 };
 
 const CHECKS = [
+  'campaign_staff_required_animateurs_check',
   'field_interactions_kind_check',
   'field_interactions_count_check',
   'absences_void_consistent',
@@ -463,7 +472,7 @@ beforeAll(async () => {
 
 describe('database schema matches docs/04-database-design.md', () => {
   it('has the original tables and field interactions', () => {
-    expect(TABLES).toHaveLength(54);
+    expect(TABLES).toHaveLength(55);
     expect(actual.tables).toEqual([...TABLES].sort());
   });
 

@@ -16,6 +16,7 @@ import { useCampaignWrite, useStaffOptions } from '../api.js';
 function StaffDialog({ campaign, wilayaId, role, onClose }) {
   const { t } = useTranslation('common');
   const [userId, setUserId] = useState('');
+  const [quota, setQuota] = useState('');
   const mutation = useCampaignWrite();
   const { message } = useApiError(mutation.error);
   const useOptions = (search) => useStaffOptions(search, role);
@@ -29,7 +30,12 @@ function StaffDialog({ campaign, wilayaId, role, onClose }) {
             {
               method: 'post',
               path: '/campaigns/' + campaign.id + '/staff',
-              body: { userId, wilayaId, role },
+              body: {
+                userId,
+                wilayaId,
+                role,
+                ...(role === 'supervisor' ? { requiredAnimateurs: Number(quota) } : {}),
+              },
             },
             { onSuccess: onClose },
           );
@@ -40,9 +46,72 @@ function StaffDialog({ campaign, wilayaId, role, onClose }) {
             <SearchSelect {...props} useOptions={useOptions} value={userId} onChange={setUserId} />
           )}
         </FormField>
+        {role === 'supervisor' && (
+          <FormField label={t('campaigns.requiredPerSupervisor')}>
+            {(props) => (
+              <TextInput
+                {...props}
+                type="number"
+                min={0}
+                max={500}
+                required
+                value={quota}
+                onChange={(event) => setQuota(event.target.value)}
+              />
+            )}
+          </FormField>
+        )}
         <Toast error message={message} />
         <div>
-          <button className={primaryStyle} disabled={!userId || mutation.isPending}>
+          <button
+            className={primaryStyle}
+            disabled={!userId || (role === 'supervisor' && quota === '') || mutation.isPending}
+          >
+            {t('admin.save')}
+          </button>
+        </div>
+      </form>
+    </Modal>
+  );
+}
+
+function QuotaDialog({ campaign, member, onClose }) {
+  const { t } = useTranslation('common');
+  const [quota, setQuota] = useState(String(member.requiredAnimateurs));
+  const mutation = useCampaignWrite();
+  const { message } = useApiError(mutation.error);
+  return (
+    <Modal title={t('campaigns.quotaTitle') + ' · ' + member.user.fullName} onClose={onClose}>
+      <form
+        className="grid gap-4"
+        onSubmit={(event) => {
+          event.preventDefault();
+          mutation.mutate(
+            {
+              method: 'patch',
+              path: '/campaigns/' + campaign.id + '/staff/' + member.id,
+              body: { requiredAnimateurs: Number(quota) },
+            },
+            { onSuccess: onClose },
+          );
+        }}
+      >
+        <FormField label={t('campaigns.requiredPerSupervisor')}>
+          {(props) => (
+            <TextInput
+              {...props}
+              type="number"
+              min={member.teamCount ?? 0}
+              max={500}
+              required
+              value={quota}
+              onChange={(event) => setQuota(event.target.value)}
+            />
+          )}
+        </FormField>
+        <Toast error message={message} />
+        <div>
+          <button className={primaryStyle} disabled={quota === '' || mutation.isPending}>
             {t('admin.save')}
           </button>
         </div>
@@ -57,25 +126,22 @@ export function CoverageTab({ campaign, canEdit }) {
   const wilayas = useWilayas();
   const mutation = useCampaignWrite();
   const { message } = useApiError(mutation.error);
-  const [required, setRequired] = useState({});
   const [newWilaya, setNewWilaya] = useState('');
   const [dialog, setDialog] = useState(null);
   const names = areaOptions(wilayas.data?.data, i18n.resolvedLanguage);
   const nameOf = (id) => names.find((item) => item.value === id)?.label ?? id;
-  const current = campaign.wilayas.map(({ wilayaId, requiredAnimateurs }) => ({
-    wilayaId,
-    requiredAnimateurs: required[wilayaId] ?? requiredAnimateurs,
-  }));
+  // The need of a wilaya is the sum of its supervisors' numbers: only wilayas are sent.
+  const current = campaign.wilayas.map(({ wilayaId }) => ({ wilayaId }));
   const save = (rows) =>
-    mutation.mutate(
-      { method: 'put', path: '/campaigns/' + campaign.id + '/wilayas', body: { wilayas: rows } },
-      { onSuccess: () => setRequired({}) },
-    );
+    mutation.mutate({
+      method: 'put',
+      path: '/campaigns/' + campaign.id + '/wilayas',
+      body: { wilayas: rows },
+    });
   const number = new Intl.NumberFormat(i18n.resolvedLanguage);
   const available = names.filter(
     (item) => !campaign.wilayas.some((row) => row.wilayaId === item.value),
   );
-  const dirty = Object.keys(required).length > 0;
 
   return (
     <div className="grid gap-4">
@@ -93,7 +159,7 @@ export function CoverageTab({ campaign, canEdit }) {
             className={actionStyle}
             disabled={!newWilaya || mutation.isPending}
             onClick={() => {
-              save([...current, { wilayaId: Number(newWilaya), requiredAnimateurs: 0 }]);
+              save([...current, { wilayaId: Number(newWilaya) }]);
               setNewWilaya('');
             }}
           >
@@ -108,25 +174,9 @@ export function CoverageTab({ campaign, canEdit }) {
             <div className="flex flex-wrap items-center justify-between gap-3">
               <h3 className="font-semibold">{nameOf(row.wilayaId)}</h3>
               <div className="flex flex-wrap items-center gap-2">
-                {canEdit ? (
-                  <label className="flex items-center gap-2 text-sm">
-                    {t('campaigns.requiredAnimateurs')}
-                    <TextInput
-                      type="number"
-                      min={0}
-                      max={500}
-                      className="w-24 rounded-lg border border-control px-2 py-1"
-                      value={required[row.wilayaId] ?? row.requiredAnimateurs}
-                      onChange={(event) =>
-                        setRequired({ ...required, [row.wilayaId]: Number(event.target.value) })
-                      }
-                    />
-                  </label>
-                ) : (
-                  <span className="text-sm">
-                    {t('campaigns.requiredAnimateurs')}: {number.format(row.requiredAnimateurs)}
-                  </span>
-                )}
+                <span className="text-sm">
+                  {t('campaigns.requiredAnimateurs')}: {number.format(row.requiredAnimateurs)}
+                </span>
                 {canEdit && (
                   <button
                     type="button"
@@ -144,7 +194,26 @@ export function CoverageTab({ campaign, canEdit }) {
                 <li key={member.id} className="flex flex-wrap items-center justify-between gap-2">
                   <span>
                     {member.user.fullName} · {t('roles.' + member.role)}
+                    {member.role === 'supervisor' && (
+                      <>
+                        {' · '}
+                        {t('campaigns.teamProgress', {
+                          count: number.format(member.teamCount ?? 0),
+                          required: number.format(member.requiredAnimateurs),
+                        })}
+                      </>
+                    )}
                   </span>
+                  {canEdit && member.role === 'supervisor' && (
+                    <button
+                      type="button"
+                      className={actionStyle}
+                      aria-label={t('campaigns.editQuota') + ' ' + member.user.fullName}
+                      onClick={() => setDialog({ type: 'quota', member })}
+                    >
+                      {t('campaigns.editQuota')}
+                    </button>
+                  )}
                   {canEdit && (
                     <button
                       type="button"
@@ -179,17 +248,8 @@ export function CoverageTab({ campaign, canEdit }) {
           </li>
         ))}
       </ul>
-      {canEdit && dirty && (
-        <div>
-          <button
-            type="button"
-            className={primaryStyle}
-            disabled={mutation.isPending}
-            onClick={() => save(current)}
-          >
-            {t('campaigns.saveRequired')}
-          </button>
-        </div>
+      {dialog?.type === 'quota' && (
+        <QuotaDialog campaign={campaign} member={dialog.member} onClose={() => setDialog(null)} />
       )}
       {dialog?.type === 'add' && (
         <StaffDialog

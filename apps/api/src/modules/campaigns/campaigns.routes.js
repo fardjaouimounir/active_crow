@@ -59,6 +59,38 @@ export function createCampaignsRouter() {
     validate({ query, params: input.staffParams, body: input.empty }),
     controller.removeStaff,
   );
+  router.patch(
+    '/:id/staff/:staffId',
+    authenticate,
+    manage,
+    validate({ query, params: input.staffParams, body: input.staffQuota }),
+    controller.setStaffQuota,
+  );
+  // Supervisor teams: a supervisor manages his own Animateurs; the director and a regional manager
+  // act for a supervisor (`supervisorId`). The service decides who may touch which team.
+  const team = requirePermission('assignment.propose');
+  router.get('/:id/team', authenticate, read, validate({ query, params }), controller.team);
+  router.post(
+    '/:id/team',
+    authenticate,
+    team,
+    validate({ query, params, body: input.teamAnimateur }),
+    controller.addTeamMember,
+  );
+  router.post(
+    '/:id/team/new',
+    authenticate,
+    team,
+    validate({ query, params, body: input.newTeamAnimateur }),
+    controller.createTeamMember,
+  );
+  router.delete(
+    '/:id/team/:animateurId',
+    authenticate,
+    team,
+    validate({ query, params: input.teamParams, body: input.empty }),
+    controller.removeTeamMember,
+  );
   router.put(
     '/:id/points-of-sale',
     authenticate,

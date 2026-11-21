@@ -174,7 +174,8 @@ Nov 20, 2026 · @mounir
 | --- | --- | --- | --- |
 | campaign_status_history | id | campaign_id، from_status، to_status، reason، changed_by، created_at | كل انتقال حالة، لا يُعدَّل |
 | campaign_wilayas | (campaign_id, wilaya_id) | required_animateurs int `CHECK >= 0` | الولايات المستهدفة والاحتياج |
-| campaign_staff | id | campaign_id، wilaya_id، user_id، role campaign_staff_role | المسؤولون والمشرفون لكل ولاية؛ UNIQUE `(campaign_id, wilaya_id, user_id)`، FK `(campaign_id, wilaya_id)` → campaign_wilayas |
+| campaign_staff | id | campaign_id، wilaya_id، user_id، role campaign_staff_role، required_animateurs int `CHECK >= 0` (للمشرف فقط: عدد المنشطين الذي حدده المدير؛ احتياج الولاية = مجموعها) | المسؤولون والمشرفون لكل ولاية؛ UNIQUE `(campaign_id, wilaya_id, user_id)`، FK `(campaign_id, wilaya_id)` → campaign_wilayas |
+| campaign_animateurs | id | campaign_id، supervisor_id، animateur_id، added_by | منشطو كل مشرف في الحملة (اختارهم أو أنشأهم المشرف)؛ UNIQUE `(campaign_id, animateur_id)`، ولا يُقترح تعيين إلا لمنشط من فريق المشرف |
 | campaign_points_of_sale | (campaign_id, point_of_sale_id) | — | المحلات المشمولة |
 | campaign_products | (campaign_id, product_id) | — | المنتجات المروّجة |
 | campaign_documents | (campaign_id, file_id) | label | Mécanisme PDF والملفات |

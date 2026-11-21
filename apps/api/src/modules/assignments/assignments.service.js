@@ -159,6 +159,10 @@ async function validateProposal(db, actor, campaign, input, { replacement = fals
   ) {
     throw error('SHIFT_INVALID');
   }
+  // The Animateur must be in this supervisor's team for the campaign (chosen or created by them).
+  if (!(await repo.isInTeam(db, campaign.id, supervisorId, input.animateurId))) {
+    throw error('ANIMATEUR_NOT_IN_TEAM');
+  }
   return {
     animateurId: input.animateurId,
     pointOfSaleId: input.pointOfSaleId,
@@ -525,7 +529,15 @@ async function mine(actor) {
 async function candidates(actor, campaignId, { wilayaId, from, to, q }) {
   const campaign = await requireCampaign(prisma, actor, campaignId);
   visibleWilaya(actor, campaign, wilayaId);
-  const people = await repo.candidates(prisma, ScopeService.resolve(actor), actor.agencyId, q);
+  const people = await repo.candidates(prisma, ScopeService.resolve(actor), actor.agencyId, q, {
+    campaignId,
+    supervisorIds: staffFor(campaign, wilayaId)
+      .filter(
+        ({ role, userId }) =>
+          role === 'supervisor' && (actor.role !== 'supervisor' || userId === actor.id),
+      )
+      .map(({ userId }) => userId),
+  });
   const now = repo.asDate(today());
   const conflicts = new Map();
   for (const row of await repo.getOverlaps(

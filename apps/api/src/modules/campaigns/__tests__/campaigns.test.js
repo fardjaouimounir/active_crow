@@ -65,8 +65,13 @@ const createCampaign = (overrides, actor = 'director') =>
   ok(send('post', '/campaigns', actor, draft(overrides)), 201);
 const setWilayas = (id, wilayas) =>
   send('put', '/campaigns/' + id + '/wilayas', 'director', { wilayas });
-const addStaff = (id, user, wilayaId, role = user.role) =>
-  send('post', '/campaigns/' + id + '/staff', 'director', { userId: user.id, wilayaId, role });
+const addStaff = (id, user, wilayaId, role = user.role, requiredAnimateurs) =>
+  send('post', '/campaigns/' + id + '/staff', 'director', {
+    userId: user.id,
+    wilayaId,
+    role,
+    ...(requiredAnimateurs === undefined ? {} : { requiredAnimateurs }),
+  });
 
 function assignment(campaignId, data) {
   return prisma.assignment.create({
@@ -242,7 +247,8 @@ describe('FR-031 coverage', () => {
       ]),
       200,
     );
-    expect(after.counts).toMatchObject({ wilayas: 2, requiredAnimateurs: 5 });
+    // The need of a wilaya is the sum of its supervisors' quotas, never typed in.
+    expect(after.counts).toMatchObject({ wilayas: 2, requiredAnimateurs: 0 });
     await rejected(
       setWilayas(campaign.id, [
         { wilayaId: 16, requiredAnimateurs: 1 },
@@ -256,7 +262,7 @@ describe('FR-031 coverage', () => {
       400,
       'VALIDATION_FAILED',
     );
-    await ok(addStaff(campaign.id, people.supervisor, 16), 201);
+    await ok(addStaff(campaign.id, people.supervisor, 16, 'supervisor', 4), 201);
     await ok(
       send('put', '/campaigns/' + campaign.id + '/points-of-sale', 'director', {
         pointOfSaleIds: [points.c31.id],
@@ -277,7 +283,7 @@ describe('FR-031 coverage', () => {
       200,
     );
     expect(kept.wilayas.map((row) => [row.wilayaId, row.requiredAnimateurs])).toEqual([
-      [9, 1],
+      [9, 0],
       [16, 4],
       [31, 0],
     ]);

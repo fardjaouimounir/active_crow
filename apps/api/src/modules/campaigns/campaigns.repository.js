@@ -41,7 +41,7 @@ const detailFields = {
       wilaya: { select: { nameAr: true, nameEn: true } },
       staff: {
         orderBy: [{ role: 'asc' }, { createdAt: 'asc' }],
-        select: { id: true, role: true, wilayaId: true, user: person },
+        select: { id: true, role: true, wilayaId: true, requiredAnimateurs: true, user: person },
       },
     },
   },
@@ -234,11 +234,12 @@ export async function replaceWilayas(tx, scope, campaignId, rows) {
   await tx.campaignWilaya.deleteMany({
     where: { campaignId, wilayaId: { notIn: rows.map((row) => row.wilayaId) } },
   });
-  for (const { wilayaId, requiredAnimateurs } of rows) {
+  // The need of a wilaya is the sum of its supervisors' quotas: it is never set from here.
+  for (const { wilayaId } of rows) {
     await tx.campaignWilaya.upsert({
       where: { campaignId_wilayaId: { campaignId, wilayaId } },
-      create: { agencyId: scope.agencyId, campaignId, wilayaId, requiredAnimateurs },
-      update: { requiredAnimateurs },
+      create: { agencyId: scope.agencyId, campaignId, wilayaId, requiredAnimateurs: 0 },
+      update: {},
     });
   }
 }
@@ -246,7 +247,7 @@ export async function replaceWilayas(tx, scope, campaignId, rows) {
 export function findStaff(tx, campaignId, id) {
   return tx.campaignStaff.findFirst({
     where: { id, campaignId },
-    select: { id: true, userId: true, wilayaId: true, role: true },
+    select: { id: true, userId: true, wilayaId: true, role: true, requiredAnimateurs: true },
   });
 }
 
@@ -260,7 +261,7 @@ export function regionalOfWilaya(tx, campaignId, wilayaId) {
 export function createStaff(tx, scope, data) {
   return tx.campaignStaff.create({
     data: { ...data, agencyId: scope.agencyId },
-    select: { id: true, role: true, wilayaId: true, user: person },
+    select: { id: true, role: true, wilayaId: true, requiredAnimateurs: true, user: person },
   });
 }
 

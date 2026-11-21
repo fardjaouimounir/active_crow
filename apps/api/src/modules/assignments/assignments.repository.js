@@ -65,12 +65,20 @@ export function list(db, where, paging = {}) {
   });
 }
 
-export async function candidates(db, scope, agencyId, q) {
+export function isInTeam(db, campaignId, supervisorId, animateurId) {
+  return db.campaignAnimateur
+    .count({ where: { campaignId, supervisorId, animateurId } })
+    .then((count) => count > 0);
+}
+
+/** Active Animateurs of the supervisors' teams in the campaign (the only ones that can be proposed). */
+export async function candidates(db, scope, agencyId, q, { campaignId, supervisorIds }) {
   return db.user.findMany({
     where: scoped(await userWhere(scope, { db }), {
       agencyId,
       role: 'animateur',
       status: 'active',
+      teamAsAnimateur: { some: { campaignId, supervisorId: { in: supervisorIds } } },
       ...(q ? { fullName: { contains: q, mode: 'insensitive' } } : {}),
     }),
     select: {

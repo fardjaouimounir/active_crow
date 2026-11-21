@@ -13,6 +13,7 @@ import { fileService } from '../files/files.service.js';
 import { organizationReadService } from '../organization/organizationReadService.js';
 import * as repository from './campaigns.repository.js';
 import { assertEditable } from './editPolicy.js';
+import * as team from './team.repository.js';
 
 const rule = (code, message, details) => new AppError({ status: 422, code, message, details });
 
@@ -63,7 +64,21 @@ async function list(scope, query) {
 }
 
 async function detail(scope, id) {
-  return forScope(scope, await visible(prisma, scope, id));
+  const campaign = await visible(prisma, scope, id);
+  if (scope.level === 'client') return forScope(scope, campaign);
+  // How many Animateurs each supervisor has chosen so far (a number only, never the names).
+  const counts = await team.teamCounts(prisma, id);
+  return {
+    ...campaign,
+    wilayas: campaign.wilayas.map((wilaya) => ({
+      ...wilaya,
+      staff: wilaya.staff.map((member) =>
+        member.role === 'supervisor'
+          ? { ...member, teamCount: counts.get(member.user.id) ?? 0 }
+          : member,
+      ),
+    })),
+  };
 }
 
 async function create(scope, actor, data) {
@@ -150,7 +165,7 @@ function setWilayas(scope, actor, id, { wilayas }) {
   });
 }
 
-function addStaff(scope, actor, id, { userId, wilayaId, role }) {
+function addStaff(scope, actor, id, { userId, wilayaId, role, requiredAnimateurs = 0 }) {
   return withTransaction(async (tx) => {
     await editable(tx, scope, id, 'coverage');
     const wilayas = await repository.campaignWilayas(tx, id);
@@ -172,17 +187,26 @@ function addStaff(scope, actor, id, { userId, wilayaId, role }) {
         'This wilaya already has a regional manager in the campaign',
       );
     }
+    if (role !== 'supervisor' && requiredAnimateurs > 0) {
+      throw rule(
+        ERROR_CODES.QUOTA_ONLY_FOR_SUPERVISORS,
+        'Only supervisors have an Animateur quota',
+      );
+    }
     const staff = await repository.createStaff(tx, scope, {
       campaignId: id,
       wilayaId,
       userId,
       role,
+      requiredAnimateurs,
     });
+    await team.syncWilayaNeed(tx, id, wilayaId);
     await audit(tx, actor, 'staff_added', id, undefined, {
       staffId: staff.id,
       userId,
       wilayaId,
       role,
+      requiredAnimateurs,
     });
     return staff;
   });
@@ -200,7 +224,21 @@ function removeStaff(scope, actor, id, staffId) {
         { assignments },
       );
     }
+    if (staff.role === 'supervisor') {
+      const others = (await team.supervisorStaff(tx, id, staff.userId)).filter(
+        (row) => row.id !== staffId,
+      );
+      const members = await team.countTeam(tx, id, staff.userId);
+      if (members > 0 && others.length === 0) {
+        throw rule(
+          ERROR_CODES.STAFF_HAS_TEAM,
+          'This supervisor has Animateurs in the campaign: remove them first',
+          { members },
+        );
+      }
+    }
     await repository.deleteStaff(tx, staffId);
+    await team.syncWilayaNeed(tx, id, staff.wilayaId);
     await audit(tx, actor, 'staff_removed', id, staff);
   });
 }

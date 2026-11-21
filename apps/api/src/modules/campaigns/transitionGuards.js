@@ -5,6 +5,7 @@ import { TRANSITION_ACTIONS } from '@fieldflow/shared';
 import { assignmentReadService } from '../assignments/assignmentReadService.js';
 import { inventoryReadService } from '../inventory/inventoryReadService.js';
 import * as ruleSets from './ruleSets.repository.js';
+import * as team from './team.repository.js';
 
 /**
  * @typedef {{ code: string, details?: object }} Blocker
@@ -87,6 +88,25 @@ registerTransitionGuard('mark-assigned', ({ campaign }) => {
     }
   }
   return blockers;
+});
+
+registerTransitionGuard('mark-assigned', async ({ db, campaign }) => {
+  const counts = await team.teamCounts(db, campaign.id);
+  const quotas = new Map();
+  for (const wilaya of campaign.wilayas) {
+    for (const member of wilaya.staff) {
+      if (member.role !== 'supervisor') continue;
+      quotas.set(member.user.id, (quotas.get(member.user.id) ?? 0) + member.requiredAnimateurs);
+    }
+  }
+  const short = [...quotas]
+    .map(([supervisorId, required]) => ({
+      supervisorId,
+      required,
+      count: counts.get(supervisorId) ?? 0,
+    }))
+    .filter((row) => row.count < row.required);
+  return short.length ? [blocker('SUPERVISOR_BELOW_QUOTA', { supervisors: short })] : [];
 });
 
 registerTransitionGuard('activate', approvedRuleSet);
