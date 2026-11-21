@@ -163,8 +163,11 @@ it('a supervisor can generate their own AI summary and sees the request state', 
 
 it('shows each request state: waiting, ready for review, failed', async () => {
   const states = [
-    [{ status: 'queued' }, 'Queued'],
-    [{ status: 'sent' }, 'Waiting for the AI service'],
+    [{ status: 'queued', createdAt: new Date().toISOString() }, 'Generating…'],
+    [
+      { status: 'sent', createdAt: new Date(Date.now() - 121_000).toISOString() },
+      'Still generating — check the review page later',
+    ],
     [
       { status: 'completed', suggestion: { id: 's', status: 'pending_review' } },
       'Ready for review',
@@ -181,6 +184,41 @@ it('shows each request state: waiting, ready for review, failed', async () => {
     api.restore();
     resetSessionForTests();
   }
+});
+
+it('shows missing report figures, fallback details, and hypotheses in review', async () => {
+  setup('director', {
+    [`GET /ai/suggestions/${suggestionId}`]: () =>
+      ok({
+        ...insights,
+        capability: 'supervisor_daily_summary',
+        fallback: true,
+        confidence: 0,
+        output: {
+          headline: 'Daily summary',
+          kpis: { units: 0 },
+          fallback: { reasonCode: 'AI_UNAVAILABLE' },
+          insights: {
+            claims: [{ kind: 'hypothesis', text: 'Possible staffing issue' }],
+            rejected: [{ reason: 'UNDEFINED_METRIC' }],
+          },
+          dataQuality: [{ code: 'TARGET_MISSING', severity: 'missing' }],
+        },
+      }),
+  });
+  renderApp(`/app/ai-review/${suggestionId}`);
+  const report = await screen.findByRole('heading', { name: 'Report figures' });
+  expect(report.parentElement.querySelectorAll('dd')).toHaveLength(3);
+  expect([...report.parentElement.querySelectorAll('dd')].map((node) => node.textContent)).toEqual([
+    '—',
+    '0',
+    '—',
+  ]);
+  expect(screen.getByText(/Hypothesis.*Possible staffing issue/)).toHaveClass('italic');
+  expect(screen.getByText('TARGET_MISSING')).toBeInTheDocument();
+  expect(screen.getByText('Rejected claims').parentElement).not.toHaveAttribute('open');
+  expect(screen.getByText('AI_UNAVAILABLE')).toBeInTheDocument();
+  expect(screen.getByRole('button', { name: 'Accept' })).toBeEnabled();
 });
 
 it('hides every AI button when the module is disabled', async () => {

@@ -1,7 +1,7 @@
 import { AI_CAPABILITIES, AI_SUGGESTION_STATUSES } from '@fieldflow/shared';
 import { useState } from 'react';
 import { Link, useParams, useSearchParams } from 'react-router';
-import { useCan } from '../../shared/auth/hooks.js';
+import { useAuth, useCan } from '../../shared/auth/hooks.js';
 import { EmptyState, PageHeader, StatusBadge, Toast } from '../../shared/ui/PageParts.jsx';
 import { useApiError } from '../../shared/ui/useApiError.js';
 import { useAiList, useAiSuggestion, useReview } from './api.js';
@@ -175,6 +175,7 @@ function Kpis({ kpis }) {
 
 function ReviewDetail({ id }) {
   const { t, dateTime, percent } = useAiText();
+  const { user } = useAuth();
   const suggestion = useAiSuggestion(id);
   const review = useReview();
   const [note, setNote] = useState('');
@@ -209,7 +210,13 @@ function ReviewDetail({ id }) {
             <AiBadge />
             <h2 className="font-semibold tracking-tight">{t('aiText')}</h2>
           </div>
-          <AiOutput capability={row.capability} output={row.output} labels={row.labels} />
+          <AiOutput
+            capability={row.capability}
+            output={row.output}
+            labels={row.labels}
+            fallback={row.fallback}
+            showRejected={user?.role === 'director'}
+          />
         </div>
         <Kpis kpis={row.kpis} />
       </div>

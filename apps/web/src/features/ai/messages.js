@@ -16,6 +16,20 @@ export const messages = {
   model: ['Model', 'النموذج'],
   confidence: ['Confidence', 'درجة الثقة'],
   fallback: ['Fallback text', 'نص بديل'],
+  fallbackReport: [
+    'Fallback — generated from rules, not the model',
+    'تقرير بديل أُنشئ بالقواعد دون استخدام النموذج',
+  ],
+  reportKpis: ['Report figures', 'أرقام التقرير'],
+  claims: ['Claims', 'استنتاجات التقرير'],
+  hypothesis: ['Hypothesis', 'فرضية'],
+  dataNotes: ['Data notes', 'ملاحظات البيانات'],
+  rejectedClaims: ['Rejected claims', 'الاستنتاجات المستبعدة'],
+  'state.generating': ['Generating…', 'جارٍ الإنشاء…'],
+  'state.stillGenerating': [
+    'Still generating — check the review page later',
+    'لا يزال الإنشاء جاريًا، تحقّق من صفحة المراجعة لاحقًا',
+  ],
   failed: ['Failed', 'فشل'],
   none: ['No suggestions yet.', 'لا توجد اقتراحات بعد.'],
   loading: ['Loading…', 'جارٍ التحميل…'],
@@ -86,6 +100,7 @@ export const messages = {
     'There was not enough data to write this suggestion.',
     'لا توجد بيانات كافية لكتابة هذا الاقتراح.',
   ],
+  'failure.UNKNOWN': ['The AI service returned an error.', 'أعادت خدمة الذكاء الاصطناعي خطأً.'],
   'failure.AI_MODEL_TIMEOUT': [
     'The AI model took too long.',
     'استغرق نموذج الذكاء الاصطناعي وقتًا طويلًا.',

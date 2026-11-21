@@ -1,4 +1,4 @@
-// Local copy of the AI service contract (../fieldflow-ai/openapi.yaml, `Request` and
+// Local copy of the AI service contract (fieldflow-ai/openapi.yaml, `Request` and
 // `CallbackResult` schemas) and of its PII firewall. The copy lets the backend validate every
 // outbound payload before it leaves; test/aiContract.test.js fails when the YAML changes.
 import { z } from 'zod';
@@ -20,14 +20,7 @@ export const AI_SUBJECT_TYPES = Object.freeze({
 
 export const AI_LOCALES = Object.freeze(['ar', 'en']);
 
-export const AI_OUTPUT_ERROR_CODES = Object.freeze([
-  'NEEDS_DATA',
-  'AI_MODEL_TIMEOUT',
-  'AI_RATE_LIMITED',
-  'AI_UNAVAILABLE',
-  'AI_VALIDATION_FAILED',
-  'PII_FIREWALL',
-]);
+export const AI_OUTPUT_ERROR_CODES = Object.freeze(['NEEDS_DATA', 'PII_FIREWALL']);
 
 const businessDate = z.string().regex(/^\d{4}-\d{2}-\d{2}$/);
 
@@ -55,14 +48,7 @@ export const aiCallbackSchema = z.strictObject({
   capability: z.enum(AI_CAPABILITIES),
   modelVersion: z.string().min(1).max(120),
   confidence: z.number().min(0).max(1),
-  output: z
-    .record(z.string(), z.unknown())
-    .refine(
-      ({ error }) =>
-        error === undefined ||
-        (typeof error?.code === 'string' && typeof error?.message === 'string'),
-      { message: 'output.error must be { code, message }' },
-    ),
+  output: z.record(z.string(), z.unknown()),
 });
 
 // --- PII guard: same rules as the AI service's firewall (HANDOFF §5) ---

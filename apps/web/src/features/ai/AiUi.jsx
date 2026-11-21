@@ -1,9 +1,10 @@
 import { ScanSearch } from 'lucide-react';
+import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { buttonClass } from '../../ui/primitives.jsx';
 import { useCan } from '../../shared/auth/hooks.js';
 import { useApiError } from '../../shared/ui/useApiError.js';
-import { useAiCommentary, useAiRequests, useRequestSuggestion } from './api.js';
+import { AI_WAIT_MS, useAiCommentary, useAiRequests, useRequestSuggestion } from './api.js';
 import { messages } from './messages.js';
 
 export function useAiText() {
@@ -67,10 +68,21 @@ export function AiActionButton({ capability, subjectId, filters = {}, blockedRea
   const requests = useAiRequests({ capability, subjectId, enabled: allowed });
   const create = useRequestSuggestion();
   const { message } = useApiError(create.error);
-  if (!allowed || !requests.data?.meta?.enabled) return null;
-  const latest = requests.data.data[0];
+  const latest = requests.data?.data[0];
   const state = requestState(latest);
   const inFlight = state === 'queued' || state === 'sent';
+  const deadline = inFlight ? Date.parse(latest.createdAt) + AI_WAIT_MS : null;
+  const [expiredDeadline, setExpiredDeadline] = useState(null);
+  useEffect(() => {
+    if (!Number.isFinite(deadline)) return;
+    const timer = setTimeout(
+      () => setExpiredDeadline(deadline),
+      Math.max(0, deadline - Date.now()),
+    );
+    return () => clearTimeout(timer);
+  }, [deadline]);
+  const timedOut = inFlight && deadline === expiredDeadline;
+  if (!allowed || !requests.data?.meta?.enabled) return null;
   return (
     <div className="flex flex-wrap items-center gap-2">
       <button
@@ -89,9 +101,15 @@ export function AiActionButton({ capability, subjectId, filters = {}, blockedRea
       >
         {t('action.' + capability)}
       </button>
-      {state && (
+      {(state || create.isPending) && (
         <span role="status" className={'text-sm ' + (toneOf[state] ?? 'text-fg-2')}>
-          {t('state.' + state)}
+          {t(
+            inFlight || create.isPending
+              ? timedOut
+                ? 'state.stillGenerating'
+                : 'state.generating'
+              : 'state.' + state,
+          )}
         </span>
       )}
       {message && (
@@ -146,13 +164,97 @@ export function useLabelName(labels) {
 }
 
 /** Readable form of any capability output. Arabic text keeps its own direction (`dir="auto"`). */
-export function AiOutput({ capability, output, labels }) {
+export function AiOutput({ capability, output, labels, fallback, showRejected = false }) {
+  return (
+    <div className="space-y-3">
+      <ReportBody capability={capability} output={output} labels={labels} />
+      {output && !output.error && (
+        <ReportDetails
+          output={output}
+          capability={capability}
+          fallback={fallback}
+          showRejected={showRejected}
+        />
+      )}
+    </div>
+  );
+}
+
+function ReportDetails({ output, capability, fallback, showRejected }) {
+  const { t, number, percent } = useAiText();
+  const claims = list(output.insights?.claims).filter((claim) => text(claim));
+  const notes = list(output.dataQuality)
+    .map((note) => note?.code)
+    .filter((code) => typeof code === 'string');
+  const rejected = list(output.insights?.rejected)
+    .map((item) => item?.reason)
+    .filter((reason) => typeof reason === 'string');
+  const kpis = [
+    ['kpi.attendance', percent(output.kpis?.attendanceRate)],
+    ['kpi.sales', number(output.kpis?.units)],
+    ['kpi.gifts', percent(output.kpis?.giftDistributionRate)],
+  ];
+  return (
+    <>
+      {(fallback || output.fallback) && (
+        <p className="rounded-md bg-warning-soft p-2 text-sm text-warning">
+          {t('fallbackReport')} <bdi>{text(output.fallback?.reasonCode)}</bdi>
+        </p>
+      )}
+      {capability === 'supervisor_daily_summary' && (
+        <Section title={t('reportKpis')}>
+          <dl className="text-sm">
+            {kpis.map(([key, value]) => (
+              <div key={key} className="flex justify-between gap-3">
+                <dt>{t(key)}</dt>
+                <dd>{value}</dd>
+              </div>
+            ))}
+          </dl>
+        </Section>
+      )}
+      {claims.length > 0 && (
+        <Section title={t('claims')}>
+          <ul className="list-disc space-y-1 ps-5 text-sm">
+            {claims.map((claim, index) => (
+              <li
+                key={index}
+                dir="auto"
+                className={claim.kind === 'hypothesis' ? 'italic text-fg-3' : undefined}
+              >
+                {claim.kind === 'hypothesis' && <>{t('hypothesis')} · </>}
+                {text(claim)}
+              </li>
+            ))}
+          </ul>
+        </Section>
+      )}
+      {notes.length > 0 && (
+        <Section title={t('dataNotes')}>
+          <Bullets items={notes} />
+        </Section>
+      )}
+      {showRejected && rejected.length > 0 && (
+        <details className="text-sm">
+          <summary>{t('rejectedClaims')}</summary>
+          <Bullets items={rejected} />
+        </details>
+      )}
+    </>
+  );
+}
+
+function ReportBody({ capability, output, labels }) {
   const { t } = useAiText();
   const name = useLabelName(labels);
   if (!output || output.error) {
     return (
       <p role="alert" className="rounded-md bg-danger-soft p-3 text-sm text-danger">
-        {t('failure.' + output?.error?.code)}
+        {t(
+          messages['failure.' + output?.error?.code]
+            ? 'failure.' + output.error.code
+            : 'failure.UNKNOWN',
+        )}
       </p>
     );
   }
@@ -293,7 +395,12 @@ export function AiCommentaryCard({ capability, subjectId, period }) {
           })}
         </p>
       </header>
-      <AiOutput capability={capability} output={row.output} labels={row.labels} />
+      <AiOutput
+        capability={capability}
+        output={row.output}
+        labels={row.labels}
+        fallback={row.fallback}
+      />
     </section>
   );
 }

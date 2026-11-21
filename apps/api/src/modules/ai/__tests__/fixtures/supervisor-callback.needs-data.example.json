@@ -1,0 +1,12 @@
+{
+  "requestId": "00000000-0000-4000-8000-000000000002",
+  "capability": "supervisor_daily_summary",
+  "modelVersion": "none@no-data",
+  "confidence": 0,
+  "output": {
+    "error": {
+      "code": "NEEDS_DATA",
+      "message": "No usable aggregate data was supplied."
+    }
+  }
+}

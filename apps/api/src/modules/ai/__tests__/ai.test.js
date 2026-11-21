@@ -1,4 +1,5 @@
 import { randomUUID } from 'node:crypto';
+import { readFileSync } from 'node:fs';
 import { aiServiceRequestSchema, findPiiProblems } from '@fieldflow/shared';
 import ExcelJS from 'exceljs';
 import { afterAll, beforeAll, beforeEach, describe, expect, it, vi } from 'vitest';
@@ -67,6 +68,56 @@ const answerWith = (output) => {
   });
 };
 const sentFor = (created) => fake.calls.filter(({ body }) => body?.requestId === created.requestId);
+
+it.each([
+  ['example', '2001-02-01', null],
+  ['fallback.example', '2001-02-02', 'accept'],
+  ['needs-data.example', '2001-02-03', 'reject'],
+])(
+  'stores the upstream %s callback before the AI HTTP response',
+  async (fixture, workDate, review) => {
+    await world.campaign();
+    const example = JSON.parse(
+      readFileSync(
+        new URL(`./fixtures/supervisor-callback.${fixture}.json`, import.meta.url),
+        'utf8',
+      ),
+    );
+    let callbackStatus;
+    fake.state.handler = async ({ body }) => {
+      const callback = {
+        ...example,
+        requestId: body.requestId,
+        output: { ...example.output, extension: { preserved: true } },
+      };
+      callbackStatus = (await postCallback(app, callback)).status;
+      return defaultHandler();
+    };
+    const created = await world.ok(trigger('supervisor', daily({ filters: { workDate } })), 201);
+    await waitStatus(created.id, 'completed');
+    await vi.waitFor(() => expect(callbackStatus).toBe(200));
+    const stored = await prisma.aiSuggestion.findUniqueOrThrow({
+      where: { requestId: created.requestId },
+    });
+    expect(stored.status).toBe('pending_review');
+    expect(stored.output).toEqual({ ...example.output, extension: { preserved: true } });
+    expect(Number(stored.confidence)).toBe(example.confidence);
+    if (review === 'accept')
+      await world.ok(world.call('director', 'post', `/ai/suggestions/${stored.id}/accept`, {}));
+    if (review === 'reject') {
+      await world.refused(
+        world.call('director', 'post', `/ai/suggestions/${stored.id}/accept`, {}),
+        422,
+        'BUSINESS_RULE_VIOLATION',
+      );
+      await world.ok(
+        world.call('director', 'post', `/ai/suggestions/${stored.id}/reject`, {
+          note: 'Insufficient data',
+        }),
+      );
+    }
+  },
+);
 
 describe('disabled mode (no AI_SERVICE_BASE_URL)', () => {
   it('answers 503 AI_DISABLED, queues nothing and leaves other routes alone', async () => {
@@ -527,11 +578,20 @@ describe('review hardening', () => {
     expect(director.id).not.toBe(regional.id);
   });
 
-  it('a callback with a malformed output.error is a 400', async () => {
+  it('keeps an unfamiliar error object and treats the report as reject-only', async () => {
+    const built = await world.campaign();
+    const input = campaignRequest(built, 'animateur_coaching');
+    const created = await world.ok(trigger('director', input), 201);
+    const output = { error: { code: 5 } };
+    await world.ok(postCallback(app, callbackBody(created.requestId, input.capability, output)));
+    const stored = await prisma.aiSuggestion.findUniqueOrThrow({
+      where: { requestId: created.requestId },
+    });
+    expect(stored.output).toEqual(output);
     await world.refused(
-      postCallback(app, callbackBody(randomUUID(), 'animateur_coaching', { error: { code: 5 } })),
-      400,
-      'VALIDATION_FAILED',
+      world.call('director', 'post', `/ai/suggestions/${stored.id}/accept`, {}),
+      422,
+      'BUSINESS_RULE_VIOLATION',
     );
   });
 });

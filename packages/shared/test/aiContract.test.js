@@ -1,5 +1,5 @@
 import { existsSync, readFileSync, readdirSync } from 'node:fs';
-import { fileURLToPath } from 'node:url';
+import { resolve } from 'node:path';
 import { describe, expect, it } from 'vitest';
 import {
   AI_CAPABILITIES,
@@ -10,50 +10,45 @@ import {
   findPiiProblems,
 } from '../src/index.js';
 
-// The AI service lives in a sibling repository. Without it (CI) only the local rules are checked.
-const repo = fileURLToPath(new URL('../../../../fieldflow-ai/', import.meta.url));
+// Without the upstream checkout (CI), only the local rules are checked.
+const repo = resolve(process.env.AI_SERVICE_PATH || 'C:/dev/fieldflow-ai') + '/';
 const present = existsSync(repo + 'openapi.yaml');
 const yaml = present ? readFileSync(repo + 'openapi.yaml', 'utf8') : '';
 
-describe.skipIf(!present)(
-  'local copy of the AI contract matches ../fieldflow-ai/openapi.yaml',
-  () => {
-    it('has the same paths, capability ids and enums', () => {
-      for (const capability of AI_CAPABILITIES) expect(yaml).toContain(`/v1/${capability}:`);
-      expect(yaml).toContain(`enum: [${AI_CAPABILITIES.join(', ')}]`);
-      expect(yaml).toContain(`enum: [${AI_OUTPUT_ERROR_CODES.join(', ')}]`);
-      expect(yaml).toContain('enum: [supervisor, campaign]');
-      expect(yaml).toContain('enum: [ar, en]');
-      expect(yaml).toContain('required: [requestId, agencyId, subject, input]');
-      expect(yaml).toContain('required: [requestId, capability, modelVersion, confidence, output]');
-      expect(yaml).toContain("pattern: '^[0-9]{4}-[0-9]{2}-[0-9]{2}$'");
-      expect(yaml.match(/additionalProperties: false/g)).toHaveLength(6);
-    });
+describe.skipIf(!present)('local copy of the AI contract matches fieldflow-ai/openapi.yaml', () => {
+  it('has the same paths, capability ids and enums', () => {
+    for (const capability of AI_CAPABILITIES) expect(yaml).toContain(`/v1/${capability}:`);
+    expect(yaml).toContain(`enum: [${AI_CAPABILITIES.join(', ')}]`);
+    expect(yaml).toContain(`enum: [${AI_OUTPUT_ERROR_CODES.join(', ')}]`);
+    expect(yaml).toContain('enum: [supervisor, campaign]');
+    expect(yaml).toContain('enum: [ar, en]');
+    expect(yaml).toContain('required: [requestId, agencyId, subject, input]');
+    expect(yaml).toContain('required: [requestId, capability, modelVersion, confidence, output]');
+    expect(yaml).toContain("pattern: '^[0-9]{4}-[0-9]{2}-[0-9]{2}$'");
+    expect(yaml.match(/additionalProperties: false/g)).toHaveLength(6);
+  });
 
-    it('every fixture of the AI repository is a valid request with the right subject type', () => {
-      let count = 0;
-      for (const capability of AI_CAPABILITIES) {
-        const directory = `${repo}fixtures/${capability}/`;
-        for (const file of readdirSync(directory).filter((name) => name.endsWith('.json'))) {
-          const body = JSON.parse(readFileSync(directory + file, 'utf8'));
-          expect(aiServiceRequestSchema.safeParse(body).success, `${capability}/${file}`).toBe(
-            true,
-          );
-          expect(body.subject.type).toBe(AI_SUBJECT_TYPES[capability]);
-          count += 1;
-        }
+  it('every fixture of the AI repository is a valid request with the right subject type', () => {
+    let count = 0;
+    for (const capability of AI_CAPABILITIES) {
+      const directory = `${repo}fixtures/${capability}/`;
+      for (const file of readdirSync(directory).filter((name) => name.endsWith('.json'))) {
+        const body = JSON.parse(readFileSync(directory + file, 'utf8'));
+        expect(aiServiceRequestSchema.safeParse(body).success, `${capability}/${file}`).toBe(true);
+        expect(body.subject.type).toBe(AI_SUBJECT_TYPES[capability]);
+        count += 1;
       }
-      expect(count).toBe(20);
-    });
+    }
+    expect(count).toBe(20);
+  });
 
-    it('the happy fixtures pass our PII guard', () => {
-      for (const capability of AI_CAPABILITIES) {
-        const body = JSON.parse(readFileSync(`${repo}fixtures/${capability}/happy.json`, 'utf8'));
-        expect(findPiiProblems(body.input.context.data)).toEqual([]);
-      }
-    });
-  },
-);
+  it('the happy fixtures pass our PII guard', () => {
+    for (const capability of AI_CAPABILITIES) {
+      const body = JSON.parse(readFileSync(`${repo}fixtures/${capability}/happy.json`, 'utf8'));
+      expect(findPiiProblems(body.input.context.data)).toEqual([]);
+    }
+  });
+});
 
 describe('callback schema', () => {
   const valid = {

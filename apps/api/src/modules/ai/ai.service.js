@@ -446,7 +446,7 @@ async function receiveResult(body) {
 const pageMeta = (query, total) => ({ page: query.page, pageSize: query.pageSize, total });
 const number = (value) => (value == null ? null : Number(value));
 const failureOf = (output) =>
-  output && typeof output === 'object' ? (output.error?.code ?? null) : null;
+  output?.error ? (typeof output.error.code === 'string' ? output.error.code : 'UNKNOWN') : null;
 
 async function names(agencyId, rows) {
   const users = new Set();

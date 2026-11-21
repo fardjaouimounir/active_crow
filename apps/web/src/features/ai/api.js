@@ -3,6 +3,7 @@ import { apiClient } from '../../shared/api/client.js';
 import { useAuth } from '../../shared/auth/hooks.js';
 
 const OPEN = ['queued', 'sent'];
+export const AI_WAIT_MS = 120_000;
 
 /** The latest requests for one subject and capability, polled while one is still in flight. */
 export function useAiRequests({ capability, subjectId, enabled = true }) {
@@ -19,7 +20,11 @@ export function useAiRequests({ capability, subjectId, enabled = true }) {
       ).data,
     refetchInterval: (query) => {
       const latest = query.state.data?.data?.[0];
-      return latest && OPEN.includes(latest.status) ? 5000 : false;
+      return latest &&
+        OPEN.includes(latest.status) &&
+        Date.now() - Date.parse(latest.createdAt) < AI_WAIT_MS
+        ? 5000
+        : false;
     },
   });
 }

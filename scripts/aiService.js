@@ -1,4 +1,4 @@
-// Starts the AI service of ../fieldflow-ai for local work, without touching that repository:
+// Starts the AI service at AI_SERVICE_PATH for local work without touching that repository:
 // it loads the service's own .env and listens itself (the service only starts on its own when its
 // path has no spaces or special characters, and it does not read .env files).
 //
@@ -7,7 +7,9 @@ import { existsSync } from 'node:fs';
 import { resolve } from 'node:path';
 import { pathToFileURL } from 'node:url';
 
-const dir = resolve(import.meta.dirname, '../../fieldflow-ai');
+const envFile = resolve(import.meta.dirname, '../.env');
+if (existsSync(envFile)) process.loadEnvFile(envFile);
+const dir = resolve(process.env.AI_SERVICE_PATH || 'C:/dev/fieldflow-ai');
 if (!existsSync(resolve(dir, 'src/server.js'))) {
   process.stderr.write(`The AI service was not found at ${dir}\n`);
   process.exit(1);

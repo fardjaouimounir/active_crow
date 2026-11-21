@@ -92,18 +92,24 @@ With an empty `AI_SERVICE_BASE_URL` the module is disabled: `POST /ai/requests` 
 ## Run both services locally
 
 1. FieldFlow API on port 4000: set the three variables above, `npm run dev`.
-2. AI service (`../fieldflow-ai`): copy `.env.example` to `.env`, put the **same** two keys in
+2. AI service (`C:/dev/fieldflow-ai`, branch `feat/claims-validation`): copy `.env.example` to `.env`, put the **same** two keys in
    `AI_SERVICE_INBOUND_KEY` / `AI_SERVICE_OUTBOUND_KEY`, set `FIELDFLOW_API_BASE_URL=http://localhost:4000`,
-   add your own `LLM_API_KEY`, then `npm ci && npm start` (port 4100). Check `GET http://localhost:4100/health`.
+   add your own `LLM_API_KEY` and run `npm ci` in the AI checkout. Use `npm run ai:start` from FieldFlow
+   and check `GET http://localhost:4100/health`.
 3. Sign in as a supervisor, open the dashboard and press "Generate AI summary". The suggestion appears in
    `/app/ai-review` for the director within a minute; accepting it shows the card on the dashboard.
 
 ### Starting the AI service from this repository
 
-`npm run ai:start` (script `scripts/aiService.js`) loads `../fieldflow-ai/.env` and starts the service. Use it
+`npm run ai:start` (script `scripts/aiService.js`) loads the AI checkout's `.env` and starts the service.
+It defaults to `C:/dev/fieldflow-ai`. Set `AI_SERVICE_PATH` in the FieldFlow root `.env` to use another checkout. Use it
 when `npm start` in `fieldflow-ai` exits silently: that service only starts by itself when its path has
 no spaces or special characters, and it does not read `.env` files. The model must be one the LLM key
 may use (`LLM_MODEL` in the service `.env`).
+
+With FieldFlow's API and the AI service running, use `npm run ai:smoke -w @fieldflow/api` to
+generate a summary for an active seeded supervisor and wait up to 60 seconds for a stored
+callback. The output lists the request status, suggestion ID, model, confidence and output type.
 
 ## Docker note (Prompt 16)
 
