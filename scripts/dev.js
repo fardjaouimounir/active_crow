@@ -1,12 +1,13 @@
-// Runs the API and the web app in watch mode side by side; when one stops, the other is stopped too.
+// Runs the API and the web app side by side; when one stops, the other is stopped too.
 import { spawn } from 'node:child_process';
 
-const workspaces = ['@fieldflow/api', '@fieldflow/web'];
+const apiScript = process.argv.includes('--no-api-watch') ? 'start' : 'dev';
+const commands = [`npm run ${apiScript} -w @fieldflow/api`, 'npm run dev -w @fieldflow/web'];
 
-const children = workspaces.map((workspace) =>
+const children = commands.map((command) =>
   // A single command string: shell mode is needed on Windows (npm is npm.cmd) and the
   // workspace names are fixed literals, so nothing user-supplied reaches the shell.
-  spawn(`npm run dev -w ${workspace}`, { stdio: 'inherit', shell: true }),
+  spawn(command, { stdio: 'inherit', shell: true }),
 );
 
 let stopping = false;

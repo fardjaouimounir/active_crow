@@ -4,6 +4,10 @@ Field-marketing campaign platform for an Algerian Animation Commerciale agency: 
 staffing, attendance and visits, sales and gift distribution, inventory, Tombola, reporting and a
 client portal.
 
+**Evaluating the project?** Follow the [reviewer guide](docs/reviewer-guide.md) to run a small
+fictional campaign locally, sign in by role, and verify the application. The core demo runs without
+an external AI account.
+
 Project rules, stack and conventions: [`CLAUDE.md`](CLAUDE.md). Business analysis and database
 design (Arabic): [`docs/`](docs/). Build prompts and the working method:
 [`prompts/README.md`](prompts/README.md).

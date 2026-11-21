@@ -24,6 +24,11 @@ it('requires the exact RESET response for the confirmed reset', () => {
 
 it('recognizes refresh-today and rejects mixing it with reset confirmation', () => {
   expect(parseShowcaseOptions(['--refresh-today'])).toMatchObject({ refreshToday: true });
+  expect(parseShowcaseOptions(['--confirm-reset', '--tiny'])).toMatchObject({
+    confirmReset: true,
+    tiny: true,
+    refreshToday: false,
+  });
   expect(() => parseShowcaseOptions(['--refresh-today', '--confirm-reset'])).toThrow(
     'either a reset',
   );

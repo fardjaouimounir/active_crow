@@ -33,6 +33,7 @@
     "seed:showcase": "npm run db:seed:showcase -w @fieldflow/api --",
     "demo:reset": "npm run seed:showcase -- --confirm-reset",
     "demo:today": "npm run seed:showcase -- --refresh-today",
+    "demo:serve": "node scripts/dev.js --no-api-watch",
     "ai:start": "node scripts/aiService.js",
     "seed:showcase:check": "npm run seed:showcase:check -w @fieldflow/api"
   },

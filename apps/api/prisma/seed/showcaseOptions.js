@@ -1,6 +1,6 @@
 import { createInterface } from 'node:readline';
 
-const FLAGS = new Set(['--refresh-today', '--compact', '--confirm-reset']);
+const FLAGS = new Set(['--refresh-today', '--compact', '--tiny', '--confirm-reset']);
 
 export function parseShowcaseOptions(args) {
   for (const arg of args) {
@@ -9,7 +9,12 @@ export function parseShowcaseOptions(args) {
   const refreshToday = args.includes('--refresh-today');
   const confirmReset = args.includes('--confirm-reset');
   if (refreshToday && confirmReset) throw new Error('Choose either a reset or a today refresh.');
-  return { refreshToday, confirmReset, compact: args.includes('--compact') };
+  return {
+    refreshToday,
+    confirmReset,
+    compact: args.includes('--compact'),
+    tiny: args.includes('--tiny'),
+  };
 }
 
 export async function confirmShowcaseReset() {

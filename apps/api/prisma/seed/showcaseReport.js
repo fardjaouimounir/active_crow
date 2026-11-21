@@ -351,18 +351,20 @@ export function formatReport({ accounts, counts, findings }) {
       .map(([s, n]) => `${s}=${n}`)
       .join(' ')}`,
   );
-  out.push(
-    '',
-    'Expected AI findings (labels as the AI sees them: S = seller rank, A = Animateur rank, PDV = store)',
-  );
-  for (const line of findings.lines) out.push(`  • ${line}`);
+  if (findings) {
+    out.push(
+      '',
+      'Expected AI findings (labels as the AI sees them: S = seller rank, A = Animateur rank, PDV = store)',
+    );
+    for (const line of findings.lines) out.push(`  • ${line}`);
+  }
   return out;
 }
 
-export async function buildReport(ctx) {
+export async function buildReport(ctx, { includeFindings = true } = {}) {
   return {
     accounts: await buildAccounts(ctx),
     counts: await buildCounts(ctx),
-    findings: await buildFindings(ctx),
+    findings: includeFindings ? await buildFindings(ctx) : null,
   };
 }

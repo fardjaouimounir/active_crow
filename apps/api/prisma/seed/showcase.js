@@ -3,6 +3,7 @@
 //   npm run seed:showcase                      full reset of the demo agency, then a fresh history
 //   npm run seed:showcase -- --refresh-today   top up today only (safe to repeat, idempotent per hour)
 //   npm run seed:showcase -- --compact         only the last days of each campaign (quick look, tests)
+//   npm run demo:reset -- --tiny               rebuild a small, fast demo for reviewers
 //
 // Runs only with DEMO_MODE=true and DEMO_PASSWORD set (apps/api/.env), and refuses a database that
 // holds anything that is not demo data. SHOWCASE_NOW=14:30 pretends it is that time of day today.
@@ -22,7 +23,8 @@ async function main() {
   try {
     const ctx = await runShowcase({ ...options, log });
     log(`\nDone (${ctx.failures.length} call(s) refused — see the lines starting with "!" above).`);
-    for (const line of formatReport(await buildReport(ctx))) log(line);
+    for (const line of formatReport(await buildReport(ctx, { includeFindings: !options.tiny })))
+      log(line);
     if (ctx.failures.length) process.exitCode = 1;
   } catch (error) {
     if (!(error instanceof ShowcaseRefusal)) throw error;
