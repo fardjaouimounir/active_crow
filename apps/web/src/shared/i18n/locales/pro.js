@@ -179,6 +179,8 @@ export const pro = {
       targetOf: 'Target {{value}} units',
       targetProgress: 'Progress towards the sales target',
       vsPrevious: 'vs previous period',
+      vsSameTime: 'vs same time last {{day}}',
+      vsSameDay: 'vs last {{day}}',
       trend14: 'Last 14 days',
     },
     charts: {
@@ -388,6 +390,8 @@ export const pro = {
       targetOf: 'الهدف {{value}} وحدة',
       targetProgress: 'التقدّم نحو هدف المبيعات',
       vsPrevious: 'مقارنة بالفترة السابقة',
+      vsSameTime: 'مقارنة بنفس الوقت من {{day}} الماضي',
+      vsSameDay: 'مقارنة بـ{{day}} الماضي',
       trend14: 'آخر 14 يومًا',
     },
     charts: {

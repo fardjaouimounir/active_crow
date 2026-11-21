@@ -138,3 +138,21 @@ it('opens the provisional campaign report with an A4 print stylesheet', async ()
   );
   expect(printStyles).toMatch(/@media print[\s\S]+size: A4/);
 });
+
+it.each([
+  ['sameTime', 'vs same time last Friday'],
+  ['sameDay', 'vs last Friday'],
+])("labels the supervisor's today comparison (%s)", async (kind, label) => {
+  setup('supervisor', {
+    'GET /reports/kpis': () =>
+      response({
+        ...stats(18),
+        previous: stats(12),
+        comparison: { kind, weekday: '2026-11-13' },
+        alerts: { oldPending: 0, unvisitedStores: 0 },
+        options: { wilayaIds: wilayas },
+      }),
+  });
+  renderApp('/app/dashboard');
+  expect((await screen.findAllByText(label)).length).toBeGreaterThan(0);
+});

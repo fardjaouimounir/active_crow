@@ -117,16 +117,27 @@ export function TodayStrip({ filters, now }) {
  * bar where a target exists. `trend` holds the last 14 daily rows (unfiltered by period).
  */
 export function KpiRow({ values, trend, supervisor = false, compare = true }) {
-  const { t } = useTranslation('pro');
+  const { t, i18n } = useTranslation('pro');
   const { num, pct } = useFormat();
   const days = [...(trend ?? [])].sort((a, b) => a.id.localeCompare(b.id));
   const series = (pick) => (days.length > 1 ? days.map(pick) : null);
   const prev = values.previous;
+  // Today is compared with the same weekday last week up to the same time (the whole day once the
+  // shift is over); a supervisor's today view shows that comparison too.
+  const comparison = values.comparison;
+  const weekday = comparison
+    ? new Intl.DateTimeFormat(i18n.language, { weekday: 'long', timeZone: 'UTC' }).format(
+        new Date(comparison.weekday + 'T00:00:00Z'),
+      )
+    : null;
+  const comparisonLabel = comparison
+    ? t(comparison.kind === 'sameTime' ? 'kpi.vsSameTime' : 'kpi.vsSameDay', { day: weekday })
+    : t('kpi.vsPrevious');
   const target = values.completion?.salesTarget;
   const delta = (group, field) => {
     const a = values[group]?.[field];
     const b = prev?.[group]?.[field];
-    return !compare || supervisor || a == null || b == null ? null : a - b;
+    return !compare || (supervisor && !comparison) || a == null || b == null ? null : a - b;
   };
   const tiles = [
     {
@@ -204,7 +215,7 @@ export function KpiRow({ values, trend, supervisor = false, compare = true }) {
           delta={tile.delta}
           deltaFormat={tile.deltaFormat}
           deltaGood
-          period={tile.delta != null ? t('kpi.vsPrevious') : undefined}
+          period={tile.delta != null ? comparisonLabel : undefined}
           progress={tile.progress ?? undefined}
           sparkline={
             tile.spark ? <Sparkline values={tile.spark} label={t('kpi.trend14')} /> : undefined

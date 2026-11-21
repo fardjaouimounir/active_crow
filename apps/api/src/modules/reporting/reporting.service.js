@@ -141,8 +141,26 @@ async function stockFor(actor, ctx) {
 
 const period = ({ from, to }) => ({ from, to });
 const totals = (rows) => rows[0]?.totals ?? {};
-const read = (ctx, dimension, filters = ctx.filters) =>
-  repository.aggregate(prisma, ctx.scope, filters, dimension, ctx.instant);
+const read = (ctx, dimension, filters = ctx.filters, until = null) =>
+  repository.aggregate(prisma, ctx.scope, filters, dimension, ctx.instant, until);
+
+/** After this Algiers time the shift is over: today is compared with the whole of last week's day. */
+export const SHIFT_END = '20:00';
+
+/**
+ * The "same time last week" comparison of a single day. For today before the end of the shift it is
+ * the same weekday a week ago, counted only up to the same time of day (Algeria has no DST, so that
+ * is exactly 7 × 24 h earlier). After the shift, or for a past day, it is the whole day.
+ * @param {string} date business date of the day being compared
+ * @param {Date} instant now
+ * @returns {{ date: string, until: Date | null, sameTime: boolean }}
+ */
+export function sameTimeLastWeek(date, instant) {
+  const previous = shift(date, -7);
+  const time = new Date(+instant + 3_600_000).toISOString().slice(11, 16);
+  const live = date === businessDate(instant) && time < SHIFT_END;
+  return { date: previous, until: live ? new Date(+instant - 7 * DAY) : null, sameTime: live };
+}
 
 async function choices(ctx) {
   const campaigns = ctx.visibleCampaigns;
@@ -183,11 +201,15 @@ export async function kpis(actor, filters) {
   const ctx = await context(actor, filters);
   const { from, to } = ctx.filters;
   const days = (Date.parse(to) - Date.parse(from)) / DAY + 1;
-  const previous = { ...ctx.filters, from: shift(from, -days), to: shift(from, -1) };
+  const single = from === to && to === businessDate(ctx.instant);
+  const week = single ? sameTimeLastWeek(to, ctx.instant) : null;
+  const previous = week
+    ? { ...ctx.filters, from: week.date, to: week.date }
+    : { ...ctx.filters, from: shift(from, -days), to: shift(from, -1) };
   const recentFrom = shift(to, -6);
   const [currentRows, previousRows, stock, options, recentRows] = await Promise.all([
     read(ctx),
-    read(ctx, undefined, previous),
+    read(ctx, undefined, previous, week?.until),
     stockFor(actor, ctx),
     ctx.scope.level === 'self' ? null : choices(ctx),
     from > recentFrom && ctx.scope.level !== 'self'
@@ -198,6 +220,7 @@ export async function kpis(actor, filters) {
   return {
     ...calculateKpis(period(ctx.filters), current, stock.totals),
     previous: calculateKpis(period(previous), totals(previousRows)),
+    comparison: week ? { kind: week.sameTime ? 'sameTime' : 'sameDay', weekday: week.date } : null,
     alerts: {
       oldPending: current.oldPending ?? 0,
       unvisitedStores: (recentRows ? totals(recentRows) : current).unvisitedStores ?? 0,
@@ -346,10 +369,10 @@ export async function exportData(actor, filters, id) {
  * The AI integration builds its aggregate payloads from these numbers (the dashboard's own source).
  * @returns {Promise<object | object[]>}
  */
-export async function aggregates(actor, filters, dimension) {
+export async function aggregates(actor, filters, dimension, { until = null } = {}) {
   const ctx = await context(actor, filters);
   if (dimension) return grouped(ctx, dimension);
-  return calculateKpis(period(ctx.filters), totals(await read(ctx)));
+  return calculateKpis(period(ctx.filters), totals(await read(ctx, undefined, ctx.filters, until)));
 }
 
 const PORTAL_DIMENSIONS = ['day', 'wilaya', 'point_of_sale', 'product'];

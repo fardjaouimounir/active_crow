@@ -75,11 +75,17 @@ const location = (row) => Prisma.sql`
   JOIN points_of_sale p ON p.id = ${row}.point_of_sale_id AND p.agency_id = ${row}.agency_id
   LEFT JOIN region_wilayas rw ON rw.wilaya_id = p.wilaya_id AND rw.agency_id = p.agency_id`;
 
-export async function aggregate(db, scope, filters, dimension, instant) {
+/**
+ * @param {Date | null} [until] when given, only what was recorded at or before this instant counts
+ *   (sales, attendance, interactions, visits): the "same time last week" comparison.
+ */
+export async function aggregate(db, scope, filters, dimension, instant, until = null) {
   assertScope(scope);
   const { agencyId, userId } = scope;
   const { from, to } = filters;
   const elapsedTo = Prisma.sql`least(${to}::date, (${instant}::timestamptz AT TIME ZONE 'Africa/Algiers')::date)`;
+  const upTo = (column) =>
+    until ? Prisma.sql`AND ${Prisma.raw(column)} <= ${until}::timestamptz` : Prisma.empty;
   const key = dimensions[dimension] ?? Prisma.sql`''::text`;
   const visitsKey = dimension === 'animateur' ? Prisma.sql`observed_animateur_id::text` : key;
   const salesSource =
@@ -186,6 +192,7 @@ export async function aggregate(db, scope, filters, dimension, instant) {
       JOIN selected_campaigns c ON c.id = a.campaign_id
       JOIN assignments r ON r.id = a.assignment_id AND r.agency_id = a.agency_id
       WHERE a.agency_id = ${agencyId}::uuid AND a.work_date BETWEEN ${from}::date AND ${to}::date
+      ${upTo('a.recorded_at')}
     ), scoped_attendance AS (
       SELECT a.*, p.wilaya_id, rw.region_id FROM attendance_rows a ${location(Prisma.sql`a`)}
       WHERE true ${operationScope(scope, Prisma.sql`a`)} ${facets(filters, Prisma.sql`a`)}
@@ -225,6 +232,7 @@ export async function aggregate(db, scope, filters, dimension, instant) {
         s.point_of_sale_id, s.customer_id, s.status, p.wilaya_id, rw.region_id FROM sales s
       JOIN selected_campaigns c ON c.id = s.campaign_id ${location(Prisma.sql`s`)}
       WHERE s.agency_id = ${agencyId}::uuid AND s.work_date BETWEEN ${from}::date AND ${to}::date
+      ${upTo('s.sold_at')}
       ${facets(filters, Prisma.sql`s`)} ${operationScope(scope, Prisma.sql`s`)}
     ), sales_stats AS (
       SELECT ${key} AS bucket, count(*) AS "salesCount", sum(units) AS "salesUnits",
@@ -246,6 +254,7 @@ export async function aggregate(db, scope, filters, dimension, instant) {
       SELECT i.*, a.supervisor_id FROM field_interactions i JOIN selected_campaigns c ON c.id = i.campaign_id
       JOIN assignments a ON a.id = i.assignment_id
       WHERE i.agency_id = ${agencyId}::uuid AND i.work_date BETWEEN ${from}::date AND ${to}::date
+      ${upTo('i.recorded_at')}
     ), scoped_interactions AS (
       SELECT i.*, p.wilaya_id, rw.region_id FROM interaction_rows i ${location(Prisma.sql`i`)}
       WHERE true ${operationScope(scope, Prisma.sql`i`)} ${facets(filters, Prisma.sql`i`)}
@@ -258,6 +267,7 @@ export async function aggregate(db, scope, filters, dimension, instant) {
       WHERE v.agency_id = ${agencyId}::uuid
         AND visited_at >= (${from}::date::timestamp AT TIME ZONE 'Africa/Algiers')
         AND visited_at < ((${to}::date::timestamp + interval '1 day') AT TIME ZONE 'Africa/Algiers')
+        ${upTo('visited_at')}
     ), scoped_visits AS (
       SELECT v.*, p.wilaya_id, rw.region_id
       ${dimension === 'animateur' ? Prisma.sql`, observed_animateur_id` : Prisma.empty}

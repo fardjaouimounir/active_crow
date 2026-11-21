@@ -19,7 +19,7 @@ import { jobs } from '../../core/jobs/index.js';
 import { businessDate, clock } from '../../core/time/clock.js';
 import { prisma } from '../../db/client.js';
 import { withTransaction } from '../../db/transaction.js';
-import { reportingService } from '../reporting/reporting.service.js';
+import { reportingService, sameTimeLastWeek } from '../reporting/reporting.service.js';
 import { aiConfig } from './ai.config.js';
 import * as repository from './ai.repository.js';
 import { sendToAiService } from './aiClient.js';
@@ -34,7 +34,6 @@ import {
 const DAY = 86_400_000;
 const HOUR = 3_600_000;
 const SCHEDULED_LOCALE = 'ar';
-const shift = (date, days) => new Date(Date.parse(date) + days * DAY).toISOString().slice(0, 10);
 const queueOf = (capability) => `ai.${capability}`;
 const sha256 = (value) => createHash('sha256').update(JSON.stringify(value)).digest('hex');
 
@@ -233,10 +232,17 @@ async function collectData(capability, actor, request, existing) {
     reportingService.aggregates(actor, override, dimension);
   switch (capability) {
     case 'supervisor_daily_summary': {
-      const lastWeek = shift(filters.from, -7);
+      // Today so far against the same weekday last week up to the same time (the whole day after
+      // the shift or for a past day), never against a full day.
+      const week = sameTimeLastWeek(filters.from, clock.now());
       const [today, previous] = await Promise.all([
         aggregates(),
-        aggregates(undefined, { ...filters, from: lastWeek, to: lastWeek }),
+        reportingService.aggregates(
+          actor,
+          { ...filters, from: week.date, to: week.date },
+          undefined,
+          { until: week.until },
+        ),
       ]);
       return payloadBuilders[capability]({ today, previous });
     }

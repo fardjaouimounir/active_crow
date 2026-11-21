@@ -84,8 +84,8 @@ function periodBuckets(daily) {
 }
 
 /**
- * @param {{ today: object, previous: object }} input KPIs of the work date and of the same weekday
- *   one week earlier (a fixed choice: the previous calendar day is often a day off).
+ * @param {{ today: object, previous: object }} input KPIs of the work date so far and of the same weekday
+ *   one week earlier up to the same time of day (the whole day once the shift is over).
  */
 export function supervisorDailySummary({ today, previous }) {
   return {
