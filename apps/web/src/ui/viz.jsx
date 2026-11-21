@@ -166,7 +166,14 @@ export function StatusPill({ tone = 'neutral', children, className, icon }) {
   );
 }
 
-export const PILL_ICONS = { good: CircleCheck, warn: TriangleAlert, bad: CircleX, info: CircleAlert, neutral: Minus, wait: Clock };
+export const PILL_ICONS = {
+  good: CircleCheck,
+  warn: TriangleAlert,
+  bad: CircleX,
+  info: CircleAlert,
+  neutral: Minus,
+  wait: Clock,
+};
 
 /* ------------------------------------------------------------------- Ago */
 

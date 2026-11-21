@@ -116,6 +116,37 @@
     background: linear-gradient(180deg, var(--brand-black) 0%, transparent 62%);
   }
 
+  /* Drawers slide in from the inline-end edge, dialogs fade up: 150 ms, off for reduced motion. */
+  @keyframes ui-drawer-in {
+    from {
+      opacity: 0;
+      transform: translateX(var(--drawer-from, 1.25rem));
+    }
+    to {
+      opacity: 1;
+      transform: none;
+    }
+  }
+  @keyframes ui-dialog-in {
+    from {
+      opacity: 0;
+      transform: translateY(0.5rem);
+    }
+    to {
+      opacity: 1;
+      transform: none;
+    }
+  }
+  .ui-drawer[open] {
+    animation: ui-drawer-in 150ms var(--ease-out-expo);
+  }
+  [dir='rtl'] .ui-drawer[open] {
+    --drawer-from: -1.25rem;
+  }
+  .ui-dialog[open] {
+    animation: ui-dialog-in 150ms var(--ease-out-expo);
+  }
+
   @media print {
     .brand-stripe {
       background: none;

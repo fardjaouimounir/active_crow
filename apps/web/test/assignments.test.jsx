@@ -131,7 +131,8 @@ it('renders the Assignments tab in Arabic and RTL', async () => {
   const table = within(await screen.findByRole('table'));
   expect({
     direction: document.documentElement.dir,
-    tab: screen.getByRole('tab', { name: 'التعيينات' }).textContent,
+    tab: screen.getByRole('tab', { selected: true }).textContent,
+    sub: screen.getByRole('button', { name: 'التعيينات' }).getAttribute('aria-current'),
     headers: table.getAllByRole('columnheader').map((item) => item.textContent),
     status: table.getByText('مقترح').textContent,
   }).toMatchInlineSnapshot(`
@@ -146,7 +147,8 @@ it('renders the Assignments tab in Arabic and RTL', async () => {
         "الإجراءات",
       ],
       "status": "مقترح",
-      "tab": "التعيينات",
+      "sub": "page",
+      "tab": "الفريق",
     }
   `);
 });

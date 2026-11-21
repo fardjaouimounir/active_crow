@@ -13,6 +13,7 @@ import {
   YAxis,
 } from 'recharts';
 import { KpiStrip, KpiTile, TableFrame, tableClass } from '../../ui/data.jsx';
+import { formatNumber, formatPercent } from '../../ui/format.js';
 import { buttonClass } from '../../ui/primitives.jsx';
 import {
   chartAxis,
@@ -28,20 +29,11 @@ export function useReportingText() {
   const { i18n } = useTranslation();
   const language = i18n.resolvedLanguage ?? i18n.language ?? 'en';
   const rtl = language.startsWith('ar');
-  const locale = rtl ? 'ar-DZ-u-nu-latn' : 'en-GB';
+  // Thin-space thousands, one decimal for percentages, "—" when there is no figure.
   const num = (value, percent = false) =>
-    value == null
-      ? '—'
-      : new Intl.NumberFormat(
-          locale,
-          percent
-            ? {
-                style: 'percent',
-                minimumFractionDigits: 1,
-                maximumFractionDigits: 1,
-              }
-            : undefined,
-        ).format(value);
+    percent
+      ? formatPercent(value)
+      : formatNumber(value, { decimals: Number.isInteger(value) ? 0 : 1, rtl });
   const t = (key, values = {}) =>
     (messages[key]?.[rtl ? 1 : 0] ?? key).replace(/\{(\w+)\}/g, (_, name) => values[name] ?? '');
   return { rtl, language, num, t };
@@ -49,10 +41,10 @@ export function useReportingText() {
 
 /** Attendance status → series color: good = spring family, problems stay distinguishable. */
 const STATUS_COLORS = {
-  verified: '#3afb7c',
-  pending: '#adfec8',
-  rejected: '#000000',
-  notSent: '#101D00',
+  verified: 'var(--accent)',
+  pending: 'var(--aquamarine)',
+  rejected: 'var(--brand-black)',
+  notSent: 'var(--success-soft)',
   absentJustified: chartSeries[4],
   absentUnjustified: chartSeries[5],
 };

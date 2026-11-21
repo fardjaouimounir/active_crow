@@ -3,12 +3,14 @@ import { useTranslation } from 'react-i18next';
 import { Link, useLocation, useNavigate } from 'react-router';
 import { useCan } from '../../../shared/auth/hooks.js';
 import { DataTable } from '../../../shared/ui/DataTable.jsx';
-import { FilterBar, useFilters } from '../../../shared/ui/FilterBar.jsx';
+import { useFilters } from '../../../shared/ui/FilterBar.jsx';
+import { ListToolbar, useColumnVisibility } from '../../../shared/ui/ListToolbar.jsx';
 import { FormField, SearchSelect } from '../../../shared/ui/FormControls.jsx';
 import { PageHeader, StatusBadge } from '../../../shared/ui/PageParts.jsx';
 import { useApiError } from '../../../shared/ui/useApiError.js';
 import { useManagers, useOrganizationResource, useWilayas } from '../api.js';
-import { InputField, SelectField, areaOptions, primaryStyle } from '../components/Fields.jsx';
+import { areaOptions, primaryStyle } from '../components/Fields.jsx';
+import { Avatar } from '../../../ui/primitives.jsx';
 
 const managerRoles = USER_ROLES.filter((role) => role !== 'animateur' && role !== 'client');
 const useListManagers = (q) => useManagers(q, managerRoles);
@@ -23,26 +25,31 @@ export function UsersPage() {
   const wilayas = useWilayas();
   const { message } = useApiError(users.error ?? wilayas.error);
   const sort = filters.sort ?? 'fullName:asc';
+  const { t: tp } = useTranslation('pro');
+  const columnState = useColumnVisibility('users');
   const columns = [
     {
       accessorKey: 'fullName',
       header: t('admin.fullName'),
-      meta: { sortable: true },
+      meta: { sortable: true, width: '32%' },
       cell: ({ row }) => (
-        <Link
-          className="font-medium underline-offset-4 hover:underline"
-          to={row.original.id}
-          state={{ listSearch: search }}
-          onClick={(event) => event.stopPropagation()}
-        >
-          {row.original.fullName}
-        </Link>
+        <div className="flex min-w-0 items-center gap-3">
+          <Avatar name={row.original.fullName} />
+          <div className="min-w-0 leading-tight">
+            <Link
+              className="block truncate font-medium underline-offset-4 hover:underline"
+              to={row.original.id}
+              state={{ listSearch: search }}
+              onClick={(event) => event.stopPropagation()}
+            >
+              <bdi>{row.original.fullName}</bdi>
+            </Link>
+            <bdi dir="ltr" className="block truncate text-xs text-fg-3">
+              {row.original.email}
+            </bdi>
+          </div>
+        </div>
       ),
-    },
-    {
-      accessorKey: 'email',
-      header: t('admin.email'),
-      cell: ({ getValue }) => <bdi dir="ltr">{getValue()}</bdi>,
     },
     {
       accessorKey: 'role',
@@ -78,34 +85,40 @@ export function UsersPage() {
           </Link>
         )}
       </PageHeader>
-      <FilterBar>
-        <InputField
-          name="search"
-          type="search"
-          value={filters.q}
-          onChange={(value) => setFilter('q', value)}
-        />
-        <SelectField
-          name="role"
-          value={filters.role}
-          blank="all"
-          options={USER_ROLES.map((value) => ({ value, label: t('roles.' + value) }))}
-          onChange={(value) => setFilter('role', value)}
-        />
-        <SelectField
-          name="status"
-          value={filters.status}
-          blank="all"
-          options={USER_STATUSES.map((value) => ({ value, label: t('admin.' + value) }))}
-          onChange={(value) => setFilter('status', value)}
-        />
-        <SelectField
-          name="wilaya"
-          value={filters.wilayaId}
-          blank="all"
-          options={areaOptions(wilayas.data?.data, i18n.resolvedLanguage)}
-          onChange={(value) => setFilter('wilayaId', value)}
-        />
+      <ListToolbar
+        search={{
+          label: t('admin.search'),
+          value: filters.q,
+          onChange: (value) => setFilter('q', value),
+        }}
+        filters={[
+          {
+            name: 'role',
+            label: t('admin.role'),
+            value: filters.role,
+            options: USER_ROLES.map((value) => ({ value, label: t('roles.' + value) })),
+            onChange: (value) => setFilter('role', value),
+          },
+          {
+            name: 'status',
+            label: t('admin.status'),
+            value: filters.status,
+            options: USER_STATUSES.map((value) => ({ value, label: t('admin.' + value) })),
+            onChange: (value) => setFilter('status', value),
+          },
+          {
+            name: 'wilaya',
+            label: t('admin.wilaya'),
+            value: filters.wilayaId,
+            options: areaOptions(wilayas.data?.data, i18n.resolvedLanguage),
+            onChange: (value) => setFilter('wilayaId', value),
+          },
+        ]}
+        columns={{
+          all: columns.map((column) => ({ id: column.accessorKey, label: column.header })),
+          ...columnState,
+        }}
+      >
         <FormField label={t('admin.manager')}>
           {(props) => (
             <SearchSelect
@@ -116,7 +129,7 @@ export function UsersPage() {
             />
           )}
         </FormField>
-      </FilterBar>
+      </ListToolbar>
       <DataTable
         columns={columns}
         rows={users.data?.data ?? []}
@@ -128,6 +141,16 @@ export function UsersPage() {
         onSort={(value) => setFilter('sort', value)}
         onPage={(value) => setFilter('page', value)}
         onRowClick={(row) => navigate(row.id, { state: { listSearch: search } })}
+        hidden={columnState.hidden}
+        rowActions={(row) => (
+          <Link
+            to={row.id}
+            state={{ listSearch: search }}
+            className="inline-flex h-7 items-center rounded-md px-2 text-xs font-medium text-fg-2 hover:bg-sunken hover:text-fg"
+          >
+            {tp('list.open')}
+          </Link>
+        )}
       />
     </>
   );

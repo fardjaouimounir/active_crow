@@ -1,6 +1,6 @@
 import { can } from '@fieldflow/shared';
 import { PanelLeftClose, PanelLeftOpen, Menu, Search } from 'lucide-react';
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useId, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Link, NavLink, useLocation } from 'react-router';
 import { useAuth } from '../auth/hooks.js';
@@ -22,12 +22,14 @@ function readCollapsed() {
 
 function NavigationItem({ item, collapsed, onNavigate, count }) {
   const { t: tp } = useTranslation('pro');
+  const countId = useId();
   const Icon = item.icon;
   return (
     <NavLink
       to={item.to}
       end={item.end}
       onClick={onNavigate}
+      aria-describedby={count > 0 ? countId : undefined}
       title={collapsed ? item.label : undefined}
       className={({ isActive }) =>
         cn(
@@ -55,14 +57,18 @@ function NavigationItem({ item, collapsed, onNavigate, count }) {
           )}
           <span className={cn('truncate', collapsed && 'lg:sr-only')}>{item.label}</span>
           {count > 0 && (
+            <span id={countId} className="sr-only">
+              {count} {tp('shell.waiting')}
+            </span>
+          )}
+          {count > 0 && (
             <span
               className={cn(
                 'tnum ms-auto inline-flex h-4 min-w-4 items-center justify-center rounded-full bg-accent-soft px-1 text-2xs font-semibold text-accent-text',
                 collapsed && 'lg:absolute lg:end-0.5 lg:top-0.5 lg:ms-0',
               )}
             >
-              {count > 99 ? '99+' : count}
-              <span className="sr-only"> {tp('shell.waiting')}</span>
+              <span aria-hidden="true">{count > 99 ? '99+' : count}</span>
             </span>
           )}
         </>
@@ -275,7 +281,7 @@ function Frame({ groups, topBar, children }) {
             <ThemeToggle />
           </div>
         </header>
-        <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain print:overflow-visible">
+        <div className="min-h-0 flex-1 scroll-pt-16 overflow-y-auto overscroll-contain print:overflow-visible">
           <main
             id="main"
             tabIndex={-1}

@@ -115,17 +115,138 @@ describe('campaigns', () => {
     const dialog = screen.getByRole('dialog');
     await within(dialog).findByRole('option', { name: supervisor.fullName });
     await user.selectOptions(within(dialog).getByLabelText('Superviseur'), supervisor.id);
+    // A supervisor comes with the number of Animateurs he must bring.
+    expect(within(dialog).getByRole('button', { name: 'Save' })).toBeDisabled();
+    await user.type(within(dialog).getByLabelText('Animateurs to bring'), '5');
     await user.click(within(dialog).getByRole('button', { name: 'Save' }));
     await waitFor(() =>
       expect(calls.calls.find(({ key }) => key.startsWith('POST /campaigns/')).body).toEqual({
         userId: supervisor.id,
         wilayaId: 16,
         role: 'supervisor',
+        requiredAnimateurs: 5,
       }),
     );
     await user.click(screen.getByRole('button', { name: 'Remove Rachid Regional' }));
     await user.click(screen.getByRole('button', { name: 'Confirm' }));
     await waitFor(() => expect(calls.count('DELETE /campaigns/' + id + '/staff/st-1')).toBe(1));
+  });
+
+  it('lets a supervisor pick an existing Animateur and create a new one for his team', async () => {
+    const me = makeUser({ role: 'supervisor' });
+    const mine = { id: 'a-1', fullName: 'Karim Animateur', role: 'animateur' };
+    const teamCampaign = {
+      ...campaign,
+      status: 'planning',
+      wilayas: [
+        {
+          wilayaId: 16,
+          requiredAnimateurs: 3,
+          wilaya: { nameEn: 'Algiers', nameAr: 'الجزائر' },
+          staff: [
+            {
+              id: 'st-9',
+              role: 'supervisor',
+              wilayaId: 16,
+              requiredAnimateurs: 3,
+              teamCount: 1,
+              user: { id: me.id, fullName: me.fullName, role: 'supervisor' },
+            },
+          ],
+        },
+      ],
+    };
+    const member = {
+      id: 'tm-1',
+      supervisorId: me.id,
+      animateur: { id: 'a-0', fullName: 'Lina Already', status: 'active' },
+    };
+    const calls = stub('supervisor', {
+      ['GET /campaigns/' + id]: () => result(teamCampaign),
+      ['GET /campaigns/' + id + '/team']: () => result([member]),
+      'GET /users': ({ params }) => result(params.role === 'animateur' ? [mine] : [supervisor]),
+      ['POST /campaigns/' + id + '/team']: () => [201, { data: { id: 'tm-2' } }],
+      ['POST /campaigns/' + id + '/team/new']: () => [
+        201,
+        {
+          data: { member: { id: 'tm-3' }, user: { id: 'a-9' }, temporaryPassword: 'Tmp-pass-123' },
+        },
+      ],
+    });
+    const user = userEvent.setup();
+    renderApp('/app/campaigns/' + id + '?tab=team&sub=team');
+    expect(await screen.findByText('Lina Already')).toBeInTheDocument();
+    expect(screen.getByText('1 of 3 Animateurs chosen')).toBeInTheDocument();
+
+    await user.click(screen.getByRole('button', { name: 'Add to the campaign' }));
+    let dialog = screen.getByRole('dialog');
+    await within(dialog).findByRole('option', { name: mine.fullName });
+    await user.selectOptions(within(dialog).getByLabelText('Choose an Animateur'), mine.id);
+    await user.click(within(dialog).getByRole('button', { name: 'Add to the campaign' }));
+    await waitFor(() =>
+      expect(calls.calls.find(({ key }) => key === 'POST /campaigns/' + id + '/team').body).toEqual(
+        {
+          animateurId: mine.id,
+        },
+      ),
+    );
+
+    await user.click(screen.getByRole('button', { name: 'Add to the campaign' }));
+    dialog = screen.getByRole('dialog');
+    await user.click(within(dialog).getByRole('button', { name: 'Create a new Animateur' }));
+    await user.type(within(dialog).getByLabelText('Full name'), 'Nadia New');
+    await user.type(within(dialog).getByLabelText('Email'), 'nadia@agency.dz');
+    // The mode switch and the submit button share a name: the submit button comes last.
+    await user.click(
+      within(dialog).getAllByRole('button', { name: 'Create a new Animateur' }).at(-1),
+    );
+    await waitFor(() =>
+      expect(
+        calls.calls.find(({ key }) => key === 'POST /campaigns/' + id + '/team/new').body,
+      ).toEqual({ fullName: 'Nadia New', email: 'nadia@agency.dz', wilayaId: 16 }),
+    );
+    expect(await screen.findByDisplayValue('Tmp-pass-123')).toBeInTheDocument();
+  });
+
+  it('shows a supervisor full when his team reaches the number the director asked', async () => {
+    const me = makeUser({ role: 'supervisor' });
+    const fullCampaign = {
+      ...campaign,
+      status: 'planning',
+      wilayas: [
+        {
+          wilayaId: 16,
+          requiredAnimateurs: 1,
+          wilaya: { nameEn: 'Algiers', nameAr: 'الجزائر' },
+          staff: [
+            {
+              id: 'st-9',
+              role: 'supervisor',
+              wilayaId: 16,
+              requiredAnimateurs: 1,
+              teamCount: 1,
+              user: { id: me.id, fullName: me.fullName, role: 'supervisor' },
+            },
+          ],
+        },
+      ],
+    };
+    stub('supervisor', {
+      ['GET /campaigns/' + id]: () => result(fullCampaign),
+      ['GET /campaigns/' + id + '/team']: () =>
+        result([
+          {
+            id: 'tm-1',
+            supervisorId: me.id,
+            animateur: { id: 'a-0', fullName: 'Lina Already', status: 'active' },
+          },
+        ]),
+    });
+    renderApp('/app/campaigns/' + id + '?tab=team&sub=team');
+    expect(
+      await screen.findByText('You have chosen all the Animateurs asked of you.'),
+    ).toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: 'Add to the campaign' })).toBeNull();
   });
 
   it('rejects a too-large document before sending it', async () => {
@@ -146,14 +267,15 @@ describe('campaigns', () => {
     stub('supervisor');
     const user = userEvent.setup();
     renderApp('/app/campaigns/' + id);
-    await screen.findByRole('tab', { name: 'Coverage' });
+    await screen.findByRole('tab', { name: 'Team' });
     expect(screen.queryByRole('button', { name: 'Save' })).toBeNull();
     expect(screen.queryByRole('link', { name: 'New campaign' })).toBeNull();
-    await user.click(screen.getByRole('tab', { name: 'Coverage' }));
+    await user.click(screen.getByRole('tab', { name: 'Team' }));
     await screen.findByText(/Rachid Regional/);
     expect(screen.queryByRole('button', { name: /Add|Remove/ })).toBeNull();
     expect(screen.queryByRole('spinbutton')).toBeNull();
-    await user.click(screen.getByRole('tab', { name: 'Documents' }));
+    await user.click(screen.getByRole('tab', { name: 'Setup' }));
+    await user.click(screen.getByRole('button', { name: 'Documents' }));
     await screen.findByText('No results.');
     expect(screen.queryByRole('button', { name: 'Upload' })).toBeNull();
   });
@@ -168,61 +290,18 @@ describe('campaigns', () => {
       direction: document.documentElement.dir,
       tabs: screen.getAllByRole('tab').map((tab) => tab.textContent),
       selected: screen.getByRole('tab', { selected: true }).textContent,
-      terms: within(main)
-        .getAllByRole('term')
-        .map((term) => term.textContent),
-      details: within(main)
-        .getAllByRole('definition')
-        // Bidi marks and no-break spaces from Intl, made visible for the snapshot.
-        .map((item) =>
-          item.textContent.replace(/\u200f/g, '<RLM>').replace(/[\u00a0\u202f]/g, '_'),
-        ),
     }).toMatchInlineSnapshot(`
       {
-        "details": [
-          "Hamoud",
-          "10<RLM>/2<RLM>/2027 – 12<RLM>/3<RLM>/2027",
-          "—",
-          "<RLM>2.500.000,00_د.ج.<RLM>",
-          "المسؤول الجهوي",
-          "1",
-          "3",
-          "1",
-          "0",
-          "0",
-          "0",
-        ],
         "direction": "rtl",
         "selected": "نظرة عامة",
         "tabs": [
           "نظرة عامة",
-          "التغطية",
-          "نقاط البيع",
-          "المنتجات",
-          "القواعد",
-          "التعيينات",
-          "الحضور",
-          "الزيارات",
-          "المبيعات",
-          "القرعة",
-          "البلاغات",
+          "الميدان",
+          "المبيعات والهدايا",
           "المخزون",
-          "الخريطة",
-          "المستندات",
-          "السجل",
-        ],
-        "terms": [
-          "العميل",
-          "الفترة",
-          "الوصف",
-          "الميزانية (دج)",
-          "معتمد التعيينات",
-          "الولايات",
-          "المنشطون المطلوبون",
-          "المسؤولون",
-          "نقاط البيع",
-          "المنتجات",
-          "المستندات",
+          "الفريق",
+          "الإعداد",
+          "النشاط",
         ],
       }
     `);

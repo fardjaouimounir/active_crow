@@ -32,6 +32,12 @@ const REFRESH_TODAY = process.argv.includes('--refresh-today');
 const AGENCY_CODE = process.env.SHOWCASE_AGENCY ?? data.AGENCY.code;
 const password = process.env.DEMO_PASSWORD?.trim();
 if (!password) throw new Error('Set DEMO_PASSWORD in apps/api/.env');
+if (process.env.NODE_ENV === 'production')
+  throw new Error('The showcase seed is disabled in production');
+if (!/^(ACTICREW|SHOWCASE)[A-Z0-9-]*$/.test(AGENCY_CODE))
+  throw new Error(
+    'SHOWCASE_AGENCY must start with ACTICREW or SHOWCASE: this seed never writes into another agency',
+  );
 
 const app = createApp();
 app.set('trust proxy', true); // seed only: each simulated user gets their own address (rate limit)
@@ -463,6 +469,18 @@ async function setupCampaign(agency, org, spec) {
   for (const [emailKey, , wilayaId, group, storeCode] of data.ANIMATEURS) {
     if (group !== spec.key && !(group === 'proposed' && spec.key === 'nedjma')) continue;
     const animateur = org.animateurs[emailKey].user;
+    // Every Animateur of the campaign belongs to the team of his supervisor.
+    await prisma.campaignAnimateur.createMany({
+      data: [
+        {
+          ...base,
+          supervisorId: supervisorOf(wilayaId).id,
+          animateurId: animateur.id,
+          addedById: supervisorOf(wilayaId).id,
+        },
+      ],
+      skipDuplicates: true,
+    });
     if (
       await prisma.assignment.count({
         where: { campaignId: campaign.id, animateurId: animateur.id },
@@ -484,6 +502,22 @@ async function setupCampaign(agency, org, spec) {
         decidedById: approved ? regionalOf(wilayaId).id : null,
         decidedAt: approved ? at(start, '08:00') : null,
       },
+    });
+  }
+
+  // The quota of a supervisor is the size of his team; the wilaya need is the sum of its quotas.
+  for (const wilayaId of wilayaIds) {
+    const supervisorId = supervisorOf(wilayaId).id;
+    const members = await prisma.campaignAnimateur.count({
+      where: { campaignId: campaign.id, supervisorId },
+    });
+    await prisma.campaignStaff.updateMany({
+      where: { campaignId: campaign.id, wilayaId, userId: supervisorId, role: 'supervisor' },
+      data: { requiredAnimateurs: members },
+    });
+    await prisma.campaignWilaya.update({
+      where: { campaignId_wilayaId: { campaignId: campaign.id, wilayaId } },
+      data: { requiredAnimateurs: members },
     });
   }
 
@@ -520,8 +554,8 @@ async function setupFutureCampaigns(agency, org, campaigns) {
       client: 'nedjma',
       name: 'حملة تذوق رمضان — قهوة نجمة',
       description: 'حملة موسمية للتذوق خلال شهر رمضان في المساحات الكبرى بالمدن الكبرى.',
-      startDate: '2027-02-08',
-      endDate: '2027-03-10',
+      startDate: addDays(today, 78),
+      endDate: addDays(today, 108),
       budget: '3100000.00',
       wilayas: { 16: 6, 31: 4, 25: 3 },
       plan: true,
@@ -530,8 +564,8 @@ async function setupFutureCampaigns(agency, org, campaigns) {
       client: 'nour',
       name: 'Lancement Yaourt Nour — Printemps',
       description: 'Deuxième vague de la gamme Nour : cap sur les Hauts-Plateaux et le Sud.',
-      startDate: '2027-03-22',
-      endDate: '2027-04-30',
+      startDate: addDays(today, 120),
+      endDate: addDays(today, 160),
       budget: '1200000.00',
       wilayas: {},
       plan: false,
@@ -585,8 +619,6 @@ async function distributeStock(campaign, org) {
   const email = (user) => user.email;
   const itemLines = (per) =>
     campaign.gifts.map((gift, index) => ({ stockItemId: gift.id, quantity: per[index] }));
-  const sum = (lines, extra) =>
-    lines.map((line, index) => ({ ...line, quantity: line.quantity + extra[index] }));
   const assigned = data.ANIMATEURS.filter(([, , , group]) => group === campaign.key);
   const perAnimateur = campaign.giftPlan.perAnimateur;
 
@@ -1021,7 +1053,8 @@ async function announcements(ctx) {
 }
 
 async function lostGift(ctx) {
-  const key = 'meriem.hamdi';
+  // Supervisors can request stock adjustments: one reports gifts lost between two stores.
+  const requester = emailOf(data.STAFF.S2.email);
   const campaign = ctx.campaigns[0];
   const done = await prisma.stockMovement.count({
     where: { campaignId: campaign.row.id, type: 'adjustment' },
@@ -1029,19 +1062,14 @@ async function lostGift(ctx) {
   if (done) return;
   setClock(addDays(today, -2), '18:30');
   const lines = [{ stockItemId: campaign.gifts[0].id, quantity: 5 }];
-  const sent = await tryCall(
-    emailOf(key),
-    'post',
-    `/campaigns/${campaign.row.id}/stock/adjustments`,
-    {
-      fields: {
-        reason: 'lost',
-        note: 'Cinq tasses perdues pendant le transport entre deux magasins.',
-        lines: JSON.stringify(lines),
-      },
-      files: [['photo', await photo('Lost gifts report', 'proof', 2)]],
+  const sent = await tryCall(requester, 'post', `/campaigns/${campaign.row.id}/stock/adjustments`, {
+    fields: {
+      reason: 'lost',
+      note: 'Cinq tasses perdues pendant le transport entre deux magasins.',
+      lines: JSON.stringify(lines),
     },
-  );
+    files: [['file', await photo('Lost gifts report', 'proof', 2)]],
+  });
   if (sent?.id)
     await tryCall(
       emailOf(data.STAFF.director.email),
@@ -1051,6 +1079,33 @@ async function lostGift(ctx) {
         body: {},
       },
     );
+}
+
+/**
+ * Issues and announcements are stamped with the database clock when created; give them the
+ * simulated time they belong to, so "since 2 days" reads right next to the other history.
+ */
+async function polishDates(ctx) {
+  for (const spec of data.ISSUES)
+    await prisma.issue.updateMany({
+      where: { agencyId: ctx.agency.id, title: spec.title },
+      data: { createdAt: at(addDays(today, -spec.age), '14:10') },
+    });
+  const automatic = await prisma.issue.findMany({
+    where: { agencyId: ctx.agency.id, title: 'Gift stock shortage' },
+    select: { id: true },
+    orderBy: { id: 'asc' },
+  });
+  for (const issue of automatic)
+    await prisma.issue.update({
+      where: { id: issue.id },
+      data: { createdAt: at(addDays(today, -Math.floor(rand(issue.id) * 4)), '16:25') },
+    });
+  for (const spec of data.ANNOUNCEMENTS)
+    await prisma.announcement.updateMany({
+      where: { agencyId: ctx.agency.id, title: spec.title },
+      data: { createdAt: at(addDays(today, -spec.age), '09:00') },
+    });
 }
 
 async function clientPhotos(ctx) {
@@ -1139,6 +1194,7 @@ if (REFRESH_TODAY) {
     if (offset === -1) await issues(ctx);
   }
   await clientPhotos(ctx);
+  await polishDates(ctx);
 }
 
 clock.now = realNow;
@@ -1151,5 +1207,5 @@ for (const spec of [
   ['animateur', data.ANIMATEURS[0][1], data.ANIMATEURS[0][0]],
 ])
   log(`  ${spec[0].padEnd(17)} ${emailOf(spec[2]).padEnd(40)} ${spec[1]}`);
-void customerNames;
 await disconnectDatabase();
+if (failures > 0) process.exitCode = 1;

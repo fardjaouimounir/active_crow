@@ -3,6 +3,7 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useTranslation } from 'react-i18next';
 import { apiClient } from '../../shared/api/client.js';
 import { useAuth } from '../../shared/auth/hooks.js';
+import { formatNumber, formatPercent } from '../../ui/format.js';
 import { messages } from './messages.js';
 
 /** Texts and number/date formats of the portal in the active language. */
@@ -30,11 +31,8 @@ export function usePortalText() {
           timeStyle: 'short',
         }).format(new Date(value))
       : '—';
-  const number = (value) => (value == null ? '—' : new Intl.NumberFormat(locale).format(value));
-  const percent = (value) =>
-    value == null
-      ? '—'
-      : new Intl.NumberFormat(locale, { style: 'percent', maximumFractionDigits: 1 }).format(value);
+  const number = (value) => formatNumber(value, { rtl });
+  const percent = (value) => formatPercent(value);
   const wilaya = (item) => (rtl && item?.nameAr) || item?.nameEn || '';
   return { t, rtl, language, locale, date, dateTime, number, percent, wilaya };
 }

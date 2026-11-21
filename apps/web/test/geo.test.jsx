@@ -302,28 +302,80 @@ describe('dashboard geography', () => {
   }, 20_000);
 });
 
-describe('live field map', () => {
-  it("shows a supervisor today's attendance per store, refreshes every minute and opens the board", async () => {
-    stub('supervisor');
-    const user = userEvent.setup();
-    const view = renderApp('/app/dashboard');
+describe('supervisor today in the field', () => {
+  const checkpoint = (status, extra = {}) => ({
+    code: 'morning',
+    label: { en: 'Morning check-in', ar: 'الحضور الصباحي' },
+    status,
+    isOpen: false,
+    isLate: false,
+    window: ['00:00', '00:01'],
+    flags: [],
+    ...extra,
+  });
+  const boardRow = (id, name, checkpoints) => ({
+    assignmentId: 'as-' + id,
+    animateur: { id, fullName: name },
+    pointOfSale: {
+      id: 'store-' + id,
+      name: 'Store ' + name,
+      wilaya: { nameEn: 'Algiers', nameAr: 'الجزائر' },
+    },
+    checkpoints,
+  });
+
+  it('lists the stores of the team, the Animateur with a problem first, with sales today', async () => {
+    stub('supervisor', {
+      'GET /campaigns': () =>
+        ok([{ id: 'c-1', name: 'Winter' }], { page: 1, pageSize: 20, total: 1 }),
+      'GET /campaigns/c-1/attendance/board': () =>
+        ok({
+          date: period.to,
+          rows: [
+            boardRow('a-ok', 'Amina Fine', [checkpoint('verified')]),
+            boardRow('a-late', 'Yacine Late', [checkpoint('pending', { isLate: true })]),
+            boardRow('a-missing', 'Sara Missing', [checkpoint('not_sent')]),
+          ],
+        }),
+      'GET /reports/breakdown': ({ params }) =>
+        ok(
+          params.dimension === 'animateur'
+            ? [
+                {
+                  id: 'a-late',
+                  label: 'Yacine Late',
+                  sales: { units: 7 },
+                  attendance: {},
+                  customers: {},
+                  visits: {},
+                },
+              ]
+            : [],
+        ),
+    });
+    renderApp('/app/dashboard');
     const section = (await screen.findByRole('heading', { name: 'Today in the field' })).closest(
       'section',
     );
-    // Only stores with someone scheduled today; counts come from the API.
-    const totals = within(section.querySelector('dl'));
-    expect(totals.getByText('Present').nextSibling).toHaveTextContent('1');
-    expect(totals.getByText('Not sent').nextSibling).toHaveTextContent('1');
-    expect(within(section).queryByText(/Uno Timimoun/)).toBeNull();
-    await user.click(
-      within(section)
-        .getAllByRole('button', { name: /Ardis Hydra/ })
-        .at(-1),
-    );
-    await waitFor(() =>
-      expect(view.location()).toBe('/app/campaigns/c-1?tab=attendance&store=store-1'),
-    );
+    const names = await waitFor(() => {
+      const found = within(section)
+        .getAllByText(/^(Amina Fine|Yacine Late|Sara Missing)$/)
+        .map((node) => node.textContent);
+      expect(found).toHaveLength(3);
+      return found;
+    });
+    // Problems first: a check-in nobody sent leads, then the late one, then the one that is fine.
+    expect(names).toEqual(['Sara Missing', 'Yacine Late', 'Amina Fine']);
+    expect(within(section).getByText('7')).toBeInTheDocument();
     expect(screen.queryByRole('heading', { name: 'Geography' })).toBeNull();
+  }, 20_000);
+
+  it('says so when no campaign is running today', async () => {
+    stub('supervisor', {
+      'GET /campaigns': () => ok([], { page: 1, pageSize: 20, total: 0 }),
+    });
+    renderApp('/app/dashboard');
+    expect(await screen.findByText('No one is scheduled today')).toBeInTheDocument();
   }, 20_000);
 });
 

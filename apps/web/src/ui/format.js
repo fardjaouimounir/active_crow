@@ -1,25 +1,34 @@
 import { useTranslation } from 'react-i18next';
 
-/** Thin space: the thousands separator (1 500 000), identical in English and Arabic. */
+/**
+ * Thousands separator (1 500 000). English uses a thin space (U+2009). In right-to-left text a thin
+ * space is a neutral character that makes the bidi algorithm split the number ("2 676" would read
+ * "676 2"), so Arabic uses the no-break space (U+00A0), a "common separator" that keeps the digit
+ * groups together as one number.
+ */
 export const THIN = ' ';
-const NO_BREAK_THIN = ' ';
+const NO_BREAK = ' ';
+const separator = (rtl) =>
+  (rtl ?? (typeof document !== 'undefined' && document.documentElement.dir === 'rtl'))
+    ? NO_BREAK
+    : THIN;
 
 const intlLocale = (language) => (language?.startsWith('ar') ? 'ar-DZ-u-nu-latn' : 'en-GB');
-const grouped = (digits) => digits.replace(/\B(?=(\d{3})+(?!\d))/g, THIN);
+const grouped = (digits, rtl) => digits.replace(/\B(?=(\d{3})+(?!\d))/g, separator(rtl));
 
 /** `1 500 000`; `—` when there is no figure (null/undefined/NaN), never a made-up 0. */
-export function formatNumber(value, { decimals = 0 } = {}) {
+export function formatNumber(value, { decimals = 0, rtl } = {}) {
   if (value == null || Number.isNaN(Number(value))) return '—';
   const number = Number(value);
   const [whole, fraction] = Math.abs(number).toFixed(decimals).split('.');
-  return `${number < 0 ? '−' : ''}${grouped(whole)}${fraction ? '.' + fraction : ''}`;
+  return `${number < 0 ? '−' : ''}${grouped(whole, rtl)}${fraction ? '.' + fraction : ''}`;
 }
 
 /** `1 500 000 DA` / `1 500 000 دج`. Amounts arrive as decimal strings. */
 export function formatCurrency(value, language) {
   if (value == null || Number.isNaN(Number(value))) return '—';
-  const unit = language?.startsWith('ar') ? 'دج' : 'DA';
-  return `${formatNumber(value)}${NO_BREAK_THIN}${unit}`;
+  const rtl = Boolean(language?.startsWith('ar'));
+  return `${formatNumber(value, { rtl })}${NO_BREAK}${rtl ? 'دج' : 'DA'}`;
 }
 
 /** Fractions (0.4796) become `48.0%`; one decimal everywhere. */
@@ -72,7 +81,7 @@ export function useFormat() {
   return {
     language,
     rtl: language.startsWith('ar'),
-    num: formatNumber,
+    num: (value, options) => formatNumber(value, { rtl: language.startsWith('ar'), ...options }),
     money: (value) => formatCurrency(value, language),
     pct: formatPercent,
     ago: (instant) => formatRelative(instant, language),

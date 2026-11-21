@@ -113,6 +113,6 @@ it('loads the audience count when composing an announcement', async () => {
   renderApp('/app/announcements');
   await user.click(await screen.findByRole('button', { name: 'Write announcement' }));
   const dialog = within(screen.getByRole('dialog'));
-  await user.click(dialog.getByRole('checkbox', { name: 'Superviseur' }));
+  await user.click(dialog.getByRole('button', { name: 'Superviseur', pressed: false }));
   expect(await dialog.findByText('Recipients: 3')).toBeInTheDocument();
 });

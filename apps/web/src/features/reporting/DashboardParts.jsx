@@ -31,7 +31,9 @@ import { useFormat } from '../../ui/format.js';
 import { Avatar, ForwardArrow, buttonClass, cn } from '../../ui/primitives.jsx';
 import { Ago, Section, Sparkline, StatusPill, Surface } from '../../ui/viz.jsx';
 import { EmptyState } from '../../ui/data.jsx';
+import { Toast } from '../../shared/ui/PageParts.jsx';
 import { useReport } from './api.js';
+import { ReportTable, useReportingText } from './ReportingUi.jsx';
 
 const addDays = (iso, days) => {
   const date = new Date(iso + 'T00:00:00.000Z');
@@ -114,7 +116,7 @@ export function TodayStrip({ filters, now }) {
  * KPI strip with a hero tile, 14-day sparklines, delta vs the previous period and a thin progress
  * bar where a target exists. `trend` holds the last 14 daily rows (unfiltered by period).
  */
-export function KpiRow({ values, trend, supervisor = false }) {
+export function KpiRow({ values, trend, supervisor = false, compare = true }) {
   const { t } = useTranslation('pro');
   const { num, pct } = useFormat();
   const days = [...(trend ?? [])].sort((a, b) => a.id.localeCompare(b.id));
@@ -124,7 +126,7 @@ export function KpiRow({ values, trend, supervisor = false }) {
   const delta = (group, field) => {
     const a = values[group]?.[field];
     const b = prev?.[group]?.[field];
-    return supervisor || a == null || b == null ? null : a - b;
+    return !compare || supervisor || a == null || b == null ? null : a - b;
   };
   const tiles = [
     {
@@ -218,6 +220,7 @@ export function KpiRow({ values, trend, supervisor = false }) {
 /** Daily sales as an area with the previous period as a dashed ghost line. */
 export function SalesAreaChart({ rows, previousRows }) {
   const { t } = useTranslation('pro');
+  const { t: report } = useReportingText();
   const { num, rtl } = useFormat();
   const sorted = [...rows].sort((a, b) => a.id.localeCompare(b.id));
   const before = [...(previousRows ?? [])].sort((a, b) => a.id.localeCompare(b.id));
@@ -297,6 +300,16 @@ export function SalesAreaChart({ rows, previousRows }) {
           </AreaChart>
         </ResponsiveContainer>
       </div>
+      <details className="mt-3">
+        <summary className="cursor-pointer text-sm text-fg-2">{report('viewData')}</summary>
+        <ReportTable
+          rows={data}
+          columns={[
+            ['label', (row) => row.id],
+            ['sales', (row) => num(row.sales)],
+          ]}
+        />
+      </details>
     </Surface>
   );
 }
@@ -415,10 +428,10 @@ export function AttentionList({ values, supervisor }) {
                   {t('attention.severity.' + item.severity)}
                 </StatusPill>
                 <div className="min-w-0 flex-1 basis-60">
-                  <p className="truncate text-sm font-medium text-fg">
+                  <p className="truncate text-sm font-medium text-fg" title={item.title}>
                     <bdi>{item.title}</bdi>
                   </p>
-                  <p className="truncate text-xs text-fg-3">
+                  <p className="truncate text-xs text-fg-3" title={item.where}>
                     <bdi>{item.where}</bdi>
                   </p>
                 </div>
@@ -449,6 +462,21 @@ export function AttentionList({ values, supervisor }) {
 
 /* ----------------------------------------------- Supervisor: today in the field */
 
+/** Algiers wall-clock time as HH:MM, to tell a window that has closed from one that is still ahead. */
+const algiersNow = () =>
+  new Intl.DateTimeFormat('en-GB', {
+    timeZone: 'Africa/Algiers',
+    hour: '2-digit',
+    minute: '2-digit',
+    hourCycle: 'h23',
+  }).format(new Date());
+
+/** A checkpoint nobody sent although its window has closed. */
+const overdue = (checkpoint) =>
+  checkpoint.status === 'not_sent' &&
+  Array.isArray(checkpoint.window) &&
+  checkpoint.window[1] <= algiersNow();
+
 /** Problem score used to list the stores that need the supervisor first. */
 function trouble(row) {
   return row.checkpoints.reduce(
@@ -456,7 +484,7 @@ function trouble(row) {
       score +
       (checkpoint.status === 'rejected' ? 3 : 0) +
       (checkpoint.isLate ? 1 : 0) +
-      (checkpoint.status === 'not_sent' && !checkpoint.isOpen ? 2 : 0) +
+      (overdue(checkpoint) ? 2 : 0) +
       (checkpoint.flags?.includes('far_from_pos') ? 2 : 0),
     0,
   );
@@ -496,7 +524,10 @@ function FieldRow({ row, sales, rtl, t }) {
           const label = (rtl ? checkpoint.label?.ar : checkpoint.label?.en) ?? checkpoint.code;
           return (
             <li key={checkpoint.code}>
-              <StatusPill tone={checkpoint.isLate ? 'warn' : spec.tone} icon={spec.icon}>
+              <StatusPill
+                tone={checkpoint.isLate || overdue(checkpoint) ? 'warn' : spec.tone}
+                icon={spec.icon}
+              >
                 {label}
                 {checkpoint.isLate ? ` · ${t('field.late')}` : ''}
               </StatusPill>
@@ -505,7 +536,7 @@ function FieldRow({ row, sales, rtl, t }) {
         })}
       </ul>
       <div className="w-20 text-end">
-        <p className="tnum text-sm font-semibold">{num(sales ?? 0)}</p>
+        <p className="tnum text-sm font-semibold">{num(sales)}</p>
         <p className="text-2xs text-fg-3">{t('field.sales')}</p>
       </div>
     </li>
@@ -565,6 +596,7 @@ function FieldList({ campaigns, date, salesByAnimateur }) {
     );
   if (boards.some((board) => board.isPending))
     return <Surface className="p-6 text-sm text-fg-3">…</Surface>;
+  if (boards.some((board) => board.isError)) return <Toast error message={t('field.loadFailed')} />;
   if (!rows.length) return <EmptyState title={t('field.emptyTitle')} message={t('field.empty')} />;
   return (
     <ul className="divide-y divide-line overflow-hidden rounded-lg border border-line bg-surface">

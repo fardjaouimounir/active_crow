@@ -4,6 +4,8 @@ import { useEffect, useState } from 'react';
 import { useForm, useWatch } from 'react-hook-form';
 import { useTranslation } from 'react-i18next';
 import { Link, useLocation } from 'react-router';
+import { Badge } from '../../ui/primitives.jsx';
+import { formatNumber, formatPercent } from '../../ui/format.js';
 import { useFieldQuery } from './api.js';
 import {
   Availability,
@@ -140,7 +142,19 @@ export function Today() {
                   key={item.code}
                 >
                   <span>{item.label[i18n.resolvedLanguage] ?? item.label.en}</span>
-                  <strong>
+                  <Badge
+                    tone={
+                      item.record
+                        ? item.record.status === 'rejected'
+                          ? 'bad'
+                          : item.isLate
+                            ? 'warn'
+                            : 'good'
+                        : item.isOpen
+                          ? 'accent'
+                          : 'neutral'
+                    }
+                  >
                     {item.record
                       ? t(
                           item.record.status === 'rejected'
@@ -152,7 +166,7 @@ export function Today() {
                       : item.isOpen
                         ? t('openNow')
                         : t('opensAt', { time: fieldTime(item.opensAt, i18n.language) })}
-                  </strong>
+                  </Badge>
                 </div>
               ))}
               {next && (
@@ -181,7 +195,7 @@ export function Today() {
             ].map(([label, value]) => (
               <div className="rounded-xl bg-sunken p-3" key={label}>
                 <dt>{t(label)}</dt>
-                <dd className="text-3xl font-bold tabular-nums">{value ?? 0}</dd>
+                <dd className="text-3xl font-bold tabular-nums">{formatNumber(value)}</dd>
               </div>
             ))}
           </dl>
@@ -198,19 +212,13 @@ export function Today() {
           <dl className="grid grid-cols-2 gap-3">
             <div>
               <dt>{t('units')}</dt>
-              <dd className="font-semibold">{weeklyStats.sales.units}</dd>
+              <dd className="font-semibold tabular-nums">
+                {formatNumber(weeklyStats.sales.units)}
+              </dd>
             </div>
             <div>
               <dt>{t('attendance')}</dt>
-              <dd className="font-semibold">
-                {rate == null
-                  ? '—'
-                  : new Intl.NumberFormat(`${i18n.resolvedLanguage}-u-nu-latn`, {
-                      style: 'percent',
-                      minimumFractionDigits: 1,
-                      maximumFractionDigits: 1,
-                    }).format(rate)}
-              </dd>
+              <dd className="font-semibold">{formatPercent(rate)}</dd>
             </div>
           </dl>
         </section>

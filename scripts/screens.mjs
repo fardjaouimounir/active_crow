@@ -11,12 +11,13 @@ import { setTimeout as sleep } from 'node:timers/promises';
 
 const BASE = process.env.SCREENS_BASE ?? 'http://localhost:5173';
 const CHROME =
-  process.env.CHROME ??
-  ['C:/Program Files/Google/Chrome/Application/chrome.exe'].find(Boolean);
+  process.env.CHROME ?? ['C:/Program Files/Google/Chrome/Application/chrome.exe'].find(Boolean);
 const PASSWORD = process.env.SHOWCASE_PASSWORD ?? process.env.DEMO_PASSWORD;
 const [outDir, ...jobs] = process.argv.slice(2);
 if (!outDir || !jobs.length || !PASSWORD) {
-  console.error('usage: SHOWCASE_PASSWORD=… node scripts/screens.mjs <outDir> name=email@path[,lang,theme,WxH]…');
+  console.error(
+    'usage: SHOWCASE_PASSWORD=… node scripts/screens.mjs <outDir> name=email@path[,lang,theme,WxH]…',
+  );
   process.exit(1);
 }
 mkdirSync(outDir, { recursive: true });
@@ -66,7 +67,9 @@ const send = (method, params = {}) =>
   new Promise((resolve, reject) => {
     const id = ++counter;
     waiting.set(id, (message) =>
-      message.error ? reject(new Error(`${method}: ${message.error.message}`)) : resolve(message.result),
+      message.error
+        ? reject(new Error(`${method}: ${message.error.message}`))
+        : resolve(message.result),
     );
     socket.send(JSON.stringify({ id, method, params }));
   });
@@ -76,7 +79,8 @@ const evaluate = async (expression) => {
     awaitPromise: true,
     returnByValue: true,
   });
-  if (exceptionDetails) throw new Error(exceptionDetails.exception?.description ?? 'evaluate failed');
+  if (exceptionDetails)
+    throw new Error(exceptionDetails.exception?.description ?? 'evaluate failed');
   return result.value;
 };
 async function waitFor(expression, label, tries = 80) {
@@ -93,6 +97,19 @@ const navigate = async (url) => {
 };
 
 await send('Page.enable');
+// SCREENS_TIME_OFFSET_HOURS=12 shifts the page clock forward, so relative times ("12 min ago") read
+// naturally when the showcase data was generated for a later time of day than it is now.
+const offsetMs = Number(process.env.SCREENS_TIME_OFFSET_HOURS ?? 0) * 3_600_000;
+if (offsetMs) {
+  await send('Page.addScriptToEvaluateOnNewDocument', {
+    source: `(() => { const RealDate = Date; const offset = ${offsetMs};
+      class FakeDate extends RealDate {
+        constructor(...args) { super(...(args.length ? args : [RealDate.now() + offset])); }
+        static now() { return RealDate.now() + offset; }
+      }
+      globalThis.Date = FakeDate; })();`,
+  });
+}
 let signedInAs = null;
 for (const job of jobs) {
   const [name, rest] = [job.slice(0, job.indexOf('=')), job.slice(job.indexOf('=') + 1)];
@@ -108,7 +125,11 @@ for (const job of jobs) {
     mobile: width < 700,
   });
   await navigate(BASE + '/login');
-  const surface = path.startsWith('/field') ? 'field' : path.startsWith('/portal') ? 'portal' : 'app';
+  const surface = path.startsWith('/field')
+    ? 'field'
+    : path.startsWith('/portal')
+      ? 'portal'
+      : 'app';
   await evaluate(
     `localStorage.setItem('fieldflow.language', '${lang}'); localStorage.setItem('acticrew.theme.${surface}', '${theme}'); true`,
   );
@@ -140,16 +161,36 @@ for (const job of jobs) {
   await send('Page.reload');
   await sleep(500);
   await waitFor("document.readyState === 'complete'", 'load');
-  await waitFor(
-    "!document.querySelector('[role=status]') || document.querySelectorAll('[role=status]').length === 0",
-    'loading',
-    40,
-  ).catch(() => {});
-  await sleep(Number(process.env.SCREENS_WAIT ?? 1800));
-  if (Number(scroll)) {
-    await evaluate(`(document.querySelector('#main')?.parentElement ?? document.scrollingElement).scrollTop = ${Number(scroll)}; true`);
-    await sleep(700);
+  // Surfaces that follow the user's own language (the field app) ignore the stored choice: use
+  // the language switcher so the requested language is what is captured.
+  if ((await evaluate('document.documentElement.lang')) !== lang) {
+    await evaluate(`(() => {
+      const wanted = ${JSON.stringify(lang === 'en' ? 'EN' : 'العربية')};
+      [...document.querySelectorAll('button')].find((b) => b.textContent.trim() === wanted)?.click();
+      return true;
+    })()`);
+    await sleep(600);
   }
+  await waitFor(
+    "document.querySelectorAll('[role=status]:not(.sr-only)').length === 0",
+    'loading',
+    16,
+  ).catch(() => {});
+  await sleep(Number(process.env.SCREENS_WAIT ?? 1500));
+  if (Number(scroll)) {
+    await evaluate(
+      `(document.querySelector('#main')?.parentElement ?? document.scrollingElement).scrollTop = ${Number(scroll)}; true`,
+    );
+    await sleep(700);
+    // After a long scroll the top bar and the sidebar must still sit at the top of the viewport.
+    const positions = await evaluate(`(() => {
+      const top = (selector) => document.querySelector(selector)?.getBoundingClientRect().top;
+      return { header: top('header'), sidebar: top('aside'), pageScrolls: window.scrollY };
+    })()`);
+    console.log('after scroll', name, JSON.stringify(positions));
+  }
+  if (process.env.SCREENS_EVAL)
+    console.log('eval', name, JSON.stringify(await evaluate(process.env.SCREENS_EVAL)));
   const { data } = await send('Page.captureScreenshot', { format: 'png' });
   const file = `${outDir}/${name}.png`;
   writeFileSync(file, Buffer.from(data, 'base64'));

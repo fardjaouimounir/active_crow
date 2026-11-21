@@ -190,7 +190,7 @@ export function TabStrip({ label, tabs, value, onChange, idPrefix }) {
     <div
       role="tablist"
       aria-label={label}
-      className="mb-4 flex flex-wrap gap-x-1 border-b border-line"
+      className="mb-5 flex gap-x-1 overflow-x-auto border-b border-line"
     >
       {tabs.map((tab, index) => {
         const selected = tab.value === value;
@@ -209,7 +209,7 @@ export function TabStrip({ label, tabs, value, onChange, idPrefix }) {
             onKeyDown={(event) => move(event, index)}
             onClick={() => onChange(tab.value)}
             className={cn(
-              '-mb-px border-b-2 px-3 py-2 text-sm font-medium transition-colors duration-[var(--dur-fast)]',
+              '-mb-px shrink-0 border-b-2 px-3 py-2.5 text-sm font-medium whitespace-nowrap transition-colors duration-150',
               selected
                 ? 'border-accent-text font-semibold text-fg'
                 : 'border-transparent text-fg-3 hover:text-fg',

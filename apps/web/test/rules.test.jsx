@@ -379,10 +379,16 @@ describe('lifecycle on the overview', () => {
     const user = userEvent.setup();
     const view = renderApp(`/app/campaigns/${id}`);
     expect(
-      await screen.findByText(/Every wilaya needs a Superviseur\. Missing in: Algiers\./),
-    ).toBeInTheDocument();
-    expect(screen.getByText('Add at least one Point de Vente.')).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: 'Mark as assigned' })).toBeDisabled();
+      (await screen.findAllByText(/Every wilaya needs a Superviseur\. Missing in: Algiers\./))
+        .length,
+    ).toBeGreaterThan(0);
+    expect(screen.getAllByText('Add at least one Point de Vente.').length).toBeGreaterThan(0);
+    // One primary action; a blocked one is disabled and says why in its tooltip.
+    const primary = screen.getByRole('button', { name: 'Mark as assigned' });
+    expect(primary).toHaveAttribute('aria-disabled', 'true');
+    expect(screen.getByRole('tooltip', { name: /Not available yet/ })).toBeInTheDocument();
+    // The destructive action sits in the "…" menu, neutral until confirmed.
+    await user.click(screen.getByRole('button', { name: 'More actions' }));
     expect(screen.getByRole('button', { name: 'Cancel campaign' })).toBeEnabled();
     expect(screen.getByRole('listitem', { current: 'step' })).toHaveTextContent('Planning');
     const [fix] = screen.getAllByRole('link', { name: /Coverage/ });
@@ -403,6 +409,7 @@ describe('lifecycle on the overview', () => {
     });
     const user = userEvent.setup();
     renderApp(`/app/campaigns/${id}`);
+    await user.click(await screen.findByRole('button', { name: 'More actions' }));
     await user.click(await screen.findByRole('button', { name: 'Suspend' }));
     const dialog = await screen.findByRole('dialog');
     const confirm = within(dialog).getByRole('button', { name: 'Confirm' });
@@ -459,7 +466,10 @@ describe('lifecycle on the overview', () => {
       ]),
     });
     renderApp(`/app/campaigns/${id}`);
-    expect(await screen.findByRole('button', { name: 'Resume' })).toBeDisabled();
+    expect(await screen.findByRole('button', { name: 'Resume' })).toHaveAttribute(
+      'aria-disabled',
+      'true',
+    );
     expect(screen.getByRole('listitem', { current: 'step' })).toHaveTextContent('Active');
     expect(screen.getAllByText('Suspended').length).toBeGreaterThan(0);
   });
@@ -469,7 +479,7 @@ describe('editing by status', () => {
   it('locks the start date and the approver of a running campaign but not its name or end date', async () => {
     stub({ campaign: campaignOf('active') });
     const user = userEvent.setup();
-    renderApp(`/app/campaigns/${id}`);
+    renderApp(`/app/campaigns/${id}?tab=setup`);
     expect(await screen.findByLabelText('Name')).toBeEnabled();
     expect(screen.getByLabelText('End date')).toBeEnabled();
     expect(screen.getByLabelText('Start date')).toBeDisabled();
@@ -478,32 +488,33 @@ describe('editing by status', () => {
       'Locked while the campaign is Active.',
     );
     expect(screen.getByLabelText('Assignment approver')).toBeDisabled();
-    await user.click(screen.getByRole('tab', { name: 'Products' }));
+    await user.click(screen.getByRole('button', { name: 'Products' }));
     const checkbox = await screen.findByRole('checkbox', { name: /Detergent/ });
     expect(checkbox).toBeDisabled();
     expect(checkbox).toHaveAttribute(
       'title',
       'Products cannot be removed while the campaign is running.',
     );
-    await user.click(screen.getByRole('tab', { name: 'Coverage' }));
+    await user.click(screen.getByRole('tab', { name: 'Team' }));
     expect(await screen.findByRole('button', { name: 'Add Superviseur' })).toBeInTheDocument();
   });
 
   it('shows a closed campaign read-only, with a note explaining why', async () => {
     stub({ campaign: campaignOf('closed') });
     const user = userEvent.setup();
-    renderApp(`/app/campaigns/${id}`);
-    await screen.findByRole('tab', { name: 'Coverage' });
+    renderApp(`/app/campaigns/${id}?tab=setup`);
+    await screen.findByRole('tab', { name: 'Team' });
     expect(screen.queryByRole('button', { name: 'Save' })).toBeNull();
     expect(screen.queryByLabelText('Name')).toBeNull();
-    await user.click(screen.getByRole('tab', { name: 'Coverage' }));
+    await user.click(screen.getByRole('tab', { name: 'Team' }));
     expect(await screen.findByRole('note')).toHaveTextContent('This campaign is Closed');
     expect(screen.queryByRole('button', { name: 'Add Superviseur' })).toBeNull();
     expect(screen.queryByRole('button', { name: /Remove/ })).toBeNull();
-    await user.click(screen.getByRole('tab', { name: 'Documents' }));
+    await user.click(screen.getByRole('tab', { name: 'Setup' }));
+    await user.click(screen.getByRole('button', { name: 'Documents' }));
     await screen.findByText('No results.');
     expect(screen.queryByRole('button', { name: 'Upload' })).toBeNull();
-    await user.click(screen.getByRole('tab', { name: 'Rules' }));
+    await user.click(screen.getByRole('button', { name: 'Rules' }));
     await screen.findByRole('heading', { name: 'Promotions' });
     expect(screen.queryByRole('button', { name: 'Create new version' })).toBeNull();
     expect(screen.queryByRole('button', { name: 'Approve' })).toBeNull();
@@ -514,7 +525,7 @@ describe('editing by status', () => {
     const user = userEvent.setup();
     renderApp(`/app/campaigns/${id}?tab=documents`);
     expect(await screen.findByRole('button', { name: 'Upload' })).toBeInTheDocument();
-    await user.click(screen.getByRole('tab', { name: 'Coverage' }));
+    await user.click(screen.getByRole('tab', { name: 'Team' }));
     expect(await screen.findByRole('note')).toBeInTheDocument();
   });
 
@@ -525,7 +536,7 @@ describe('editing by status', () => {
       handlers: { [path]: () => apiError(422, 'FIELD_NOT_EDITABLE_IN_STATUS') },
     });
     const user = userEvent.setup();
-    renderApp(`/app/campaigns/${id}`);
+    renderApp(`/app/campaigns/${id}?tab=setup`);
     const name = await screen.findByLabelText('Name');
     await user.type(name, '!');
     await user.click(screen.getByRole('button', { name: 'Save' }));

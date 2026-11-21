@@ -145,19 +145,19 @@ describe('organization administration', () => {
     }).toMatchInlineSnapshot(`
       {
         "cells": [
-          "Amine Bensalem",
-          "amine@example.dz",
+          "ABAmine Bensalemamine@example.dz",
           "منشط",
           "نشط",
           "19‏/11‏/2026",
+          "فتح",
         ],
         "direction": "rtl",
         "headers": [
           "الاسم الكامل",
-          "البريد الإلكتروني",
           "الدور",
           "الحالة",
           "تاريخ الإنشاء",
+          "الإجراءات",
         ],
         "heading": "المستخدمون",
         "navigation": [
