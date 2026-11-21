@@ -15,18 +15,12 @@
       {
         "type": "attendance_gap",
         "text": "45 were present out of 50 expected, leaving a gap of 5.",
-        "refs": [
-          "attendanceRate",
-          "missingCount"
-        ]
+        "refs": ["attendanceRate", "missingCount"]
       },
       {
         "type": "gifts_undistributed",
         "text": "95 gifts were distributed against a plan of 100, leaving 5 undistributed.",
-        "refs": [
-          "giftGap",
-          "giftDistributionRate"
-        ]
+        "refs": ["giftGap", "giftDistributionRate"]
       }
     ],
     "recommendedActions": [
@@ -95,41 +89,31 @@
       "claims": [
         {
           "kind": "observation",
-          "findingIds": [
-            "F1"
-          ],
+          "findingIds": ["F1"],
           "text": "45 were present out of 50 expected, leaving a gap of 5.",
           "source": "model"
         },
         {
           "kind": "recommendation",
-          "findingIds": [
-            "F1"
-          ],
+          "findingIds": ["F1"],
           "text": "Verify the attendance records to understand the 10% absence rate.",
           "source": "model"
         },
         {
           "kind": "observation",
-          "findingIds": [
-            "F2"
-          ],
+          "findingIds": ["F2"],
           "text": "95 gifts were distributed against a plan of 100, leaving 5 undistributed.",
           "source": "model"
         },
         {
           "kind": "recommendation",
-          "findingIds": [
-            "F2"
-          ],
+          "findingIds": ["F2"],
           "text": "Check the gift inventory to account for the 5 remaining items.",
           "source": "model"
         },
         {
           "kind": "observation",
-          "findingIds": [
-            "F3"
-          ],
+          "findingIds": ["F3"],
           "text": "Sales reached 130 units, up 8.333% from the previous 120 units.",
           "source": "model"
         }
