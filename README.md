@@ -83,6 +83,12 @@ you started PostgreSQL before this script existed, run `docker compose -f docker
 
 Per workspace: `npm test -w @fieldflow/api`, `npm run build -w @fieldflow/web`, etc.
 
+For the showcase demo, set `DEMO_MODE=true` and `DEMO_PASSWORD` in `apps/api/.env`.
+`npm run demo:reset` asks you to type `RESET` before rebuilding demo data.
+`npm run demo:today` tops up today's activity while the app is running.
+Scheduled maintenance skips its run during a full replay. A reset refuses to start while a
+maintenance job or another showcase command holds the database lock.
+
 ## Environment variables
 
 | Variable                 | Where           | Purpose                                                                                                 |

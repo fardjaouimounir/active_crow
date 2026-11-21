@@ -2,6 +2,7 @@ import { PgBoss } from 'pg-boss';
 import { env } from '../../config/env.js';
 import { logger } from '../../config/logger.js';
 import { SYSTEM_SCOPE } from '../../core/authz/index.js';
+import { tryWithShowcaseLock } from '../../db/showcaseLock.js';
 
 const definitions = new Map();
 let boss;
@@ -19,14 +20,19 @@ async function start(connectionString = env.DATABASE_URL) {
     for (const [name, { handler, options }] of definitions) {
       const retryLimit = options.retryLimit ?? 3;
       await instance.createQueue(name, { retryLimit, retryDelay: 10, retryBackoff: true });
-      await instance.work(name, async ([job]) =>
-        handler(job.data, {
+      await instance.work(name, async ([job]) => {
+        const context = {
           scope: SYSTEM_SCOPE,
           retryCount: job.retryCount ?? 0,
           retryLimit,
           logger: logger.child({ jobId: job.id, jobName: name }),
-        }),
-      );
+        };
+        const run = () => handler(job.data, context);
+        if (!options.cron) return run();
+        const result = await tryWithShowcaseLock(run, { connectionString });
+        if (!result.acquired) context.logger.info('Skipping scheduled job during showcase replay');
+        return result.value;
+      });
       if (options.cron) await instance.schedule(name, options.cron, {}, { tz: 'Africa/Algiers' });
     }
     boss = instance;

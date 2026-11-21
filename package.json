@@ -29,8 +29,10 @@
     "db:bootstrap": "npm run db:bootstrap -w @fieldflow/api --",
     "db:studio": "npm run db:studio -w @fieldflow/api",
     "tombola:verify": "node scripts/tombolaVerify.js",
-    "db:seed:showcase": "npm run db:seed:showcase -w @fieldflow/api",
+    "db:seed:showcase": "npm run db:seed:showcase -w @fieldflow/api --",
     "seed:showcase": "npm run db:seed:showcase -w @fieldflow/api --",
+    "demo:reset": "npm run seed:showcase -- --confirm-reset",
+    "demo:today": "npm run seed:showcase -- --refresh-today",
     "ai:start": "node scripts/aiService.js",
     "seed:showcase:check": "npm run seed:showcase:check -w @fieldflow/api"
   },

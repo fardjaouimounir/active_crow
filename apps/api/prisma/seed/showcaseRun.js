@@ -15,6 +15,7 @@ import { hashPassword } from '../../src/core/auth/passwords.js';
 import { signAccessToken } from '../../src/core/auth/tokens.js';
 import { businessDate, clock } from '../../src/core/time/clock.js';
 import { prisma } from '../../src/db/client.js';
+import { tryWithShowcaseLock } from '../../src/db/showcaseLock.js';
 import { withTransaction } from '../../src/db/transaction.js';
 import { insertDraftCampaign } from '../../src/modules/campaigns/campaigns.repository.js';
 import { lifecycleService } from '../../src/modules/campaigns/lifecycle.service.js';
@@ -139,15 +140,27 @@ export async function runShowcase(options = {}) {
   const agencyCode = process.env.SHOWCASE_AGENCY ?? data.AGENCY.code;
   if (!/^ACTICREW[A-Z0-9-]*$/.test(agencyCode))
     throw new ShowcaseRefusal('SHOWCASE_AGENCY must start with ACTICREW');
+  const result = await tryWithShowcaseLock(
+    () => replay({ refreshToday, tiny, compact, log, password, agencyCode, now: options.now }),
+    { exclusive: !refreshToday },
+  );
+  if (!result.acquired)
+    throw new ShowcaseRefusal(
+      refreshToday
+        ? 'Cannot refresh today while a full showcase replay is running.'
+        : 'Cannot start a full showcase replay while another showcase run or maintenance job is active. Try again when it finishes.',
+    );
+  return result.value;
+}
+
+async function replay({ refreshToday, tiny, compact, log, password, agencyCode, now }) {
   await assertOnlyDemoData(agencyCode);
   await seedReferenceData();
 
   const realNow = clock.now;
   const today = businessDate(realNow());
   const nowHHMM =
-    options.now ??
-    process.env.SHOWCASE_NOW ??
-    new Date(+realNow() + 3_600_000).toISOString().slice(11, 16);
+    now ?? process.env.SHOWCASE_NOW ?? new Date(+realNow() + 3_600_000).toISOString().slice(11, 16);
 
   const app = createApp();
   app.set('trust proxy', true); // each simulated user gets an own address (rate limit)
