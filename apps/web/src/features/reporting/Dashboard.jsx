@@ -1,8 +1,11 @@
 import { reportingFilterFields, reportingFilters, today } from '@fieldflow/shared';
 import { lazy, Suspense } from 'react';
+import { useTranslation } from 'react-i18next';
 import { useSearchParams } from 'react-router';
-import { TriangleAlert } from 'lucide-react';
 import { useAuth, useCan } from '../../shared/auth/hooks.js';
+import { PageHeader } from '../../shared/ui/PageParts.jsx';
+import { Skeleton } from '../../ui/primitives.jsx';
+import { useFormat } from '../../ui/format.js';
 import { DashboardFilters, monday } from './DashboardFilters.jsx';
 import {
   AiActionButton,
@@ -11,26 +14,40 @@ import {
   CampaignAiCards,
 } from '../ai/AiUi.jsx';
 import { useReport } from './api.js';
+import {
+  AttentionList,
+  KpiRow,
+  SalesAreaChart,
+  SupervisorToday,
+  TodayStrip,
+  addDays,
+} from './DashboardParts.jsx';
 // The map sections (boundary data, store maps) load only when the dashboard shows them.
 const GeographySection = lazy(() =>
   import('./GeographySection.jsx').then((module) => ({ default: module.GeographySection })),
 );
-const LiveFieldSection = lazy(() =>
-  import('./GeographySection.jsx').then((module) => ({ default: module.LiveFieldSection })),
-);
-import {
-  BreakdownTable,
-  Cards,
-  DailyChart,
-  ExportButton,
-  useReportingText,
-} from './ReportingUi.jsx';
+import { BreakdownTable, DailyChart, ExportButton, useReportingText } from './ReportingUi.jsx';
 
 const fields = Object.keys(reportingFilterFields);
+
+function DashboardSkeleton() {
+  return (
+    <div role="status" aria-busy="true" className="space-y-4">
+      <Skeleton className="h-44 w-full rounded-lg" />
+      <div className="grid gap-4 xl:grid-cols-2">
+        <Skeleton className="h-72 rounded-lg" />
+        <Skeleton className="h-72 rounded-lg" />
+      </div>
+    </div>
+  );
+}
+
 export function Dashboard() {
   const { user } = useAuth();
   const canExport = useCan('reports.export');
-  const { t, num } = useReportingText();
+  const { t } = useReportingText();
+  const { t: tp } = useTranslation('pro');
+  const { date } = useFormat();
   const [params, setParams] = useSearchParams();
   const raw = Object.fromEntries(
     fields.filter((key) => params.get(key)).map((key) => [key, params.get(key)]),
@@ -51,6 +68,22 @@ export function Dashboard() {
     '/breakdown',
     { ...mainFilters, dimension: 'day' },
     parsed.success && !supervisor,
+  );
+  // The comparison line: the same chart for the period before.
+  const previousPeriod = current.data?.previous?.period;
+  const previousSeries = useReport(
+    '/breakdown',
+    { ...mainFilters, ...previousPeriod, dimension: 'day' },
+    parsed.success && !supervisor && Boolean(previousPeriod),
+  );
+  // Sparklines always show the last 14 days, whatever period the filters select.
+  const scope = { ...filters };
+  delete scope.from;
+  delete scope.to;
+  const trend = useReport(
+    '/breakdown',
+    { ...scope, from: addDays(now, -13), to: now, dimension: 'day' },
+    parsed.success,
   );
   const team = useReport('/breakdown', { ...mainFilters, dimension }, parsed.success);
   const stores = useReport(
@@ -82,12 +115,28 @@ export function Dashboard() {
       ? filters.supervisorIds[0]
       : null;
   const oneDay = mainFilters.from && mainFilters.from === mainFilters.to;
+  const period = current.data?.period;
+  const context = period
+    ? [
+        period.from === period.to
+          ? date(period.from)
+          : `${date(period.from, { day: 'numeric', month: 'short' })} – ${date(period.to)}`,
+        tp('dash.scope.' + (supervisor ? 'supervisor' : regional ? 'regional' : 'agency')),
+      ].join(' · ')
+    : undefined;
+  const attentionValues =
+    supervisor && values
+      ? {
+          ...values,
+          alerts: { ...values.alerts, unvisitedStores: week.data?.alerts?.unvisitedInPeriod ?? 0 },
+        }
+      : values;
   return (
-    <section className="space-y-5">
-      <div className="flex flex-wrap items-center justify-between gap-2">
-        <h1 className="text-2xl font-semibold tracking-tight">{t('heading')}</h1>
+    <section className="space-y-6">
+      <PageHeader title={t('heading')} context={context}>
         {canExport && parsed.success && <ExportButton filters={mainFilters} />}
-      </div>
+      </PageHeader>
+      {parsed.success && <TodayStrip filters={filters} now={now} />}
       <DashboardFilters
         raw={raw}
         update={update}
@@ -95,8 +144,8 @@ export function Dashboard() {
         period={current.data?.period}
       />
       {parsed.success && (
-        <div className="space-y-3">
-          <div className="flex flex-wrap gap-3">
+        <div className="space-y-3 empty:hidden">
+          <div className="flex flex-wrap gap-3 empty:hidden">
             {supervisorId && (
               <AiActionButton
                 capability="supervisor_daily_summary"
@@ -123,56 +172,26 @@ export function Dashboard() {
         </div>
       )}
       {!parsed.success && <p role="alert">{t('invalid')}</p>}
-      {parsed.success && (current.isPending || current.isPlaceholderData) && (
-        <div role="status" className="animate-pulse rounded-xl bg-sunken p-6">
-          {t('loading')}
-        </div>
-      )}
+      {parsed.success && (current.isPending || current.isPlaceholderData) && <DashboardSkeleton />}
       {[current, series, team, stores, week].some((result) => result.isError) && (
         <p role="alert">{t('error')}</p>
       )}
-      {values && (
-        <>
-          <Cards values={values} supervisor={supervisor} />
-          <section className="rounded-lg border border-line bg-surface p-4">
-            <h2 className="font-semibold tracking-tight">{t('alerts')}</h2>
-            <dl className="mt-2 grid gap-x-8 gap-y-1.5 text-sm sm:grid-cols-2">
-              {[
-                ['failures', values.stock?.failingChecks],
-                ['undelivered', values.gifts.undeliveredUnits],
-                [
-                  'unvisited',
-                  supervisor ? week.data?.alerts?.unvisitedInPeriod : values.alerts.unvisitedStores,
-                ],
-                ['oldPending', values.alerts.oldPending],
-              ].map(([key, value]) => (
-                <div key={key} className="flex justify-between gap-3 border-b border-line py-1">
-                  <dt className="text-fg-2">{t(key)}</dt>
-                  <dd
-                    className={
-                      'tnum flex items-center gap-1.5 ' +
-                      (value > 0 ? 'font-semibold text-warning' : 'text-fg-3')
-                    }
-                  >
-                    {value > 0 && <TriangleAlert aria-hidden="true" size={14} />}
-                    {num(value)}
-                  </dd>
-                </div>
-              ))}
-            </dl>
-          </section>
-        </>
-      )}
-      <Suspense fallback={null}>
-        {parsed.success && (supervisor || regional) && <LiveFieldSection filters={filters} />}
-        {parsed.success && !supervisor && <GeographySection filters={filters} update={update} />}
-      </Suspense>
+      {values && <KpiRow values={values} trend={trend.data} supervisor={supervisor} />}
+      {supervisor && parsed.success && <SupervisorToday date={now} />}
       {!supervisor && series.data && (
         <div className="grid gap-4 xl:grid-cols-2">
-          <DailyChart rows={series.data} />
-          <DailyChart rows={series.data} attendance />
+          <SalesAreaChart rows={series.data} previousRows={previousSeries.data} />
+          <DailyChart rows={series.data} attendance dashboard />
         </div>
       )}
+      <Suspense fallback={null}>
+        {parsed.success && !supervisor && (
+          <div id="geography" className="scroll-mt-6">
+            <GeographySection filters={filters} update={update} />
+          </div>
+        )}
+      </Suspense>
+      {attentionValues && <AttentionList values={attentionValues} supervisor={supervisor} />}
       {team.data && (
         <BreakdownTable
           rows={team.data}

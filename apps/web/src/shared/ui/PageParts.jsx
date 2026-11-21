@@ -2,13 +2,22 @@ import { useTranslation } from 'react-i18next';
 import { Badge } from '../../ui/primitives.jsx';
 import { EmptyState as KitEmptyState } from '../../ui/data.jsx';
 
-/** Pairs a page title with the actions available for that page. */
-export function PageHeader({ title, children }) {
+/**
+ * Page header: title, one muted context line (period, status, count) and right-aligned actions
+ * (`children`). The breadcrumb lives in the top bar, so the header starts right under it.
+ */
+export function PageHeader({ title, context, badge, children }) {
   return (
-    <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
-      <h1 className="text-2xl font-semibold tracking-tight text-fg">{title}</h1>
-      {children}
-    </div>
+    <header className="mb-5 flex flex-wrap items-start justify-between gap-x-4 gap-y-3">
+      <div className="min-w-0">
+        <div className="flex flex-wrap items-center gap-2.5">
+          <h1 className="text-2xl font-semibold tracking-tight text-fg">{title}</h1>
+          {badge}
+        </div>
+        {context && <div className="mt-1 text-sm text-fg-3">{context}</div>}
+      </div>
+      {children && <div className="flex flex-wrap items-center gap-2">{children}</div>}
+    </header>
   );
 }
 

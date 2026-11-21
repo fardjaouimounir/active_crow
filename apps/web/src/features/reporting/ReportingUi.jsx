@@ -6,6 +6,7 @@ import {
   Legend,
   Line,
   LineChart,
+  Rectangle,
   ResponsiveContainer,
   Tooltip,
   XAxis,
@@ -48,10 +49,10 @@ export function useReportingText() {
 
 /** Attendance status → series color: good = spring family, problems stay distinguishable. */
 const STATUS_COLORS = {
-  verified: chartSeries[0],
-  pending: chartSeries[1],
-  rejected: 'var(--danger-solid)',
-  notSent: chartSeries[3],
+  verified: '#3afb7c',
+  pending: '#adfec8',
+  rejected: '#000000',
+  notSent: '#101D00',
   absentJustified: chartSeries[4],
   absentUnjustified: chartSeries[5],
 };
@@ -174,7 +175,7 @@ export function BreakdownTable({ rows, title, view = 'staff', ranked = false }) 
   );
 }
 
-export function DailyChart({ rows, attendance = false }) {
+export function DailyChart({ rows, attendance = false, dashboard = false }) {
   const { t, num, rtl } = useReportingText();
   const keys = attendance ? statuses : ['sales'];
   const data = [...rows]
@@ -208,8 +209,24 @@ export function DailyChart({ rows, attendance = false }) {
                   allowDecimals={false}
                   tickFormatter={(value) => num(value)}
                 />
-                <Tooltip {...chartTooltip} formatter={(value) => num(value)} />
-                <Legend {...chartLegend} />
+                <Tooltip
+                  {...chartTooltip}
+                  contentStyle={{
+                    ...chartTooltip.contentStyle,
+                    ...(dashboard && {
+                      borderRadius: 12,
+                      boxShadow: '0 4px 16px rgb(0 0 0 / 0.12)',
+                    }),
+                  }}
+                  formatter={(value) => num(value)}
+                />
+                <Legend
+                  {...chartLegend}
+                  iconType={dashboard && attendance ? 'circle' : undefined}
+                  formatter={
+                    dashboard ? (label) => <span className="text-fg-2">{label}</span> : undefined
+                  }
+                />
                 {attendance ? (
                   keys.map((key) => (
                     <Bar
@@ -218,16 +235,33 @@ export function DailyChart({ rows, attendance = false }) {
                       name={t(key)}
                       stackId="attendance"
                       fill={STATUS_COLORS[key]}
-                      stroke="var(--surface)"
+                      stroke={
+                        key === 'rejected' || key === 'notSent'
+                          ? 'var(--chart-axis)'
+                          : 'var(--surface)'
+                      }
+                      maxBarSize={36}
+                      shape={(props) => (
+                        <Rectangle
+                          {...props}
+                          radius={
+                            statuses.findLast((status) => props.payload[status] > 0) === key
+                              ? [5, 5, 0, 0]
+                              : 0
+                          }
+                        />
+                      )}
                       isAnimationActive={false}
                     />
                   ))
                 ) : (
                   <Line
                     dataKey="sales"
+                    type={dashboard ? 'monotoneX' : undefined}
                     name={t('sales')}
                     stroke={chartSeries[0]}
-                    strokeWidth={2}
+                    strokeWidth={dashboard ? 3 : 2}
+                    strokeLinecap={dashboard ? 'round' : undefined}
                     dot={false}
                     isAnimationActive={false}
                   />

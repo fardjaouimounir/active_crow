@@ -3,6 +3,7 @@ import { Fragment, useEffect, useRef, useState, useSyncExternalStore } from 'rea
 import { useTranslation } from 'react-i18next';
 import { Link } from 'react-router';
 import { Button, Delta, ForwardArrow, cn } from './primitives.jsx';
+import { ProgressBar } from './viz.jsx';
 
 /* ------------------------------------------------------------------ Table */
 
@@ -359,15 +360,22 @@ export function KpiTile({
   period,
   unit,
   sparkline,
+  progress,
+  hero = false,
   className,
   animate = true,
 }) {
   const shown = useCountUp(value, animate);
   return (
-    <div className={cn('min-w-0 px-4 py-3', className)}>
-      <dt className="truncate text-xs text-fg-3">{label}</dt>
-      <dd className="mt-1 flex items-baseline gap-1.5">
-        <span className="tnum text-2xl font-semibold tracking-tight text-fg">
+    <div className={cn('flex min-w-0 flex-col px-4 py-3.5', hero && 'sm:col-span-2', className)}>
+      <dt className="truncate text-xs font-medium text-fg-3">{label}</dt>
+      <dd className="mt-1.5 flex items-baseline gap-1.5">
+        <span
+          className={cn(
+            'tnum font-semibold tracking-tight text-fg',
+            hero ? 'text-4xl' : 'text-2xl',
+          )}
+        >
           {typeof value === 'number' ? format(shown) : (value ?? '—')}
         </span>
         {unit && <span className="text-xs text-fg-3">{unit}</span>}
@@ -378,7 +386,18 @@ export function KpiTile({
         )}
         {period && <span>{period}</span>}
       </dd>
-      {sparkline && <div className="mt-2">{sparkline}</div>}
+      {progress && (
+        <dd className="mt-2.5 space-y-1">
+          <ProgressBar
+            value={progress.value}
+            max={progress.max}
+            label={progress.label}
+            tone={progress.tone}
+          />
+          {progress.caption && <span className="block text-2xs text-fg-3">{progress.caption}</span>}
+        </dd>
+      )}
+      {sparkline && <dd className="mt-auto pt-3">{sparkline}</dd>}
     </div>
   );
 }

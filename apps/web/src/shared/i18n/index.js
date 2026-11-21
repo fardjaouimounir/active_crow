@@ -6,6 +6,7 @@ import arSystem from './locales/ar/system.json';
 import enAuth from './locales/en/auth.json';
 import enCommon from './locales/en/common.json';
 import enSystem from './locales/en/system.json';
+import { pro } from './locales/pro.js';
 
 /** UI languages. `intlLocale` is used for Intl number/date formatting. */
 export const LANGUAGES = Object.freeze([
@@ -19,8 +20,8 @@ const STORAGE_KEY = 'fieldflow.language';
 
 // One namespace per feature (plus `common`), so features own their strings.
 export const resources = {
-  en: { common: enCommon, auth: enAuth, system: enSystem },
-  ar: { common: arCommon, auth: arAuth, system: arSystem },
+  en: { common: enCommon, auth: enAuth, system: enSystem, pro: pro.en },
+  ar: { common: arCommon, auth: arAuth, system: arSystem, pro: pro.ar },
 };
 
 function readStoredLanguage() {
