@@ -23,6 +23,29 @@ import * as plan from './showcasePlan.js';
 
 const { addDays, daysBetween, minutesOf, pick, rand, toHHMM } = plan;
 
+/** Everything the engine builds from: the whole cast, or the tiny one of the fast test. */
+function castOf(tiny) {
+  if (!tiny)
+    return {
+      animateurs: data.ANIMATEURS,
+      stores: data.STORES,
+      campaigns: data.CAMPAIGNS,
+      clients: Object.keys(data.CLIENTS),
+    };
+  const spec = data.CAMPAIGNS.find((c) => c.key === data.TINY.campaign.key);
+  const animateurs = data.TINY.animateurs.map(([key, store]) => {
+    const row = data.ANIMATEURS.find(([k]) => k === key);
+    return [row[0], row[1], row[2], store, row[4], row[5]];
+  });
+  const codes = new Set(animateurs.map((row) => row[3]));
+  return {
+    animateurs,
+    stores: data.STORES.filter(([code]) => codes.has(code)),
+    campaigns: [{ ...spec, ...data.TINY.campaign }],
+    clients: [spec.client],
+  };
+}
+
 /** Thrown when the generator must not run (not demo mode, real data present, nothing to refresh). */
 export class ShowcaseRefusal extends Error {
   constructor(message) {
@@ -106,7 +129,8 @@ async function resetDatabase() {
  * @returns {Promise<object>} the context (agency, people, campaigns, failures) for the report
  */
 export async function runShowcase(options = {}) {
-  const { refreshToday = false, compact = false } = options;
+  const { refreshToday = false, tiny = false } = options;
+  const compact = options.compact || tiny;
   const log = options.log ?? (() => {});
   const password = options.password ?? process.env.DEMO_PASSWORD?.trim();
   assertDemoMode();
@@ -125,7 +149,7 @@ export async function runShowcase(options = {}) {
 
   const app = createApp();
   app.set('trust proxy', true); // each simulated user gets an own address (rate limit)
-  const engine = createEngine({ app, today, log, compact });
+  const engine = createEngine({ app, today, log, compact, tiny });
   try {
     if (refreshToday) {
       const ctx = await engine.loadContext(agencyCode);
@@ -149,7 +173,8 @@ function finish(engine, ctx, realNow) {
 
 // ─── Engine ──────────────────────────────────────────────────────────────────
 
-function createEngine({ app, today, log, compact }) {
+function createEngine({ app, today, log, compact, tiny }) {
+  const cast = castOf(tiny);
   const realNow = clock.now;
   const failures = [];
   const seen = new Set();
@@ -360,13 +385,13 @@ function createEngine({ app, today, log, compact }) {
         });
     }
     const animateurs = {};
-    for (const [emailKey, name, wilayaId] of data.ANIMATEURS) {
+    for (const [emailKey, name, wilayaId] of cast.animateurs) {
       const user = await ensureUser(agency, { emailKey, name, role: 'animateur', wilayaId });
       await ensureReportingLine(agency, user, staff[plan.supervisorKeyOf(wilayaId)], history);
       animateurs[emailKey] = user;
     }
     const stores = {};
-    for (const [code, name, type, wilayaId, latitude, longitude] of data.STORES) {
+    for (const [code, name, type, wilayaId, latitude, longitude] of cast.stores) {
       stores[code] = await prisma.pointOfSale.upsert({
         where: { agencyId_code: { agencyId: agency.id, code } },
         update: { name, type, wilayaId, latitude, longitude },
@@ -487,7 +512,7 @@ function createEngine({ app, today, log, compact }) {
 
     // Roster: the Animateurs of the campaign grouped by wilaya (all members of the team of their
     // supervisor), or the wilaya needs of the planned campaign.
-    const members = data.ANIMATEURS.filter(([key]) => plan.assignmentWindow(today, spec, key));
+    const members = cast.animateurs.filter(([key]) => plan.assignmentWindow(today, spec, key));
     const perWilaya = new Map();
     if (spec.status === 'planning')
       for (const [w, n] of Object.entries(data.PLANNED_WILAYAS)) perWilaya.set(Number(w), n);
@@ -519,7 +544,7 @@ function createEngine({ app, today, log, compact }) {
     });
     const storeCodes = new Set([
       ...members.map(([, , , store]) => store),
-      ...(data.EXTRA_STORES[spec.key] ?? []),
+      ...(data.EXTRA_STORES[spec.key] ?? []).filter((code) => org.stores[code]),
     ]);
     await prisma.campaignPointOfSale.createMany({
       data: [...storeCodes].map((code) => ({ ...b, pointOfSaleId: org.stores[code].id })),
@@ -672,7 +697,7 @@ function createEngine({ app, today, log, compact }) {
         ['adel.rahmani', 'PDV-CON-02'],
       ];
       for (const [key, storeCode] of proposals) {
-        const wilayaId = data.ANIMATEURS.find(([k]) => k === key)[2];
+        const wilayaId = cast.animateurs.find(([k]) => k === key)[2];
         const supervisor = supervisorOf(wilayaId);
         await prisma.campaignAnimateur.create({
           data: {
@@ -701,7 +726,7 @@ function createEngine({ app, today, log, compact }) {
             proposedById: supervisor.id,
             // They are all on the active campaign until it ends: the proposal starts right after.
             startDate: new Date(
-              addDays(datesOf(data.CAMPAIGNS.find((c) => c.key === 'najma')).end, 1),
+              addDays(datesOf(cast.campaigns.find((c) => c.key === 'najma')).end, 1),
             ),
             endDate: new Date(end),
             workDays: [1, 2, 3, 4, 5, 6, 7],
@@ -1138,6 +1163,7 @@ function createEngine({ app, today, log, compact }) {
         continue;
       const campaign = ctx.campaigns.find((c) => c.key === spec.campaign);
       const reporter = ctx.org.animateurs[spec.by];
+      if (!reporter) continue; // not part of the cast (tiny run)
       const assignment = await prisma.assignment.findFirst({
         where: { animateurId: reporter.id, campaignId: campaign.row.id, status: 'approved' },
       });
@@ -1200,7 +1226,11 @@ function createEngine({ app, today, log, compact }) {
   async function replacementOn(ctx, date) {
     const { replaced, replacement, leaveOffset } = data.REPLACEMENT;
     const campaign = ctx.campaigns.find((c) => c.key === 'najma');
-    if (date === addDays(today, leaveOffset + 1) && date >= simFrom(campaign)) {
+    if (
+      ctx.org.animateurs[replacement] &&
+      date === addDays(today, leaveOffset + 1) &&
+      date >= simFrom(campaign)
+    ) {
       // The next day the replacement is on the field: the supervisor equips her.
       setClock(date, '09:00');
       const lines = giftLines(campaign, supplyFor(ctx, campaign, replacement));
@@ -1215,7 +1245,7 @@ function createEngine({ app, today, log, compact }) {
         await move(campaign, ctx.org.staff.S1, ctx.org.animateurs[replacement], lines);
       return;
     }
-    if (date !== addDays(today, leaveOffset)) return;
+    if (!ctx.org.animateurs[replaced] || date !== addDays(today, leaveOffset)) return;
     if (date < simFrom(campaign)) return;
     const original = await prisma.assignment.findFirst({
       where: {
@@ -1476,12 +1506,12 @@ function createEngine({ app, today, log, compact }) {
           orderBy: { startDate: 'asc' },
         })
       : [];
-    if (!agency || campaignRows.length < data.CAMPAIGNS.length)
+    if (!agency || campaignRows.length < cast.campaigns.length)
       throw new ShowcaseRefusal('Nothing to refresh: run `npm run seed:showcase` first.');
     const org = await orgFromDatabase(agency);
     const campaigns = [];
     const clients = {};
-    for (const spec of data.CAMPAIGNS) {
+    for (const spec of cast.campaigns) {
       const row = campaignRows.find((c) => c.name === spec.name);
       if (!row)
         throw new ShowcaseRefusal('The demo campaigns are missing: run `npm run seed:showcase`.');
@@ -1519,7 +1549,7 @@ function createEngine({ app, today, log, compact }) {
       Object.entries(data.STAFF).map(([key, spec]) => [key, byEmail.get(emailOf(spec.email))]),
     );
     const animateurs = Object.fromEntries(
-      data.ANIMATEURS.map(([key]) => [key, byEmail.get(emailOf(key))]),
+      cast.animateurs.map(([key]) => [key, byEmail.get(emailOf(key))]),
     );
     const rows = await prisma.pointOfSale.findMany({ where: { agencyId: agency.id } });
     return { staff, animateurs, stores: Object.fromEntries(rows.map((s) => [s.code, s])) };
@@ -1545,16 +1575,16 @@ function createEngine({ app, today, log, compact }) {
     log(`Agency ${agency.name} (${agency.code})`);
     const org = await setupOrganization(agency);
     log(
-      `  ${data.ANIMATEURS.length} animateurs, ${data.STORES.length} stores, supervisors, managers`,
+      `  ${cast.animateurs.length} animateurs, ${cast.stores.length} stores, supervisors, managers`,
     );
     const clients = {};
-    for (const key of Object.keys(data.CLIENTS)) {
+    for (const key of cast.clients) {
       const base = await setupClient(agency, key);
       clients[key] = { ...base, ...(await catalogOf(base.client, key)) };
     }
     const ctx = { agency, org, clients, campaigns: [], today };
     ctxRef = ctx;
-    for (const spec of data.CAMPAIGNS) {
+    for (const spec of cast.campaigns) {
       const campaign = await setupCampaign(ctx, spec);
       ctx.campaigns.push(campaign);
       log(`  campaign ready (${spec.status}): ${spec.name}`);

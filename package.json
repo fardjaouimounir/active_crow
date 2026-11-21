@@ -31,7 +31,8 @@
     "tombola:verify": "node scripts/tombolaVerify.js",
     "db:seed:showcase": "npm run db:seed:showcase -w @fieldflow/api",
     "seed:showcase": "npm run db:seed:showcase -w @fieldflow/api --",
-    "ai:start": "node scripts/aiService.js"
+    "ai:start": "node scripts/aiService.js",
+    "seed:showcase:check": "npm run seed:showcase:check -w @fieldflow/api"
   },
   "devDependencies": {
     "@eslint/js": "^10.0.1",

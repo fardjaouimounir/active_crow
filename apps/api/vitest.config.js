@@ -1,6 +1,6 @@
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
-import { defineProject } from 'vitest/config';
+import { configDefaults, defineProject } from 'vitest/config';
 
 /** Uploads of this run; test/globalSetup.js deletes the directory at the end. */
 export const TEST_UPLOAD_DIR = join(tmpdir(), 'fieldflow-test-uploads-' + process.pid);
@@ -9,6 +9,10 @@ export default defineProject({
   test: {
     name: 'api',
     environment: 'node',
+    // The slow full-size showcase check is opt-in: `npm run seed:showcase:check`.
+    exclude: process.env.SHOWCASE_CHECK
+      ? configDefaults.exclude
+      : [...configDefaults.exclude, 'test/**/*.full.test.js'],
     include: [
       'test/**/*.test.js',
       'src/**/__tests__/**/*.test.js',

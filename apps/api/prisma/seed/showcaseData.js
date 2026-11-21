@@ -398,3 +398,22 @@ export const VISIT_NOTES = [
   'الفريق يحتاج إلى دعم إضافي بعد الظهر.',
   'تم التأكد من توفر المنتجات على الرفوف.',
 ];
+
+/**
+ * A tiny cast for the fast test (`runShowcase({ tiny: true })`): one running campaign, four
+ * Animateurs of three supervisors in three stores, three days of activity.
+ */
+export const TINY = {
+  animateurs: [
+    ['yacine.haddad', 'PDV-ALG-01'],
+    ['amina.benali', 'PDV-ALG-01'],
+    ['hamza.belhadj', 'PDV-ORA-02'],
+    ['souad.cheniti', 'PDV-BIS-01'],
+  ],
+  campaign: {
+    key: 'najma',
+    startOffset: -2,
+    endOffset: 5,
+    targets: { dailyUnitsPerAnimateur: 4, dailySamplesPerAnimateur: 10 },
+  },
+};
