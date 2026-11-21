@@ -1,7 +1,7 @@
 import { randomUUID } from 'node:crypto';
 import request from 'supertest';
 import { beforeAll, describe, expect, it } from 'vitest';
-import { loadReferenceData } from '../../../../prisma/seed/index.js';
+import { loadReferenceData } from '../../../../prisma/seed/reference.js';
 import { seedDemo } from '../../../../prisma/seed/demo.js';
 import { createApp } from '../../../app.js';
 import { businessDate } from '../../../core/time/clock.js';

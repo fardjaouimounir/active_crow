@@ -81,14 +81,22 @@ describe('generated data (tiny cast)', () => {
 
   beforeAll(async () => {
     process.env.DEMO_MODE = 'true';
-    ctx = await runShowcase({ tiny: true, password: PASSWORD, now: '09:30' });
+    // Test setup keeps reference rows and the refresh refusal may have seeded them.
+    await prisma.$executeRaw`TRUNCATE TABLE wilayas, communes RESTART IDENTITY CASCADE`;
+    expect(await prisma.wilaya.count()).toBe(0);
+    expect(await prisma.commune.count()).toBe(0);
+    expect(await prisma.agency.count()).toBe(0);
+    ctx = await runShowcase({ compact: true, tiny: true, password: PASSWORD, now: '09:30' });
     director = await prisma.user.findUniqueOrThrow({
       where: { email: `director@${EMAIL_DOMAIN}` },
     });
   }, 120_000);
 
-  it('runs without a refused call and flags everything as demo', async () => {
+  it('seeds reference data on an empty migrated database and runs without a refused call', async () => {
     expect(ctx.failures).toEqual([]);
+    expect(await prisma.wilaya.count()).toBe(69);
+    expect(await prisma.commune.count()).toBe(1541);
+    expect(await prisma.agency.count()).toBe(1);
     expect(await prisma.user.count({ where: { isDemo: false } })).toBe(0);
     expect(await prisma.pointOfSale.count({ where: { isDemo: false } })).toBe(0);
     const roles = await prisma.user.groupBy({ by: ['role'], _count: true });

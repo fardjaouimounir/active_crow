@@ -18,6 +18,7 @@ import { prisma } from '../../src/db/client.js';
 import { withTransaction } from '../../src/db/transaction.js';
 import { insertDraftCampaign } from '../../src/modules/campaigns/campaigns.repository.js';
 import { lifecycleService } from '../../src/modules/campaigns/lifecycle.service.js';
+import { seedReferenceData } from './reference.js';
 import * as data from './showcaseData.js';
 import * as plan from './showcasePlan.js';
 
@@ -139,6 +140,7 @@ export async function runShowcase(options = {}) {
   if (!/^ACTICREW[A-Z0-9-]*$/.test(agencyCode))
     throw new ShowcaseRefusal('SHOWCASE_AGENCY must start with ACTICREW');
   await assertOnlyDemoData(agencyCode);
+  await seedReferenceData();
 
   const realNow = clock.now;
   const today = businessDate(realNow());
