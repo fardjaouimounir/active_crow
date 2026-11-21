@@ -1,0 +1,100 @@
+name: fieldflow-committee
+
+x-api: &api
+  build:
+    context: .
+    target: api
+  image: fieldflow-committee-api
+  environment: &api-env
+    NODE_ENV: development
+    TRUST_PROXY: '1'
+    CORS_ORIGINS: http://localhost:${COMMITTEE_WEB_PORT:-8080},http://127.0.0.1:${COMMITTEE_WEB_PORT:-8080}
+    DATABASE_URL: postgresql://fieldflow:local-committee-db@postgres:5432/fieldflow
+    JWT_ACCESS_SECRET: ${COMMITTEE_JWT_SECRET:-fieldflow-local-committee-jwt-do-not-deploy-publicly}
+    UPLOAD_DIR: /data/uploads
+    DEMO_MODE: 'true'
+    DEMO_PASSWORD: ${COMMITTEE_DEMO_PASSWORD:-FieldFlow-Demo-2026}
+    AI_SERVICE_BASE_URL: ${COMMITTEE_AI_URL:-}
+    AI_SERVICE_INBOUND_KEY: ${COMMITTEE_AI_INBOUND_KEY:-fieldflow-local-committee-inbound-key}
+    AI_SERVICE_OUTBOUND_KEY: ${COMMITTEE_AI_OUTBOUND_KEY:-fieldflow-local-committee-outbound-key}
+  volumes:
+    - demo-data:/data
+
+services:
+  postgres:
+    image: postgres:17-alpine
+    environment:
+      POSTGRES_USER: fieldflow
+      POSTGRES_PASSWORD: local-committee-db
+      POSTGRES_DB: fieldflow
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+    healthcheck:
+      test: [CMD, pg_isready, -U, fieldflow, -d, fieldflow]
+      interval: 3s
+      timeout: 3s
+      retries: 20
+
+  setup:
+    <<: *api
+    environment:
+      <<: *api-env
+      AI_SERVICE_BASE_URL: ''
+      JOBS_ENABLED: 'false'
+    depends_on:
+      postgres:
+        condition: service_healthy
+    command:
+      - sh
+      - -ec
+      - |
+        npm run db:migrate:deploy
+        if [ ! -f /data/.demo-ready ]; then
+          npm run seed:showcase -- --tiny
+          touch /data/.demo-ready
+        fi
+
+  api:
+    <<: *api
+    depends_on:
+      setup:
+        condition: service_completed_successfully
+    healthcheck:
+      test:
+        [
+          CMD,
+          node,
+          -e,
+          "fetch('http://localhost:4000/api/v1/health').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))",
+        ]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+
+  web:
+    build:
+      context: .
+      target: web
+    ports:
+      - '127.0.0.1:${COMMITTEE_WEB_PORT:-8080}:80'
+    depends_on:
+      api:
+        condition: service_healthy
+
+  ai:
+    profiles: [ai]
+    build: ./vendor/fieldflow-ai
+    environment:
+      AI_SERVICE_INBOUND_KEY: ${COMMITTEE_AI_INBOUND_KEY:-fieldflow-local-committee-inbound-key}
+      AI_SERVICE_OUTBOUND_KEY: ${COMMITTEE_AI_OUTBOUND_KEY:-fieldflow-local-committee-outbound-key}
+      FIELDFLOW_API_BASE_URL: http://api:4000
+      LLM_API_KEY: ${LLM_API_KEY:-}
+      LLM_MODEL: ${LLM_MODEL:-google/gemma-4-31B}
+      LLM_BASE_URL: ${LLM_BASE_URL:-https://app.ai-grid.io/v1}
+    depends_on:
+      api:
+        condition: service_healthy
+
+volumes:
+  postgres-data:
+  demo-data:

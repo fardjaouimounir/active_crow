@@ -1,0 +1,10 @@
+.git
+.claude
+**/node_modules
+**/dist
+**/.env
+**/.env.*
+apps/api/var
+docs
+prompts
+vendor

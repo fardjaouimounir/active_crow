@@ -1,0 +1,5 @@
+Here is the analysis:
+```json
+{"locale": "en", "ranking": ["S1", "S2"], "trends": ["S1 sold 120 units against a target of 100, while S2 sold 80.", "Period P2 reached 110 units, up from 90 in P1."], "anomalies": ["S2 is 20 units under its target of 100."], "recommendedActions": ["Pair S2 with S1 for a field visit to close the 20 unit gap."]}
+```
+Let me know if you need more.

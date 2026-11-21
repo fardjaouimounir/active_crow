@@ -6,7 +6,7 @@ client portal.
 
 **Evaluating the project?** Follow the [reviewer guide](docs/reviewer-guide.md) to run a small
 fictional campaign locally, sign in by role, and verify the application. The core demo runs without
-an external AI account.
+an external AI account. Run `docker compose up --build` and open [the local demo](http://localhost:8080).
 
 Project rules, stack and conventions: [`CLAUDE.md`](CLAUDE.md). Business analysis and database
 design (Arabic): [`docs/`](docs/). Build prompts and the working method:

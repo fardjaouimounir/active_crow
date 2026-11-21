@@ -1,0 +1,3 @@
+```json
+{"locale": "ar", "narrative": "حققت الحملة ١٢٠ وحدة من هدف ١٥٠ أي ٨٠ بالمئة.", "risks": [{"severity": "medium", "text": "فجوة الهدف 30 وحدة والحضور ٨٤ بالمئة.", "evidence": []}], "opportunities": ["ارفع توزيع الهدايا."], "decisions": ["راجع تخطيط الحضور مع Superviseur."]}
+```

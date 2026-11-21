@@ -1,0 +1,5 @@
+<think>
+The user wants a JSON report. Attendance is 42 of 50 so 84 percent. Sales 120 vs 100 means +20 percent. I should avoid inventing numbers 2026...
+</think>
+
+{"locale": "en", "narrative": "The campaign delivered 120 units against a 150 target, so attainment is 80 percent.", "risks": [{"severity": "medium", "text": "The target gap is 30 units with attendance at 84 percent.", "evidence": []}], "opportunities": ["Gift distribution at 80 percent can be pushed to close the gap."], "decisions": ["Review attendance planning with the Superviseur."], "notes": "extra chatter key the model added"}

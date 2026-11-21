@@ -1,0 +1,28 @@
+<think>
+The user wants a JSON report. Attendance is 42 of 50 so 84 percent. Sales 120 vs 100 means +20 percent. I should avoid inventing numbers 2026...
+</think>
+
+```json
+{
+  "locale": "en",
+  "headline": "Attendance at 84 percent with sales up 20 percent",
+  "summary": [
+    "42 of 50 expected promoters were present, 8 were missing.",
+    "Units reached 120 versus 100 previously.",
+    "Gift distribution is at 80 percent, 20 gifts short of plan."
+  ],
+  "attention": [
+    {
+      "type": "gifts",
+      "text": "Gifts are 20 below the planned 100.",
+      "refs": []
+    }
+  ],
+  "recommendedActions": [
+    "Plan distribution of the 20 remaining gifts."
+  ],
+  "kpis": {
+    "attendanceRate": 0.84
+  }
+}
+```

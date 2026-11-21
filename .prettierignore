@@ -2,6 +2,7 @@ node_modules/
 dist/
 coverage/
 package-lock.json
+vendor/
 
 # Authored reference material: not reformatted by tooling
 docs/

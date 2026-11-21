@@ -1,0 +1,144 @@
+{
+  "requestId": "00000000-0000-4000-8000-000000000001",
+  "capability": "supervisor_daily_summary",
+  "modelVersion": "Qwen/Qwen3.8-27B@deterministic-fallback@prompt-v5",
+  "confidence": 0,
+  "output": {
+    "locale": "en",
+    "headline": "Attendance and gift distribution fell short of targets while sales grew.",
+    "summary": [
+      "45 were present out of 50 expected, leaving a gap of 5.",
+      "95 gifts were distributed against a plan of 100, leaving 5 undistributed.",
+      "Sales reached 130 units, up 8.333% from the previous 120 units."
+    ],
+    "attention": [
+      {
+        "type": "attendance_gap",
+        "text": "45 were present out of 50 expected, leaving a gap of 5.",
+        "refs": [
+          "attendanceRate",
+          "missingCount"
+        ]
+      },
+      {
+        "type": "gifts_undistributed",
+        "text": "95 gifts were distributed against a plan of 100, leaving 5 undistributed.",
+        "refs": [
+          "giftGap",
+          "giftDistributionRate"
+        ]
+      }
+    ],
+    "recommendedActions": [
+      "Verify the attendance records to understand the 10% absence rate.",
+      "Check the gift inventory to account for the 5 remaining items."
+    ],
+    "kpis": {
+      "presentCount": 45,
+      "expectedCount": 50,
+      "missingCount": 5,
+      "attendanceRate": 0.9,
+      "units": 130,
+      "previousUnits": 120,
+      "unitsDeltaPct": 8.333,
+      "distributedGifts": 95,
+      "plannedGifts": 100,
+      "giftGap": 5,
+      "giftDistributionRate": 0.95
+    },
+    "insights": {
+      "findings": [
+        {
+          "id": "F1",
+          "type": "ATTENDANCE_GAP",
+          "scope": "group",
+          "entity": null,
+          "polarity": "adverse",
+          "rank": 1,
+          "values": {
+            "present": 45,
+            "expected": 50,
+            "missingCount": 5,
+            "missingPct": 10,
+            "attendanceRate": 0.9
+          }
+        },
+        {
+          "id": "F2",
+          "type": "GIFTS_UNDISTRIBUTED",
+          "scope": "group",
+          "entity": null,
+          "polarity": "adverse",
+          "rank": 2,
+          "values": {
+            "distributed": 95,
+            "planned": 100,
+            "giftGap": 5,
+            "giftDistributionRate": 0.95,
+            "giftRemainingPct": 5
+          }
+        },
+        {
+          "id": "F3",
+          "type": "SALES_GROWTH",
+          "scope": "group",
+          "entity": null,
+          "polarity": "positive",
+          "rank": 3,
+          "values": {
+            "units": 130,
+            "previousUnits": 120,
+            "unitsDeltaPct": 8.333
+          }
+        }
+      ],
+      "claims": [
+        {
+          "kind": "observation",
+          "findingIds": [
+            "F1"
+          ],
+          "text": "45 were present out of 50 expected, leaving a gap of 5.",
+          "source": "model"
+        },
+        {
+          "kind": "recommendation",
+          "findingIds": [
+            "F1"
+          ],
+          "text": "Verify the attendance records to understand the 10% absence rate.",
+          "source": "model"
+        },
+        {
+          "kind": "observation",
+          "findingIds": [
+            "F2"
+          ],
+          "text": "95 gifts were distributed against a plan of 100, leaving 5 undistributed.",
+          "source": "model"
+        },
+        {
+          "kind": "recommendation",
+          "findingIds": [
+            "F2"
+          ],
+          "text": "Check the gift inventory to account for the 5 remaining items.",
+          "source": "model"
+        },
+        {
+          "kind": "observation",
+          "findingIds": [
+            "F3"
+          ],
+          "text": "Sales reached 130 units, up 8.333% from the previous 120 units.",
+          "source": "model"
+        }
+      ]
+    },
+    "fallback": {
+      "used": true,
+      "reasonCode": "AI_UNAVAILABLE",
+      "attempts": 1
+    }
+  }
+}

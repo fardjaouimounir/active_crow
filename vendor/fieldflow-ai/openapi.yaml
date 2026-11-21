@@ -1,0 +1,230 @@
+openapi: 3.1.0
+info:
+  title: FieldFlow AI service
+  version: 0.1.0
+  description: >
+    Four suggestion-only AI capabilities for FieldFlow. The service never writes business data;
+    every result is delivered to FieldFlow's internal results route and stored as `pending_review`
+    for a human to accept or reject. Provider: AI Grid (https://app.ai-grid.io/v1),
+    OpenAI Chat Completions compatible. Model: Qwen/Qwen3.8-27B.
+servers:
+  - url: http://localhost:4100
+paths:
+  /v1/supervisor_daily_summary:
+    $ref: '#/x-paths/supervisor_daily_summary'
+  /v1/sales_performance:
+    $ref: '#/x-paths/sales_performance'
+  /v1/campaign_insights:
+    $ref: '#/x-paths/campaign_insights'
+  /v1/animateur_coaching:
+    $ref: '#/x-paths/animateur_coaching'
+  /health:
+    get:
+      summary: Health check
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  ok: { type: boolean }
+x-paths:
+  supervisor_daily_summary:
+    post:
+      summary: Supervisor daily summary (AI Daily Report Generator)
+      security:
+        - inboundKey: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Request'
+              # subject.type must be "supervisor" for this capability.
+      responses:
+        '202':
+          description: Accepted (queued, or cached for a duplicate requestId)
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: object
+                    properties:
+                      requestId: { type: string, format: uuid }
+                      status: { type: string, enum: [queued, cached] }
+        '400':
+          description: Validation error, invalid subject, or PII firewall rejection
+        '401':
+          description: Missing or invalid service key
+  sales_performance:
+    post:
+      summary: Sales performance analytics
+      security:
+        - inboundKey: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Request'
+              # subject.type must be "campaign" for this capability.
+      responses:
+        '202':
+          description: Accepted (queued, or cached for a duplicate requestId)
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: object
+                    properties:
+                      requestId: { type: string, format: uuid }
+                      status: { type: string, enum: [queued, cached] }
+        '400':
+          description: Validation error, invalid subject, or PII firewall rejection
+        '401':
+          description: Missing or invalid service key
+  campaign_insights:
+    post:
+      summary: Campaign business insights
+      security:
+        - inboundKey: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Request'
+              # subject.type must be "campaign" for this capability.
+      responses:
+        '202':
+          description: Accepted (queued, or cached for a duplicate requestId)
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: object
+                    properties:
+                      requestId: { type: string, format: uuid }
+                      status: { type: string, enum: [queued, cached] }
+        '400':
+          description: Validation error, invalid subject, or PII firewall rejection
+        '401':
+          description: Missing or invalid service key
+  animateur_coaching:
+    post:
+      summary: Animateur coaching actions
+      security:
+        - inboundKey: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Request'
+              # subject.type must be "campaign" for this capability.
+      responses:
+        '202':
+          description: Accepted (queued, or cached for a duplicate requestId)
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: object
+                    properties:
+                      requestId: { type: string, format: uuid }
+                      status: { type: string, enum: [queued, cached] }
+        '400':
+          description: Validation error, invalid subject, or PII firewall rejection
+        '401':
+          description: Missing or invalid service key
+components:
+  securitySchemes:
+    inboundKey:
+      type: http
+      scheme: bearer
+      description: AI_SERVICE_INBOUND_KEY (service key, never a user JWT)
+  schemas:
+    Request:
+      type: object
+      additionalProperties: false
+      required: [requestId, agencyId, subject, input]
+      properties:
+        requestId: { type: string, format: uuid }
+        agencyId: { type: string, format: uuid }
+        subject:
+          type: object
+          additionalProperties: false
+          required: [type, id]
+          properties:
+            type: { type: string, enum: [supervisor, campaign] }
+            id: { type: string }
+        input:
+          type: object
+          additionalProperties: false
+          required: [context]
+          properties:
+            text: { type: [string, 'null'] }
+            fileUrl: { type: [string, 'null'], format: uri }
+            context:
+              type: object
+              additionalProperties: false
+              required: [locale, data]
+              properties:
+                workDate: { type: string, pattern: '^[0-9]{4}-[0-9]{2}-[0-9]{2}$' }
+                from: { type: string, pattern: '^[0-9]{4}-[0-9]{2}-[0-9]{2}$' }
+                to: { type: string, pattern: '^[0-9]{4}-[0-9]{2}-[0-9]{2}$' }
+                locale: { type: string, enum: [ar, en] }
+                data:
+                  type: object
+                  description: >
+                    Aggregates, codes and short labels only. No PII (no customer
+                    or employee names, phones, emails, EXIF or raw photos).
+                    Optional `causes`: `[{ label?: string, code: string }]`, opaque short codes
+                    (e.g. `STK-01`) that are the only way a report may state a cause as fact.
+                    A code that is not label-shaped is rejected by the PII firewall (400).
+    CallbackResult:
+      type: object
+      additionalProperties: false
+      required: [requestId, capability, modelVersion, confidence, output]
+      properties:
+        requestId: { type: string, format: uuid }
+        capability:
+          type: string
+          enum: [supervisor_daily_summary, sales_performance, campaign_insights, animateur_coaching]
+        modelVersion: { type: string }
+        confidence: { type: number, minimum: 0, maximum: 1 }
+        output:
+          type: object
+          description: >
+            Capability-specific report with a code-computed `kpis` object (a metric that
+            cannot be computed from the supplied data is omitted, never 0) and, when the
+            service detects a data problem, an optional code-computed `dataQuality`
+            array of `{code, severity: conflict|missing|info}`, and an optional code-set `insights`
+            object (`findings[]` detected by code, `claims[]` of kind observation|interpretation|
+            hypothesis|recommendation tied to finding ids, optional `downgradedFrom`, and an optional `rejected`
+            list of `{reason, kind}` for claims removed by the claim rules); or an
+            error object `{ error: { code, message } }`, used ONLY for NEEDS_DATA (no usable
+            data was supplied) and PII_FIREWALL (personal data was rejected). When the model
+            fails (timeout, rate limit, provider unavailable, unusable reply) the output is NOT an
+            error object: it is a normal-shaped report built from code, with `confidence` 0, a
+            `modelVersion` ending in `@deterministic-fallback@prompt-vN` and an
+            `output.fallback` object `{ used: true, reasonCode, attempts }`.
+    Error:
+      type: object
+      additionalProperties: false
+      required: [code, message]
+      properties:
+        code:
+          type: string
+          enum: [NEEDS_DATA, PII_FIREWALL]
+        message: { type: string }

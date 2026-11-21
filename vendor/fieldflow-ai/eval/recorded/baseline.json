@@ -1,0 +1,5049 @@
+{
+ "recordedAt": "2026-11-20T21:40:42.611Z",
+ "runs": 1,
+ "records": [
+  {
+   "id": "SUP-02",
+   "locale": "en",
+   "run": 1,
+   "ms": 6118,
+   "modelVersion": "Qwen/Qwen3.8-27B@prompt-v2",
+   "output": {
+    "locale": "en",
+    "headline": "Attendance and Gift Distribution Below Target",
+    "summary": [
+     "Attendance is at 60% with 30 present out of 50 expected.",
+     "Sales units are 100, down 4.762% from the previous 105.",
+     "Gift distribution is at 90% with 90 distributed out of 100 planned."
+    ],
+    "attention": [
+     {
+      "type": "attendance",
+      "text": "20 Animateurs are missing from the expected 50.",
+      "refs": [
+       "attendance"
+      ]
+     },
+     {
+      "type": "gifts",
+      "text": "There is a gap of 10 gifts not yet distributed.",
+      "refs": [
+       "gifts"
+      ]
+     }
+    ],
+    "recommendedActions": [
+     "Contact missing Animateurs to ensure full attendance at the Point de Vente.",
+     "Prioritize distributing the remaining 10 gifts to meet the planned target."
+    ],
+    "kpis": {
+     "presentCount": 30,
+     "expectedCount": 50,
+     "missingCount": 20,
+     "attendanceRate": 0.6,
+     "units": 100,
+     "previousUnits": 105,
+     "unitsDeltaPct": -4.762,
+     "distributedGifts": 90,
+     "plannedGifts": 100,
+     "giftGap": 10,
+     "giftDistributionRate": 0.9
+    }
+   },
+   "diagnostics": {
+    "state": "first_pass",
+    "fallbackReason": null,
+    "attempts": [
+     "OK"
+    ]
+   }
+  },
+  {
+   "id": "SUP-01",
+   "locale": "en",
+   "run": 1,
+   "ms": 6299,
+   "modelVersion": "Qwen/Qwen3.8-27B@prompt-v2",
+   "output": {
+    "locale": "en",
+    "headline": "Strong sales growth with minor attendance and gift gaps",
+    "summary": [
+     "Attendance reached 45 out of 50 expected, resulting in a 90% attendance rate.",
+     "Sales units increased to 130 from 120 previous units, a rise of 8.333%.",
+     "Gift distribution hit 95 out of 100 planned, leaving a gap of 5."
+    ],
+    "attention": [
+     {
+      "type": "attendance",
+      "text": "5 Animateurs are missing from the expected count.",
+      "refs": [
+       "attendance"
+      ]
+     },
+     {
+      "type": "gifts",
+      "text": "5 planned gifts remain undistributed.",
+      "refs": [
+       "gifts"
+      ]
+     }
+    ],
+    "recommendedActions": [
+     "Verify the status of the 5 missing Animateurs to ensure full Point de Vente coverage.",
+     "Distribute the remaining 5 gifts to close the gap against the planned total."
+    ],
+    "kpis": {
+     "presentCount": 45,
+     "expectedCount": 50,
+     "missingCount": 5,
+     "attendanceRate": 0.9,
+     "units": 130,
+     "previousUnits": 120,
+     "unitsDeltaPct": 8.333,
+     "distributedGifts": 95,
+     "plannedGifts": 100,
+     "giftGap": 5,
+     "giftDistributionRate": 0.95
+    }
+   },
+   "diagnostics": {
+    "state": "first_pass",
+    "fallbackReason": null,
+    "attempts": [
+     "OK"
+    ]
+   }
+  },
+  {
+   "id": "SUP-01",
+   "locale": "ar",
+   "run": 1,
+   "ms": 6633,
+   "modelVersion": "Qwen/Qwen3.8-27B@prompt-v2",
+   "output": {
+    "locale": "ar",
+    "headline": "أداء ميداني جيد مع فجوة بسيطة في توزيع الهدايا",
+    "summary": [
+     "بلغت نسبة الحضور 90% مع غياب 5 أشخاص من أصل 50 متوقعاً.",
+     "سجلت المبيعات 130 وحدة بزيادة قدرها 8.333% مقارنة بالفترة السابقة.",
+     "تم توزيع 95 هدية من أصل 100 مخططة، مما يترك فجوة قدرها 5 هدايا."
+    ],
+    "attention": [
+     {
+      "type": "gift_gap",
+      "text": "توجد فجوة في توزيع الهدايا بقيمة 5 هدايا لم يتم توزيعها.",
+      "refs": [
+       "giftGap"
+      ]
+     },
+     {
+      "type": "attendance_gap",
+      "text": "غياب 5 أشخاص عن الحضور المتوقع.",
+      "refs": [
+       "missingCount"
+      ]
+     }
+    ],
+    "recommendedActions": [
+     "متابعة توزيع الهدايا المتبقية لسد الفجوة الحالية.",
+     "تحديد أسباب غياب 5 أشخاص لضمان اكتمال الفريق في الحملات القادمة."
+    ],
+    "kpis": {
+     "presentCount": 45,
+     "expectedCount": 50,
+     "missingCount": 5,
+     "attendanceRate": 0.9,
+     "units": 130,
+     "previousUnits": 120,
+     "unitsDeltaPct": 8.333,
+     "distributedGifts": 95,
+     "plannedGifts": 100,
+     "giftGap": 5,
+     "giftDistributionRate": 0.95
+    }
+   },
+   "diagnostics": {
+    "state": "first_pass",
+    "fallbackReason": null,
+    "attempts": [
+     "OK"
+    ]
+   }
+  },
+  {
+   "id": "SUP-03",
+   "locale": "en",
+   "run": 1,
+   "ms": 6273,
+   "modelVersion": "Qwen/Qwen3.8-27B@prompt-v2",
+   "output": {
+    "locale": "en",
+    "headline": "Sales dropped 29.167% while attendance remained high at 96%",
+    "summary": [
+     "Attendance reached 96% with 48 present out of 50 expected.",
+     "Sales units fell to 85 from 120, a decrease of 29.167%.",
+     "Gift distribution hit 95% with 95 distributed against 100 planned."
+    ],
+    "attention": [
+     {
+      "type": "sales_decline",
+      "text": "Sales units decreased by 29.167% compared to the previous period.",
+      "refs": [
+       "sales"
+      ]
+     },
+     {
+      "type": "gift_gap",
+      "text": "There is a gap of 5 gifts between distributed and planned amounts.",
+      "refs": [
+       "gifts"
+      ]
+     }
+    ],
+    "recommendedActions": [
+     "Review sales performance drivers to address the 29.167% drop in units.",
+     "Distribute the remaining 5 gifts to close the gap with the planned target."
+    ],
+    "kpis": {
+     "presentCount": 48,
+     "expectedCount": 50,
+     "missingCount": 2,
+     "attendanceRate": 0.96,
+     "units": 85,
+     "previousUnits": 120,
+     "unitsDeltaPct": -29.167,
+     "distributedGifts": 95,
+     "plannedGifts": 100,
+     "giftGap": 5,
+     "giftDistributionRate": 0.95
+    }
+   },
+   "diagnostics": {
+    "state": "first_pass",
+    "fallbackReason": null,
+    "attempts": [
+     "OK"
+    ]
+   }
+  },
+  {
+   "id": "SUP-03",
+   "locale": "ar",
+   "run": 1,
+   "ms": 6856,
+   "modelVersion": "Qwen/Qwen3.8-27B@prompt-v2",
+   "output": {
+    "locale": "ar",
+    "headline": "تراجع ملحوظ في المبيعات مع الحفاظ على حضور مرتفع",
+    "summary": [
+     "بلغ عدد الحاضرين 48 من أصل 50 متوقعاً، مما يعكس نسبة حضور 96%.",
+     "سجلت المبيعات 85 وحدة، بانخفاض نسبته 29.167% مقارنة بـ 120 وحدة في الفترة السابقة.",
+     "تم توزيع 95 هدية من أصل 100 مخططة، مع فجوة قدرها 5 هدايا."
+    ],
+    "attention": [
+     {
+      "type": "sales_decline",
+      "text": "انخفضت المبيعات بنسبة 29.167% لتصل إلى 85 وحدة.",
+      "refs": [
+       "sales"
+      ]
+     },
+     {
+      "type": "gift_gap",
+      "text": "تبقى 5 هدايا غير موزعة من إجمالي 100 مخططة.",
+      "refs": [
+       "gifts"
+      ]
+     }
+    ],
+    "recommendedActions": [
+     "مراجعة استراتيجيات العرض في Point de Vente لتحفيز زيادة المبيعات.",
+     "تسريع وتيرة توزيع الهدايا المتبقية لضمان استنفاد الخطة المخططة.",
+     "تحليل أسباب غياب 2 من Animateur لضمان اكتمال الفريق في الفترات القادمة."
+    ],
+    "kpis": {
+     "presentCount": 48,
+     "expectedCount": 50,
+     "missingCount": 2,
+     "attendanceRate": 0.96,
+     "units": 85,
+     "previousUnits": 120,
+     "unitsDeltaPct": -29.167,
+     "distributedGifts": 95,
+     "plannedGifts": 100,
+     "giftGap": 5,
+     "giftDistributionRate": 0.95
+    }
+   },
+   "diagnostics": {
+    "state": "first_pass",
+    "fallbackReason": null,
+    "attempts": [
+     "OK"
+    ]
+   }
+  },
+  {
+   "id": "SUP-02",
+   "locale": "ar",
+   "run": 1,
+   "ms": 7946,
+   "modelVersion": "Qwen/Qwen3.8-27B@prompt-v2",
+   "output": {
+    "locale": "ar",
+    "headline": "تقرير الأداء الميداني: انخفاض في الحضور والمبيعات",
+    "summary": [
+     "بلغ عدد الحاضرين 30 من أصل 50 متوقعاً، مما أدى إلى غياب 20 شخصاً.",
+     "سُجّل انخفاض في المبيعات بنسبة 4.762% مقارنة بالفترة السابقة، حيث بلغت الوحدات 100 مقابل 105.",
+     "تم توزيع 90 هدية من أصل 100 مخطط لها، مع فجوة قدرها 10 هدايا."
+    ],
+    "attention": [
+     {
+      "type": "attendance",
+      "text": "معدل الحضور الحالي هو 60%، مع غياب 20 شخصاً.",
+      "refs": [
+       "attendance"
+      ]
+     },
+     {
+      "type": "sales",
+      "text": "انخفضت المبيعات بنسبة 4.762% لتصل إلى 100 وحدة.",
+      "refs": [
+       "sales"
+      ]
+     },
+     {
+      "type": "gifts",
+      "text": "توجد فجوة في توزيع الهدايا بقيمة 10 هدايا.",
+      "refs": [
+       "gifts"
+      ]
+     }
+    ],
+    "recommendedActions": [
+     "مراجعة أسباب غياب 20 شخصاً لتحسين معدل الحضور.",
+     "تحليل أسباب انخفاض المبيعات بنسبة 4.762%.",
+     "توزيع الهدايا المتبقية لسد الفجوة البالغة 10 هدايا."
+    ],
+    "kpis": {
+     "presentCount": 30,
+     "expectedCount": 50,
+     "missingCount": 20,
+     "attendanceRate": 0.6,
+     "units": 100,
+     "previousUnits": 105,
+     "unitsDeltaPct": -4.762,
+     "distributedGifts": 90,
+     "plannedGifts": 100,
+     "giftGap": 10,
+     "giftDistributionRate": 0.9
+    }
+   },
+   "diagnostics": {
+    "state": "first_pass",
+    "fallbackReason": null,
+    "attempts": [
+     "OK"
+    ]
+   }
+  },
+  {
+   "id": "SUP-04",
+   "locale": "en",
+   "run": 1,
+   "ms": 5382,
+   "modelVersion": "Qwen/Qwen3.8-27B@prompt-v2",
+   "output": {
+    "locale": "en",
+    "headline": "Strong attendance and gift distribution offset by significant sales decline",
+    "summary": [
+     "Attendance reached 49 out of 50 expected, resulting in a 98% attendance rate.",
+     "Sales units dropped to 60 from 100 previous units, a decrease of 40%.",
+     "All 100 planned gifts were distributed, achieving a 100% distribution rate with no gap."
+    ],
+    "attention": [
+     {
+      "type": "sales_decline",
+      "text": "Sales units are down 40 compared to the previous period.",
+      "refs": [
+       "sales"
+      ]
+     }
+    ],
+    "recommendedActions": [
+     "Investigate factors contributing to the 40% drop in sales units.",
+     "Review sales strategies to address the decline in units sold."
+    ],
+    "kpis": {
+     "presentCount": 49,
+     "expectedCount": 50,
+     "missingCount": 1,
+     "attendanceRate": 0.98,
+     "units": 60,
+     "previousUnits": 100,
+     "unitsDeltaPct": -40,
+     "distributedGifts": 100,
+     "plannedGifts": 100,
+     "giftGap": 0,
+     "giftDistributionRate": 1
+    }
+   },
+   "diagnostics": {
+    "state": "first_pass",
+    "fallbackReason": null,
+    "attempts": [
+     "OK"
+    ]
+   }
+  },
+  {
+   "id": "SUP-04",
+   "locale": "ar",
+   "run": 1,
+   "ms": 5675,
+   "modelVersion": "Qwen/Qwen3.8-27B@prompt-v2",
+   "output": {
+    "locale": "ar",
+    "headline": "تراجع ملحوظ في المبيعات مع اكتمال توزيع الهدايا",
+    "summary": [
+     "بلغت نسبة الحضور 98% مع غياب شخص واحد من أصل 50 متوقعاً.",
+     "سجلت المبيعات 60 وحدة، مما يمثل انخفاضاً بنسبة 40% مقارنة بـ 100 وحدة في الفترة السابقة.",
+     "تم توزيع 100 هدية من أصل 100 مخطط لها، مما يعني عدم وجود فجوة في التوزيع."
+    ],
+    "attention": [
+     {
+      "type": "sales_drop",
+      "text": "انخفضت المبيعات بنسبة 40% لتصل إلى 60 وحدة بدلاً من 100 وحدة.",
+      "refs": [
+       "sales"
+      ]
+     }
+    ],
+    "recommendedActions": [
+     "مراجعة أسباب تراجع المبيعات بنسبة 40% لتحديد الإجراءات التصحيحية.",
+     "متابعة الحضور لضمان تحقيق نسبة 100% في الفترات القادمة."
+    ],
+    "kpis": {
+     "presentCount": 49,
+     "expectedCount": 50,
+     "missingCount": 1,
+     "attendanceRate": 0.98,
+     "units": 60,
+     "previousUnits": 100,
+     "unitsDeltaPct": -40,
+     "distributedGifts": 100,
+     "plannedGifts": 100,
+     "giftGap": 0,
+     "giftDistributionRate": 1
+    }
+   },
+   "diagnostics": {
+    "state": "first_pass",
+    "fallbackReason": null,
+    "attempts": [
+     "OK"
+    ]
+   }
+  },
+  {
+   "id": "SUP-05",
+   "locale": "en",
+   "run": 1,
+   "ms": 5754,
+   "modelVersion": "Qwen/Qwen3.8-27B@prompt-v2",
+   "output": {
+    "locale": "en",
+    "headline": "Field Campaign Performance Report",
+    "summary": [
+     "Attendance reached 40 out of 50 expected, resulting in an attendanceRate of 80.",
+     "Sales recorded 50 units, with a unitsDeltaPct of 0 compared to previousUnits.",
+     "Gift distribution achieved 50 out of 60 planned, leaving a giftGap of 10."
+    ],
+    "attention": [
+     {
+      "type": "Attendance",
+      "text": "10 individuals were missing from the expected count.",
+      "refs": [
+       "missingCount"
+      ]
+     },
+     {
+      "type": "Gifts",
+      "text": "A gap of 10 gifts remains between distributed and planned amounts.",
+      "refs": [
+       "giftGap"
+      ]
+     }
+    ],
+    "recommendedActions": [
+     "Review the list of missing attendees to identify reasons for the 10 missingCount.",
+     "Investigate the giftGap of 10 to ensure remaining planned gifts are distributed."
+    ],
+    "kpis": {
+     "presentCount": 40,
+     "expectedCount": 50,
+     "missingCount": 10,
+     "attendanceRate": 0.8,
+     "units": 50,
+     "previousUnits": 0,
+     "unitsDeltaPct": 0,
+     "distributedGifts": 50,
+     "plannedGifts": 60,
+     "giftGap": 10,
+     "giftDistributionRate": 0.833
+    }
+   },
+   "diagnostics": {
+    "state": "first_pass",
+    "fallbackReason": null,
+    "attempts": [
+     "OK"
+    ]
+   }
+  },
+  {
+   "id": "SUP-06",
+   "locale": "en",
+   "run": 1,
+   "ms": 5005,
+   "modelVersion": "Qwen/Qwen3.8-27B@prompt-v2",
+   "output": {
+    "locale": "en",
+    "headline": "Sales up 11.111% with 80% attendance",
+    "summary": [
+     "Attendance reached 80% with 40 present out of 50 expected.",
+     "Sales units increased to 100 from 90, a rise of 11.111%.",
+     "No gifts were planned or distributed, resulting in a gap of 0."
+    ],
+    "attention": [
+     {
+      "type": "attendance",
+      "text": "10 staff members were missing from the expected count.",
+      "refs": [
+       "attendance"
+      ]
+     }
+    ],
+    "recommendedActions": [
+     "Investigate the 10 missing staff members to improve future attendance.",
+     "Maintain current sales strategies to sustain the 11.111% growth."
+    ],
+    "kpis": {
+     "presentCount": 40,
+     "expectedCount": 50,
+     "missingCount": 10,
+     "attendanceRate": 0.8,
+     "units": 100,
+     "previousUnits": 90,
+     "unitsDeltaPct": 11.111,
+     "distributedGifts": 0,
+     "plannedGifts": 0,
+     "giftGap": 0,
+     "giftDistributionRate": 0
+    }
+   },
+   "diagnostics": {
+    "state": "first_pass",
+    "fallbackReason": null,
+    "attempts": [
+     "OK"
+    ]
+   }
+  },
+  {
+   "id": "SUP-05",
+   "locale": "ar",
+   "run": 1,
+   "ms": 6438,
+   "modelVersion": "Qwen/Qwen3.8-27B@prompt-v2",
+   "output": {
+    "locale": "ar",
+    "headline": "تقرير ميداني: حضور 80% ومبيعات 50 وحدة",
+    "summary": [
+     "بلغ عدد الحاضرين 40 من أصل 50 متوقعاً، مما يعكس نسبة حضور 80%.",
+     "تمت مبيعات 50 وحدة، مع عدم وجود مبيعات سابقة للمقارنة.",
+     "تم توزيع 50 هدية من أصل 60 مخططة، مع فجوة قدرها 10 هدايا."
+    ],
+    "attention": [
+     {
+      "type": "giftGap",
+      "text": "توجد فجوة في توزيع الهدايا بقيمة 10 هدايا.",
+      "refs": [
+       "gifts"
+      ]
+     },
+     {
+      "type": "attendance",
+      "text": "غياب 10 أشخاص من العدد المتوقع للحضور.",
+      "refs": [
+       "attendance"
+      ]
+     }
+    ],
+    "recommendedActions": [
+     "متابعة أسباب غياب 10 أشخاص لضمان اكتمال الفريق في الحملات القادمة.",
+     "توزيع الهدايا المتبقية البالغ عددها 10 لتغطية الفجوة الحالية.",
+     "تحليل أداء المبيعات البالغ 50 وحدة لتحديد فرص النمو المستقبلية."
+    ],
+    "kpis": {
+     "presentCount": 40,
+     "expectedCount": 50,
+     "missingCount": 10,
+     "attendanceRate": 0.8,
+     "units": 50,
+     "previousUnits": 0,
+     "unitsDeltaPct": 0,
+     "distributedGifts": 50,
+     "plannedGifts": 60,
+     "giftGap": 10,
+     "giftDistributionRate": 0.833
+    }
+   },
+   "diagnostics": {
+    "state": "first_pass",
+    "fallbackReason": null,
+    "attempts": [
+     "OK"
+    ]
+   }
+  },
+  {
+   "id": "SUP-06",
+   "locale": "ar",
+   "run": 1,
+   "ms": 5779,
+   "modelVersion": "Qwen/Qwen3.8-27B@prompt-v2",
+   "output": {
+    "locale": "ar",
+    "headline": "تقرير الأداء الميداني: حضور 80% ومبيعات 100 وحدة",
+    "summary": [
+     "بلغ عدد الحاضرين 40 من أصل 50 متوقعاً، مما يعكس معدل حضور 80%.",
+     "سُجّلت مبيعات قدرها 100 وحدة، بزيادة نسبتها 11.111% مقارنة بـ 90 وحدة في الفترة السابقة.",
+     "لم تُوزَّع أي هدايا، حيث كان العدد المخطط له 0 والعدد الموزَّع 0."
+    ],
+    "attention": [
+     {
+      "type": "attendance_gap",
+      "text": "يوجد نقص في الحضور قدره 10 أشخاص.",
+      "refs": [
+       "missingCount"
+      ]
+     }
+    ],
+    "recommendedActions": [
+     "متابعة أسباب غياب 10 أشخاص لضمان اكتمال الفريق في الحملات القادمة.",
+     "حافظ على استراتيجيات المبيعات الحالية التي أدت إلى زيادة الوحدات بنسبة 11.111%."
+    ],
+    "kpis": {
+     "presentCount": 40,
+     "expectedCount": 50,
+     "missingCount": 10,
+     "attendanceRate": 0.8,
+     "units": 100,
+     "previousUnits": 90,
+     "unitsDeltaPct": 11.111,
+     "distributedGifts": 0,
+     "plannedGifts": 0,
+     "giftGap": 0,
+     "giftDistributionRate": 0
+    }
+   },
+   "diagnostics": {
+    "state": "first_pass",
+    "fallbackReason": null,
+    "attempts": [
+     "OK"
+    ]
+   }
+  },
+  {
+   "id": "SUP-07",
+   "locale": "en",
+   "run": 1,
+   "ms": 5518,
+   "modelVersion": "Qwen/Qwen3.8-27B@prompt-v2",
+   "output": {
+    "locale": "en",
+    "headline": "Strong attendance and sales growth with a gift distribution gap",
+    "summary": [
+     "Attendance exceeded expectations with 60 present against 50 expected.",
+     "Sales units reached 120, a 20% increase from the previous 100 units.",
+     "Gift distribution is at 80% with 80 distributed against 100 planned."
+    ],
+    "attention": [
+     {
+      "type": "gift_gap",
+      "text": "There is a gap of 20 gifts between planned and distributed amounts.",
+      "refs": [
+       "giftGap"
+      ]
+     }
+    ],
+    "recommendedActions": [
+     "Review gift inventory and distribution process to close the 20-unit gap.",
+     "Maintain current sales momentum to sustain the 20% growth in units."
+    ],
+    "kpis": {
+     "presentCount": 60,
+     "expectedCount": 50,
+     "missingCount": -10,
+     "attendanceRate": 1.2,
+     "units": 120,
+     "previousUnits": 100,
+     "unitsDeltaPct": 20,
+     "distributedGifts": 80,
+     "plannedGifts": 100,
+     "giftGap": 20,
+     "giftDistributionRate": 0.8
+    }
+   },
+   "diagnostics": {
+    "state": "first_pass",
+    "fallbackReason": null,
+    "attempts": [
+     "OK"
+    ]
+   }
+  },
+  {
+   "id": "SUP-07",
+   "locale": "ar",
+   "run": 1,
+   "ms": 5835,
+   "modelVersion": "Qwen/Qwen3.8-27B@prompt-v2",
+   "output": {
+    "locale": "ar",
+    "headline": "تجاوز في الحضور ونمو مبيعات مع فجوة في توزيع الهدايا",
+    "summary": [
+     "بلغ عدد الحاضرين 60 متجاوزاً العدد المتوقع البالغ 50.",
+     "ارتفعت المبيعات إلى 120 وحدة مقارنة بـ 100 وحدة في الفترة السابقة.",
+     "تم توزيع 80 هدية من أصل 100 هدية مخططة، مما يترك فجوة قدرها 20."
+    ],
+    "attention": [
+     {
+      "type": "gift_gap",
+      "text": "توجد فجوة في توزيع الهدايا بقيمة 20 هدية غير موزعة.",
+      "refs": [
+       "giftGap"
+      ]
+     }
+    ],
+    "recommendedActions": [
+     "مراجعة أسباب عدم توزيع 20 هدية مخططة لضمان استكمال الخطة.",
+     "تحليل أسباب تجاوز الحضور عن المتوقع لضمان استمرارية الكفاءة التشغيلية."
+    ],
+    "kpis": {
+     "presentCount": 60,
+     "expectedCount": 50,
+     "missingCount": -10,
+     "attendanceRate": 1.2,
+     "units": 120,
+     "previousUnits": 100,
+     "unitsDeltaPct": 20,
+     "distributedGifts": 80,
+     "plannedGifts": 100,
+     "giftGap": 20,
+     "giftDistributionRate": 0.8
+    }
+   },
+   "diagnostics": {
+    "state": "first_pass",
+    "fallbackReason": null,
+    "attempts": [
+     "OK"
+    ]
+   }
+  },
+  {
+   "id": "SUP-08",
+   "locale": "en",
+   "run": 1,
+   "ms": 6837,
+   "modelVersion": "Qwen/Qwen3.8-27B@prompt-v2",
+   "output": {
+    "locale": "en",
+    "headline": "Critical sales decline and gift distribution gap",
+    "summary": [
+     "Attendance is at 80% with 10 missing out of 50 expected.",
+     "Sales units show a negative value of -5, down 105 from the previous 100.",
+     "Gift distribution is at 50% with a gap of 50 against the planned 100."
+    ],
+    "attention": [
+     {
+      "type": "sales",
+      "text": "Sales units are negative at -5, representing a 105 drop from previous units.",
+      "refs": [
+       "sales"
+      ]
+     },
+     {
+      "type": "gifts",
+      "text": "Gift distribution rate is 50% with a gap of 50.",
+      "refs": [
+       "gifts"
+      ]
+     },
+     {
+      "type": "attendance",
+      "text": "Attendance rate is 80% with 10 missing.",
+      "refs": [
+       "attendance"
+      ]
+     }
+    ],
+    "recommendedActions": [
+     "Investigate the cause of the negative sales units and the 105 drop.",
+     "Review gift distribution to close the gap of 50.",
+     "Follow up on the 10 missing attendance to improve the 80% rate."
+    ],
+    "kpis": {
+     "presentCount": 40,
+     "expectedCount": 50,
+     "missingCount": 10,
+     "attendanceRate": 0.8,
+     "units": -5,
+     "previousUnits": 100,
+     "unitsDeltaPct": -105,
+     "distributedGifts": 50,
+     "plannedGifts": 100,
+     "giftGap": 50,
+     "giftDistributionRate": 0.5
+    }
+   },
+   "diagnostics": {
+    "state": "first_pass",
+    "fallbackReason": null,
+    "attempts": [
+     "OK"
+    ]
+   }
+  },
+  {
+   "id": "SUP-09",
+   "locale": "en",
+   "run": 1,
+   "ms": 5795,
+   "modelVersion": "Qwen/Qwen3.8-27B@prompt-v2",
+   "output": {
+    "locale": "en",
+    "headline": "Sales up 11.111% but gift distribution at 50%",
+    "summary": [
+     "Sales units reached 100, up 11.111% from the previous 90.",
+     "Gift distribution stands at 50, leaving a gap of 50 against the planned 100.",
+     "Attendance data shows 0 present and 0 expected, resulting in a 0% rate."
+    ],
+    "attention": [
+     {
+      "type": "gift_gap",
+      "text": "Only 50 of 100 planned gifts were distributed.",
+      "refs": [
+       "gifts"
+      ]
+     },
+     {
+      "type": "attendance",
+      "text": "Attendance figures are zero for both present and expected counts.",
+      "refs": [
+       "attendance"
+      ]
+     }
+    ],
+    "recommendedActions": [
+     "Investigate the 50 gift gap to ensure remaining planned gifts are distributed.",
+     "Verify attendance tracking to resolve the zero present and expected counts."
+    ],
+    "kpis": {
+     "presentCount": 0,
+     "expectedCount": 0,
+     "missingCount": 0,
+     "attendanceRate": 0,
+     "units": 100,
+     "previousUnits": 90,
+     "unitsDeltaPct": 11.111,
+     "distributedGifts": 50,
+     "plannedGifts": 100,
+     "giftGap": 50,
+     "giftDistributionRate": 0.5
+    }
+   },
+   "diagnostics": {
+    "state": "first_pass",
+    "fallbackReason": null,
+    "attempts": [
+     "OK"
+    ]
+   }
+  },
+  {
+   "id": "SUP-08",
+   "locale": "ar",
+   "run": 1,
+   "ms": 8241,
+   "modelVersion": "Qwen/Qwen3.8-27B@prompt-v2",
+   "output": {
+    "locale": "ar",
+    "headline": "تراجع ملحوظ في المبيعات وتوزيع الهدايا مع انخفاض الحضور",
+    "summary": [
+     "بلغ عدد الحاضرين 40 من أصل 50 متوقعاً، مما يعكس معدل حضور 80%.",
+     "سجلت المبيعات انخفاضاً حاداً بواقع 105% مقارنة بالفترة السابقة التي بلغت 100 وحدة.",
+     "تم توزيع 50 هدية فقط من أصل 100 مخططة، مما أدى إلى فجوة هدايا بقيمة 50."
+    ],
+    "attention": [
+     {
+      "type": "sales",
+      "text": "انخفضت المبيعات بنسبة 105% لتصل إلى -5 وحدة.",
+      "refs": [
+       "sales"
+      ]
+     },
+     {
+      "type": "gifts",
+      "text": "فجوة هدايا كبيرة حيث تم توزيع 50 فقط من 100 مخططة.",
+      "refs": [
+       "gifts"
+      ]
+     },
+     {
+      "type": "attendance",
+      "text": "غياب 10 أشخاص من أصل 50 متوقعين.",
+      "refs": [
+       "attendance"
+      ]
+     }
+    ],
+    "recommendedActions": [
+     "مراجعة أسباب غياب 10 أشخاص لضمان اكتمال فريق الـ Animateur.",
+     "تحليل أسباب التراجع الحاد في المبيعات الذي بلغ 105%.",
+     "تسريع وتيرة توزيع الهدايا لسد الفجوة البالغة 50 هدية."
+    ],
+    "kpis": {
+     "presentCount": 40,
+     "expectedCount": 50,
+     "missingCount": 10,
+     "attendanceRate": 0.8,
+     "units": -5,
+     "previousUnits": 100,
+     "unitsDeltaPct": -105,
+     "distributedGifts": 50,
+     "plannedGifts": 100,
+     "giftGap": 50,
+     "giftDistributionRate": 0.5
+    }
+   },
+   "diagnostics": {
+    "state": "first_pass",
+    "fallbackReason": null,
+    "attempts": [
+     "OK"
+    ]
+   }
+  },
+  {
+   "id": "SUP-09",
+   "locale": "ar",
+   "run": 1,
+   "ms": 6694,
+   "modelVersion": "Qwen/Qwen3.8-27B@prompt-v2",
+   "output": {
+    "locale": "ar",
+    "headline": "تقرير الحملة الميدانية: أداء المبيعات والهدايا",
+    "summary": [
+     "بلغ عدد الوحدات المباعة 100 وحدة مقابل 90 وحدة في الفترة السابقة.",
+     "سُجّل ارتفاع بنسبة 11.111 في المبيعات مقارنة بالفترة السابقة.",
+     "تم توزيع 50 هدية من أصل 100 هدية مخططة، مما أدى إلى فجوة قدرها 50 هدية."
+    ],
+    "attention": [
+     {
+      "type": "gift_gap",
+      "text": "توجد فجوة كبيرة في توزيع الهدايا حيث لم يتم توزيع 50 هدية من المخطط.",
+      "refs": [
+       "giftGap"
+      ]
+     },
+     {
+      "type": "attendance",
+      "text": "لا تتوفر بيانات حضور مؤكدة حيث أن عدد الحاضرين والمفترضين يساوي صفر.",
+      "refs": [
+       "attendance"
+      ]
+     }
+    ],
+    "recommendedActions": [
+     "مراجعة خطة توزيع الهدايا لسد الفجوة البالغة 50 هدية.",
+     "تحديث بيانات الحضور لضمان دقة التقارير المستقبلية."
+    ],
+    "kpis": {
+     "presentCount": 0,
+     "expectedCount": 0,
+     "missingCount": 0,
+     "attendanceRate": 0,
+     "units": 100,
+     "previousUnits": 90,
+     "unitsDeltaPct": 11.111,
+     "distributedGifts": 50,
+     "plannedGifts": 100,
+     "giftGap": 50,
+     "giftDistributionRate": 0.5
+    }
+   },
+   "diagnostics": {
+    "state": "first_pass",
+    "fallbackReason": null,
+    "attempts": [
+     "OK"
+    ]
+   }
+  },
+  {
+   "id": "SUP-10",
+   "locale": "en",
+   "run": 1,
+   "ms": 6456,
+   "modelVersion": "Qwen/Qwen3.8-27B@prompt-v2",
+   "output": {
+    "locale": "en",
+    "headline": "Field Campaign Performance Report",
+    "summary": [
+     "Attendance reached 1180 out of 1250 expected, resulting in 70 missing Animateurs.",
+     "Sales units increased to 12500 from 11800 in the previous period.",
+     "Gift distribution stands at 9000 out of 10000 planned, leaving a gap of 1000."
+    ],
+    "attention": [
+     {
+      "type": "gift_gap",
+      "text": "There is a shortfall of 1000 gifts against the planned target.",
+      "refs": [
+       "giftGap"
+      ]
+     },
+     {
+      "type": "attendance_gap",
+      "text": "70 Animateurs were not present at the Point de Vente.",
+      "refs": [
+       "missingCount"
+      ]
+     }
+    ],
+    "recommendedActions": [
+     "Investigate the cause of the 1000 gift gap to ensure remaining stock is distributed.",
+     "Review scheduling to address the 70 missing Animateurs at the Point de Vente."
+    ],
+    "kpis": {
+     "presentCount": 1180,
+     "expectedCount": 1250,
+     "missingCount": 70,
+     "attendanceRate": 0.944,
+     "units": 12500,
+     "previousUnits": 11800,
+     "unitsDeltaPct": 5.932,
+     "distributedGifts": 9000,
+     "plannedGifts": 10000,
+     "giftGap": 1000,
+     "giftDistributionRate": 0.9
+    }
+   },
+   "diagnostics": {
+    "state": "first_pass",
+    "fallbackReason": null,
+    "attempts": [
+     "OK"
+    ]
+   }
+  },
+  {
+   "id": "SUP-10",
+   "locale": "ar",
+   "run": 1,
+   "ms": 8467,
+   "modelVersion": "Qwen/Qwen3.8-27B@prompt-v2",
+   "output": {
+    "locale": "ar",
+    "headline": "ملخص حملة الميدان: أداء مبيعات إيجابي مع فجوة في توزيع الهدايا",
+    "summary": [
+     "بلغ عدد الحاضرين 1180 من أصل 1250 متوقعاً، مما يعكس نسبة حضور 94.4%.",
+     "سجلت المبيعات 12500 وحدة، بزيادة قدرها 5.932% مقارنة بـ 11800 وحدة في الفترة السابقة.",
+     "تم توزيع 9000 هدية من أصل 10000 مخطط لها، مع وجود فجوة قدرها 1000 هدية."
+    ],
+    "attention": [
+     {
+      "type": "gift_gap",
+      "text": "توجد فجوة في توزيع الهدايا تبلغ 1000 هدية، حيث تم توزيع 9000 فقط من المخطط له.",
+      "refs": [
+       "gifts"
+      ]
+     },
+     {
+      "type": "attendance_gap",
+      "text": "يوجد نقص في الحضور قدره 70 شخصاً، حيث حضر 1180 من أصل 1250 متوقعاً.",
+      "refs": [
+       "attendance"
+      ]
+     }
+    ],
+    "recommendedActions": [
+     "مراجعة أسباب عدم حضور 70 شخصاً لضمان اكتمال فريق الـ Animateur في الحملات القادمة.",
+     "تسريع وتيرة توزيع الهدايا المتبقية لسد الفجوة البالغة 1000 هدية قبل نهاية الحملة.",
+     "تحليل عوامل نمو المبيعات بنسبة 5.932% لتعزيز الممارسات الناجحة في نقاط البيع."
+    ],
+    "kpis": {
+     "presentCount": 1180,
+     "expectedCount": 1250,
+     "missingCount": 70,
+     "attendanceRate": 0.944,
+     "units": 12500,
+     "previousUnits": 11800,
+     "unitsDeltaPct": 5.932,
+     "distributedGifts": 9000,
+     "plannedGifts": 10000,
+     "giftGap": 1000,
+     "giftDistributionRate": 0.9
+    }
+   },
+   "diagnostics": {
+    "state": "first_pass",
+    "fallbackReason": null,
+    "attempts": [
+     "OK"
+    ]
+   }
+  },
+  {
+   "id": "SUP-11",
+   "locale": "en",
+   "run": 1,
+   "ms": 7269,
+   "modelVersion": "Qwen/Qwen3.8-27B@prompt-v2",
+   "output": {
+    "locale": "en",
+    "headline": "Critical underperformance in attendance, sales, and gift distribution",
+    "summary": [
+     "Attendance is at 40% with 30 missing out of 50 expected.",
+     "Sales units dropped 60 to 40 from the previous 100.",
+     "Gift distribution is at 10% with a gap of 90 against the planned 100."
+    ],
+    "attention": [
+     {
+      "type": "attendance",
+      "text": "Only 20 present out of 50 expected, resulting in a 40% attendance rate.",
+      "refs": [
+       "attendance"
+      ]
+     },
+     {
+      "type": "sales",
+      "text": "Units sold are down 60 to 40 compared to the previous 100.",
+      "refs": [
+       "sales"
+      ]
+     },
+     {
+      "type": "gifts",
+      "text": "Only 10 distributed against 100 planned, leaving a giftGap of 90.",
+      "refs": [
+       "gifts"
+      ]
+     }
+    ],
+    "recommendedActions": [
+     "Investigate the 30 missing Animateurs to restore the expected attendance of 50.",
+     "Review sales tactics to address the drop of 60 units from the previous period.",
+     "Accelerate gift distribution to close the gap of 90 against the planned 100."
+    ],
+    "kpis": {
+     "presentCount": 20,
+     "expectedCount": 50,
+     "missingCount": 30,
+     "attendanceRate": 0.4,
+     "units": 40,
+     "previousUnits": 100,
+     "unitsDeltaPct": -60,
+     "distributedGifts": 10,
+     "plannedGifts": 100,
+     "giftGap": 90,
+     "giftDistributionRate": 0.1
+    }
+   },
+   "diagnostics": {
+    "state": "first_pass",
+    "fallbackReason": null,
+    "attempts": [
+     "OK"
+    ]
+   }
+  },
+  {
+   "id": "SUP-11",
+   "locale": "ar",
+   "run": 1,
+   "ms": 7834,
+   "modelVersion": "Qwen/Qwen3.8-27B@prompt-v2",
+   "output": {
+    "locale": "ar",
+    "headline": "تراجع حاد في الحضور والمبيعات وتوزيع الهدايا",
+    "summary": [
+     "بلغ عدد الحاضرين 20 من أصل 50 متوقعاً، مما يعكس معدل حضور 40%.",
+     "انخفضت المبيعات إلى 40 وحدة مقارنة بـ 100 وحدة في الفترة السابقة، بتراجع نسبته 60%.",
+     "تم توزيع 10 هدايا فقط من أصل 100 مخطط لها، مع فجوة قدرها 90 هدية."
+    ],
+    "attention": [
+     {
+      "type": "critical",
+      "text": "معدل الحضور منخفض جداً عند 40% مع غياب 30 عنصراً.",
+      "refs": [
+       "attendance"
+      ]
+     },
+     {
+      "type": "critical",
+      "text": "تراجع المبيعات بنسبة 60% مقارنة بالفترة السابقة.",
+      "refs": [
+       "sales"
+      ]
+     },
+     {
+      "type": "warning",
+      "text": "فجوة كبيرة في توزيع الهدايا بمقدار 90 هدية.",
+      "refs": [
+       "gifts"
+      ]
+     }
+    ],
+    "recommendedActions": [
+     "تحديد أسباب غياب 30 عنصراً وضمان تواجدهم في الحملات القادمة.",
+     "مراجعة استراتيجية المبيعات لتحسين الأداء بعد التراجع بنسبة 60%.",
+     "تسريع وتيرة توزيع الهدايا لسد الفجوة البالغة 90 هدية."
+    ],
+    "kpis": {
+     "presentCount": 20,
+     "expectedCount": 50,
+     "missingCount": 30,
+     "attendanceRate": 0.4,
+     "units": 40,
+     "previousUnits": 100,
+     "unitsDeltaPct": -60,
+     "distributedGifts": 10,
+     "plannedGifts": 100,
+     "giftGap": 90,
+     "giftDistributionRate": 0.1
+    }
+   },
+   "diagnostics": {
+    "state": "first_pass",
+    "fallbackReason": null,
+    "attempts": [
+     "OK"
+    ]
+   }
+  },
+  {
+   "id": "SAL-01",
+   "locale": "en",
+   "run": 1,
+   "ms": 4112,
+   "modelVersion": "Qwen/Qwen3.8-27B@prompt-v2",
+   "output": {
+    "locale": "en",
+    "ranking": [
+     "S3",
+     "S1",
+     "S4",
+     "S2"
+    ],
+    "trends": [
+     "Units increased from P1 to P2 and from P2 to P3.",
+     "P3 recorded the highest units at 150."
+    ],
+    "anomalies": [
+     "S2 is the only seller with a gapToTarget of 2.",
+     "S3 exceeded target with a gapToTarget of -2."
+    ],
+    "recommendedActions": [
+     "Review S2's performance to address the gapToTarget of 2.",
+     "Share S3's best practices with other Animateurs."
+    ],
+    "kpis": {
+     "sellerCount": 4,
+     "totalUnits": 400,
+     "totalTarget": 400,
+     "targetGap": 0,
+     "targetAttainmentPct": 100,
+     "topSellerUnits": 102,
+     "periodCount": 3,
+     "lastPeriodUnits": 150
+    }
+   },
+   "diagnostics": {
+    "state": "first_pass",
+    "fallbackReason": null,
+    "attempts": [
+     "OK"
+    ]
+   }
+  },
+  {
+   "id": "SAL-01",
+   "locale": "ar",
+   "run": 1,
+   "ms": 21740,
+   "modelVersion": "Qwen/Qwen3.8-27B@prompt-v2",
+   "output": {
+    "locale": "ar",
+    "ranking": [
+     "S3",
+     "S1",
+     "S4",
+     "S2"
+    ],
+    "trends": [
+     "سجلت المبيعات نمواً متسارعاً من P1 إلى P3 حيث ارتفعت الوحدات من 120 إلى 150.",
+     "حقق S3 أعلى أداء بواقع 102 وحدة متجاوزاً هدفه بنسبة 102%."
+    ],
+    "anomalies": [
+     "تأخر S2 عن هدفه بفرق 2 وحدة ليحقق نسبة إنجاز 98%.",
+     "شهدت الفترة P3 زيادة قدرها 20 وحدة مقارنة بالفترة السابقة."
+    ],
+    "recommendedActions": [
+     "دراسة أساليب S3 الناجحة وتطبيقها لدعم S2 لسد الفجوة.",
+     "مراقبة استمرارية الزخم في المبيعات للحفاظ على النمو المسجل في P3."
+    ],
+    "kpis": {
+     "sellerCount": 4,
+     "totalUnits": 400,
+     "totalTarget": 400,
+     "targetGap": 0,
+     "targetAttainmentPct": 100,
+     "topSellerUnits": 102,
+     "periodCount": 3,
+     "lastPeriodUnits": 150
+    }
+   },
+   "diagnostics": {
+    "state": "first_pass",
+    "fallbackReason": null,
+    "attempts": [
+     "OK"
+    ]
+   }
+  },
+  {
+   "id": "SAL-02",
+   "locale": "en",
+   "run": 1,
+   "ms": 21423,
+   "modelVersion": "Qwen/Qwen3.8-27B@prompt-v2",
+   "output": {
+    "locale": "en",
+    "ranking": [
+     "S1",
+     "S4",
+     "S3",
+     "S2"
+    ],
+    "trends": [
+     "Units increased by 20 from P1 to P2 and by 20 from P2 to P3.",
+     "S1 leads with 110 units, while S2 trails with 45 units."
+    ],
+    "anomalies": [
+     "S2 has a gapToTarget of 55 and an attainmentPct of 45.",
+     "S1 and S4 exceeded their targets with gapToTarget values of -10 and -5 respectively."
+    ],
+    "recommendedActions": [
+     "Review S2's performance to address the 55 unit gap to target.",
+     "Analyze the consistent 20 unit growth from P1 to P3 to sustain momentum."
+    ],
+    "kpis": {
+     "sellerCount": 4,
+     "totalUnits": 360,
+     "totalTarget": 400,
+     "targetGap": 40,
+     "targetAttainmentPct": 90,
+     "topSellerUnits": 110,
+     "periodCount": 3,
+     "lastPeriodUnits": 140
+    }
+   },
+   "diagnostics": {
+    "state": "first_pass",
+    "fallbackReason": null,
+    "attempts": [
+     "OK"
+    ]
+   }
+  },
+  {
+   "id": "SAL-02",
+   "locale": "ar",
+   "run": 1,
+   "ms": 21881,
+   "modelVersion": "Qwen/Qwen3.8-27B@prompt-v2",
+   "output": {
+    "locale": "ar",
+    "ranking": [
+     "S1",
+     "S4",
+     "S3",
+     "S2"
+    ],
+    "trends": [
+     "سجلت المبيعات نمواً متصاعداً من 100 وحدة في P1 إلى 140 وحدة في P3.",
+     "حقق S1 أعلى أداء بواقع 110 وحدة، متجاوزاً هدفه بنسبة 110%."
+    ],
+    "anomalies": [
+     "تراجع أداء S2 بشكل ملحوظ حيث حقق 45 وحدة فقط، بفاصل 55 وحدة عن هدفه.",
+     "بلغت نسبة تحقيق الهدف الإجمالية 90% مع فجوة قدرها 40 وحدة."
+    ],
+    "recommendedActions": [
+     "تقديم دعم فوري لـ S2 لمعالجة الفجوة الكبيرة في المبيعات.",
+     "تحليل استراتيجيات S1 و S4 لنشر أفضل الممارسات بين الفريق."
+    ],
+    "kpis": {
+     "sellerCount": 4,
+     "totalUnits": 360,
+     "totalTarget": 400,
+     "targetGap": 40,
+     "targetAttainmentPct": 90,
+     "topSellerUnits": 110,
+     "periodCount": 3,
+     "lastPeriodUnits": 140
+    }
+   },
+   "diagnostics": {
+    "state": "first_pass",
+    "fallbackReason": null,
+    "attempts": [
+     "OK"
+    ]
+   }
+  },
+  {
+   "id": "SAL-03",
+   "locale": "en",
+   "run": 1,
+   "ms": 4584,
+   "modelVersion": "Qwen/Qwen3.8-27B@prompt-v2",
+   "output": {
+    "locale": "en",
+    "ranking": [
+     "S1",
+     "S2"
+    ],
+    "trends": [
+     "S1 exceeded the target with 101 units against a target of 100.",
+     "P2 showed an increase of 10 units compared to the previous period."
+    ],
+    "anomalies": [
+     "S2 fell short of the target by 1 unit, achieving 99% attainment."
+    ],
+    "recommendedActions": [
+     "Review S2's performance to address the 1 unit gap to target.",
+     "Maintain the momentum from P2's 10 unit increase to sustain growth."
+    ],
+    "kpis": {
+     "sellerCount": 2,
+     "totalUnits": 200,
+     "totalTarget": 200,
+     "targetGap": 0,
+     "targetAttainmentPct": 100,
+     "topSellerUnits": 101,
+     "periodCount": 2,
+     "lastPeriodUnits": 105
+    }
+   },
+   "diagnostics": {
+    "state": "first_pass",
+    "fallbackReason": null,
+    "attempts": [
+     "OK"
+    ]
+   }
+  },
+  {
+   "id": "SAL-03",
+   "locale": "ar",
+   "run": 1,
+   "ms": 4312,
+   "modelVersion": "Qwen/Qwen3.8-27B@prompt-v2",
+   "output": {
+    "locale": "ar",
+    "ranking": [
+     "S1",
+     "S2"
+    ],
+    "trends": [
+     "سجلت الفترة P2 زيادة قدرها 10 وحدات مقارنة بالفترة السابقة.",
+     "حقق البائع S1 أداءً بنسبة 101% من الهدف، بينما حقق البائع S2 نسبة 99%."
+    ],
+    "anomalies": [
+     "تجاوز البائع S1 هدفه بفارق 1 وحدة، في حين بقي البائع S2 دون هدفه بفارق 1 وحدة."
+    ],
+    "recommendedActions": [
+     "مراجعة أداء البائع S2 لسد الفجوة البالغة 1 وحدة عن الهدف.",
+     "تعزيز استراتيجيات البيع في الفترة P2 للحفاظ على الزيادة المسجلة."
+    ],
+    "kpis": {
+     "sellerCount": 2,
+     "totalUnits": 200,
+     "totalTarget": 200,
+     "targetGap": 0,
+     "targetAttainmentPct": 100,
+     "topSellerUnits": 101,
+     "periodCount": 2,
+     "lastPeriodUnits": 105
+    }
+   },
+   "diagnostics": {
+    "state": "first_pass",
+    "fallbackReason": null,
+    "attempts": [
+     "OK"
+    ]
+   }
+  },
+  {
+   "id": "SAL-04",
+   "locale": "en",
+   "run": 1,
+   "ms": 4320,
+   "modelVersion": "Qwen/Qwen3.8-27B@prompt-v2",
+   "output": {
+    "locale": "en",
+    "ranking": [
+     "S3",
+     "S1",
+     "S2"
+    ],
+    "trends": [
+     "P2 units increased by 20 compared to P1.",
+     "S3 exceeded target with 120 units against a target of 100."
+    ],
+    "anomalies": [
+     "S1 and S2 both missed their target by 20 units each.",
+     "Overall target gap is 20 units with 93.333% attainment."
+    ],
+    "recommendedActions": [
+     "Review S1 and S2 performance to address the 20 unit gap each.",
+     "Analyze S3's strategy to replicate success for S1 and S2."
+    ],
+    "kpis": {
+     "sellerCount": 3,
+     "totalUnits": 280,
+     "totalTarget": 300,
+     "targetGap": 20,
+     "targetAttainmentPct": 93.333,
+     "topSellerUnits": 120,
+     "periodCount": 2,
+     "lastPeriodUnits": 150
+    }
+   },
+   "diagnostics": {
+    "state": "first_pass",
+    "fallbackReason": null,
+    "attempts": [
+     "OK"
+    ]
+   }
+  },
+  {
+   "id": "SAL-04",
+   "locale": "ar",
+   "run": 1,
+   "ms": 5277,
+   "modelVersion": "Qwen/Qwen3.8-27B@prompt-v2",
+   "output": {
+    "locale": "ar",
+    "ranking": [
+     "S3",
+     "S1",
+     "S2"
+    ],
+    "trends": [
+     "سجلت الفترة P2 زيادة قدرها 20 وحدة مقارنة بالفترة السابقة.",
+     "حقق البائع S3 أعلى أداء ببيع 120 وحدة، متجاوزاً هدفه بنسبة 120%."
+    ],
+    "anomalies": [
+     "تراجع أداء البائعين S1 و S2 حيث لم يتجاوزا 80% من أهدافهما.",
+     "يوجد فجوة إجمالية قدرها 20 وحدة بين المبيعات الفعلية (280) والهدف الكلي (300)."
+    ],
+    "recommendedActions": [
+     "تقديم دعم إضافي للبائعين S1 و S2 لسد الفجوة البالغة 20 وحدة لكل منهما.",
+     "تحليل استراتيجيات البائع S3 الناجحة وتطبيقها على بقية الفريق."
+    ],
+    "kpis": {
+     "sellerCount": 3,
+     "totalUnits": 280,
+     "totalTarget": 300,
+     "targetGap": 20,
+     "targetAttainmentPct": 93.333,
+     "topSellerUnits": 120,
+     "periodCount": 2,
+     "lastPeriodUnits": 150
+    }
+   },
+   "diagnostics": {
+    "state": "first_pass",
+    "fallbackReason": null,
+    "attempts": [
+     "OK"
+    ]
+   }
+  },
+  {
+   "id": "SAL-05",
+   "locale": "en",
+   "run": 1,
+   "ms": 4123,
+   "modelVersion": "Qwen/Qwen3.8-27B@prompt-v2",
+   "output": {
+    "locale": "en",
+    "ranking": [
+     "S1",
+     "S2",
+     "S3"
+    ],
+    "trends": [
+     "Sales increased by 40 units from P1 to P2.",
+     "S2 achieved 100% of its target."
+    ],
+    "anomalies": [
+     "S1 has a gapToTarget of 150 units, the largest shortfall among sellers.",
+     "Overall targetAttainmentPct is 68%."
+    ],
+    "recommendedActions": [
+     "Review S1's field activity to address the 150 unit gap.",
+     "Maintain current strategies for S2 to sustain 100% attainment."
+    ],
+    "kpis": {
+     "sellerCount": 3,
+     "totalUnits": 340,
+     "totalTarget": 500,
+     "targetGap": 160,
+     "targetAttainmentPct": 68,
+     "topSellerUnits": 150,
+     "periodCount": 2,
+     "lastPeriodUnits": 190
+    }
+   },
+   "diagnostics": {
+    "state": "first_pass",
+    "fallbackReason": null,
+    "attempts": [
+     "OK"
+    ]
+   }
+  },
+  {
+   "id": "SAL-05",
+   "locale": "ar",
+   "run": 1,
+   "ms": 4589,
+   "modelVersion": "Qwen/Qwen3.8-27B@prompt-v2",
+   "output": {
+    "locale": "ar",
+    "ranking": [
+     "S1",
+     "S2",
+     "S3"
+    ],
+    "trends": [
+     "سجلت الفترة P2 زيادة قدرها 40 وحدة مقارنة بالفترة السابقة.",
+     "حقق البائع S2 هدفه بالكامل بنسبة 100%."
+    ],
+    "anomalies": [
+     "يواجه البائع S1 فجوة كبيرة قدرها 150 وحدة عن هدفه.",
+     "بلغت نسبة تحقيق الهدف الإجمالية 68% فقط."
+    ],
+    "recommendedActions": [
+     "تقديم دعم إضافي للبائع S1 لسد الفجوة البالغة 150 وحدة.",
+     "مراجعة استراتيجيات البيع لدى البائع S3 لسد الفجوة الصغيرة البالغة 10 وحدات."
+    ],
+    "kpis": {
+     "sellerCount": 3,
+     "totalUnits": 340,
+     "totalTarget": 500,
+     "targetGap": 160,
+     "targetAttainmentPct": 68,
+     "topSellerUnits": 150,
+     "periodCount": 2,
+     "lastPeriodUnits": 190
+    }
+   },
+   "diagnostics": {
+    "state": "first_pass",
+    "fallbackReason": null,
+    "attempts": [
+     "OK"
+    ]
+   }
+  },
+  {
+   "id": "SAL-06",
+   "locale": "en",
+   "run": 1,
+   "ms": 4124,
+   "modelVersion": "Qwen/Qwen3.8-27B@prompt-v2",
+   "output": {
+    "locale": "en",
+    "ranking": [
+     "S1",
+     "S2"
+    ],
+    "trends": [
+     "S1 achieved 100 units with 100% attainment.",
+     "S2 recorded 90 units with 90% attainment."
+    ],
+    "anomalies": [
+     "P2 saw a drop of 20 units compared to the previous period.",
+     "P3 continued the decline with a drop of 10 units."
+    ],
+    "recommendedActions": [
+     "Review S2's performance to close the 10 unit gap to target.",
+     "Investigate the consecutive unit declines in P2 and P3."
+    ],
+    "kpis": {
+     "sellerCount": 2,
+     "totalUnits": 190,
+     "totalTarget": 200,
+     "targetGap": 10,
+     "targetAttainmentPct": 95,
+     "topSellerUnits": 100,
+     "periodCount": 3,
+     "lastPeriodUnits": 50
+    }
+   },
+   "diagnostics": {
+    "state": "first_pass",
+    "fallbackReason": null,
+    "attempts": [
+     "OK"
+    ]
+   }
+  },
+  {
+   "id": "SAL-07",
+   "locale": "en",
+   "run": 1,
+   "ms": 4049,
+   "modelVersion": "Qwen/Qwen3.8-27B@prompt-v2",
+   "output": {
+    "locale": "en",
+    "ranking": [
+     "S1",
+     "S2"
+    ],
+    "trends": [
+     "Total units reached 200, matching the total target of 200.",
+     "Units decreased by 30 from P1 to P2."
+    ],
+    "anomalies": [
+     "P2 shows a drop of 30 units compared to P1."
+    ],
+    "recommendedActions": [
+     "Review field activities for P2 to address the 30 unit decline.",
+     "Maintain current performance levels for S1 and S2 as both achieved 100% attainment."
+    ],
+    "kpis": {
+     "sellerCount": 2,
+     "totalUnits": 200,
+     "totalTarget": 200,
+     "targetGap": 0,
+     "targetAttainmentPct": 100,
+     "topSellerUnits": 100,
+     "periodCount": 2,
+     "lastPeriodUnits": 120
+    }
+   },
+   "diagnostics": {
+    "state": "first_pass",
+    "fallbackReason": null,
+    "attempts": [
+     "OK"
+    ]
+   }
+  },
+  {
+   "id": "SAL-06",
+   "locale": "ar",
+   "run": 1,
+   "ms": 5197,
+   "modelVersion": "Qwen/Qwen3.8-27B@prompt-v2",
+   "output": {
+    "locale": "ar",
+    "ranking": [
+     "S1",
+     "S2"
+    ],
+    "trends": [
+     "انخفضت المبيعات من 80 وحدة في P1 إلى 60 وحدة في P2 ثم إلى 50 وحدة في P3.",
+     "حقق S1 مبيعات 100 وحدة مقابل هدف 100 وحدة، بينما حقق S2 مبيعات 90 وحدة مقابل هدف 100 وحدة."
+    ],
+    "anomalies": [
+     "سجل S2 فجوة قدرها 10 وحدات عن الهدف مع نسبة تحقق 90%.",
+     "تراجع الأداء بنسبة 25% في P2 وبنسبة 16.667% في P3 مقارنة بالفترة السابقة."
+    ],
+    "recommendedActions": [
+     "تقديم دعم إضافي لـ S2 لسد فجوة 10 وحدات وتحقيق نسبة 100%.",
+     "تحليل أسباب التراجع المستمر في المبيعات خلال P2 و P3 لتحسين الأداء."
+    ],
+    "kpis": {
+     "sellerCount": 2,
+     "totalUnits": 190,
+     "totalTarget": 200,
+     "targetGap": 10,
+     "targetAttainmentPct": 95,
+     "topSellerUnits": 100,
+     "periodCount": 3,
+     "lastPeriodUnits": 50
+    }
+   },
+   "diagnostics": {
+    "state": "first_pass",
+    "fallbackReason": null,
+    "attempts": [
+     "OK"
+    ]
+   }
+  },
+  {
+   "id": "SAL-07",
+   "locale": "ar",
+   "run": 1,
+   "ms": 4246,
+   "modelVersion": "Qwen/Qwen3.8-27B@prompt-v2",
+   "output": {
+    "locale": "ar",
+    "ranking": [
+     "S1",
+     "S2"
+    ],
+    "trends": [
+     "حقق كل من S1 و S2 نسبة إنجاز 100% من أهدافهما.",
+     "انخفضت المبيعات في الفترة P2 بمقدار 30 وحدة مقارنة بالفترة السابقة."
+    ],
+    "anomalies": [
+     "سجلت الفترة P2 انخفاضاً بنسبة 20% في الوحدات المباعة."
+    ],
+    "recommendedActions": [
+     "تحليل أسباب التراجع في الفترة P2 لتحديد نقاط الضعف.",
+     "مراجعة أداء S1 و S2 لضمان استدامة تحقيق الأهداف."
+    ],
+    "kpis": {
+     "sellerCount": 2,
+     "totalUnits": 200,
+     "totalTarget": 200,
+     "targetGap": 0,
+     "targetAttainmentPct": 100,
+     "topSellerUnits": 100,
+     "periodCount": 2,
+     "lastPeriodUnits": 120
+    }
+   },
+   "diagnostics": {
+    "state": "first_pass",
+    "fallbackReason": null,
+    "attempts": [
+     "OK"
+    ]
+   }
+  },
+  {
+   "id": "SAL-08",
+   "locale": "en",
+   "run": 1,
+   "ms": 4717,
+   "modelVersion": "Qwen/Qwen3.8-27B@prompt-v2",
+   "output": {
+    "locale": "en",
+    "ranking": [
+     "S1",
+     "S3",
+     "S2"
+    ],
+    "trends": [
+     "S1 achieved 100 units with a 100 attainmentPct.",
+     "P2 recorded 150 units, up 30 from the previous period."
+    ],
+    "anomalies": [
+     "S3 has a gapToTarget of 10 units with a 90 attainmentPct.",
+     "S2 sold 80 units without a defined target."
+    ],
+    "recommendedActions": [
+     "Review S3's performance to close the 10 unit gapToTarget.",
+     "Set a clear target for S2 to enable accurate attainment tracking."
+    ],
+    "kpis": {
+     "sellerCount": 3,
+     "totalUnits": 270,
+     "totalTarget": 200,
+     "targetGap": -70,
+     "targetAttainmentPct": 135,
+     "topSellerUnits": 100,
+     "periodCount": 2,
+     "lastPeriodUnits": 150
+    }
+   },
+   "diagnostics": {
+    "state": "first_pass",
+    "fallbackReason": null,
+    "attempts": [
+     "OK"
+    ]
+   }
+  },
+  {
+   "id": "SAL-08",
+   "locale": "ar",
+   "run": 1,
+   "ms": 4861,
+   "modelVersion": "Qwen/Qwen3.8-27B@prompt-v2",
+   "output": {
+    "locale": "ar",
+    "ranking": [
+     "S1",
+     "S3",
+     "S2"
+    ],
+    "trends": [
+     "سجلت الفترة P2 زيادة قدرها 30 وحدة بنسبة 25% مقارنة بالفترة السابقة.",
+     "حقق البائع S1 هدفه بالكامل بنسبة 100%."
+    ],
+    "anomalies": [
+     "لا توجد بيانات هدف أو فجوة محسوبة للبائع S2 في المدخلات.",
+     "يتبقى للبائع S3 فجوة قدرها 10 وحدات للوصول إلى هدفه."
+    ],
+    "recommendedActions": [
+     "مراجعة أداء البائع S2 لتحديد أسباب غياب بيانات الهدف.",
+     "تعزيز جهود البائع S3 لسد الفجوة المتبقية البالغة 10 وحدات."
+    ],
+    "kpis": {
+     "sellerCount": 3,
+     "totalUnits": 270,
+     "totalTarget": 200,
+     "targetGap": -70,
+     "targetAttainmentPct": 135,
+     "topSellerUnits": 100,
+     "periodCount": 2,
+     "lastPeriodUnits": 150
+    }
+   },
+   "diagnostics": {
+    "state": "first_pass",
+    "fallbackReason": null,
+    "attempts": [
+     "OK"
+    ]
+   }
+  },
+  {
+   "id": "SAL-09",
+   "locale": "en",
+   "run": 1,
+   "ms": 4350,
+   "modelVersion": "Qwen/Qwen3.8-27B@prompt-v2",
+   "output": {
+    "locale": "en",
+    "ranking": [
+     "S1",
+     "S2",
+     "S1"
+    ],
+    "trends": [
+     "P2 units increased by 40 compared to P1.",
+     "S1 achieved 100% attainment in one period but 60% in another."
+    ],
+    "anomalies": [
+     "S1 shows inconsistent performance with a 40 unit gap to target in one period.",
+     "S2 has a 20 unit gap to target with 80% attainment."
+    ],
+    "recommendedActions": [
+     "Review S1's strategy to stabilize performance and close the 40 unit gap.",
+     "Support S2 to improve from 80% attainment to meet the 100 unit target."
+    ],
+    "kpis": {
+     "sellerCount": 3,
+     "totalUnits": 240,
+     "totalTarget": 300,
+     "targetGap": 60,
+     "targetAttainmentPct": 80,
+     "topSellerUnits": 100,
+     "periodCount": 2,
+     "lastPeriodUnits": 140
+    }
+   },
+   "diagnostics": {
+    "state": "first_pass",
+    "fallbackReason": null,
+    "attempts": [
+     "OK"
+    ]
+   }
+  },
+  {
+   "id": "SAL-10",
+   "locale": "en",
+   "run": 1,
+   "ms": 3384,
+   "modelVersion": "Qwen/Qwen3.8-27B@prompt-v2",
+   "output": {
+    "locale": "en",
+    "ranking": [
+     "S1"
+    ],
+    "trends": [
+     "S1 shows a positive momentum with P2 units up 10 from P1."
+    ],
+    "anomalies": [
+     "S1 has a gapToTarget of 30, resulting in an attainmentPct of 70."
+    ],
+    "recommendedActions": [
+     "Focus on closing the 30 unit gap for S1 to reach the 100 target."
+    ],
+    "kpis": {
+     "sellerCount": 1,
+     "totalUnits": 70,
+     "totalTarget": 100,
+     "targetGap": 30,
+     "targetAttainmentPct": 70,
+     "topSellerUnits": 70,
+     "periodCount": 2,
+     "lastPeriodUnits": 40
+    }
+   },
+   "diagnostics": {
+    "state": "first_pass",
+    "fallbackReason": null,
+    "attempts": [
+     "OK"
+    ]
+   }
+  },
+  {
+   "id": "SAL-10",
+   "locale": "ar",
+   "run": 1,
+   "ms": 3871,
+   "modelVersion": "Qwen/Qwen3.8-27B@prompt-v2",
+   "output": {
+    "locale": "ar",
+    "ranking": [
+     "S1"
+    ],
+    "trends": [
+     "سجلت الفترة P2 زيادة قدرها 10 وحدات مقارنة بالفترة السابقة.",
+     "بلغت نسبة تحقيق الهدف من قبل البائع S1 قيمة 70."
+    ],
+    "anomalies": [
+     "يوجد فجوة قدرها 30 وحدة بين المبيعات الفعلية والهدف للبائع S1."
+    ],
+    "recommendedActions": [
+     "تعزيز جهود البيع لدى البائع S1 لسد الفجوة المتبقية والبالغة 30 وحدة."
+    ],
+    "kpis": {
+     "sellerCount": 1,
+     "totalUnits": 70,
+     "totalTarget": 100,
+     "targetGap": 30,
+     "targetAttainmentPct": 70,
+     "topSellerUnits": 70,
+     "periodCount": 2,
+     "lastPeriodUnits": 40
+    }
+   },
+   "diagnostics": {
+    "state": "first_pass",
+    "fallbackReason": null,
+    "attempts": [
+     "OK"
+    ]
+   }
+  },
+  {
+   "id": "SAL-09",
+   "locale": "ar",
+   "run": 1,
+   "ms": 5045,
+   "modelVersion": "Qwen/Qwen3.8-27B@prompt-v2",
+   "output": {
+    "locale": "ar",
+    "ranking": [
+     "S1",
+     "S2",
+     "S1"
+    ],
+    "trends": [
+     "سجلت الفترة P2 زيادة قدرها 40 وحدة مقارنة بالفترة السابقة.",
+     "حقق البائع S1 نسبة إنجاز 100% في إحدى الفترات بينما كانت 60% في أخرى."
+    ],
+    "anomalies": [
+     "يوجد فجوة إجمالية قدرها 60 وحدة بين المبيعات الفعلية والهدف المستهدف.",
+     "سجل البائع S2 فجوة قدرها 20 وحدة عن هدفه مع نسبة إنجاز 80%."
+    ],
+    "recommendedActions": [
+     "مراجعة أداء البائع S1 لفهم التباين بين نسبة إنجاز 100% و60%.",
+     "تعزيز جهود البيع للبائع S2 لسد الفجوة البالغة 20 وحدة."
+    ],
+    "kpis": {
+     "sellerCount": 3,
+     "totalUnits": 240,
+     "totalTarget": 300,
+     "targetGap": 60,
+     "targetAttainmentPct": 80,
+     "topSellerUnits": 100,
+     "periodCount": 2,
+     "lastPeriodUnits": 140
+    }
+   },
+   "diagnostics": {
+    "state": "first_pass",
+    "fallbackReason": null,
+    "attempts": [
+     "OK"
+    ]
+   }
+  },
+  {
+   "id": "SAL-12",
+   "locale": "en",
+   "run": 1,
+   "ms": 4023,
+   "modelVersion": "Qwen/Qwen3.8-27B@prompt-v2",
+   "output": {
+    "locale": "en",
+    "ranking": [
+     "S2",
+     "S1"
+    ],
+    "trends": [
+     "P2 recorded 70 units, up 10 from P1.",
+     "S2 achieved 80 units against a target of 100."
+    ],
+    "anomalies": [
+     "S1 has 50 units with a target of 0."
+    ],
+    "recommendedActions": [
+     "Review S1's target setting as it currently has no target.",
+     "Support S2 to close the 20 unit gap to target."
+    ],
+    "kpis": {
+     "sellerCount": 2,
+     "totalUnits": 130,
+     "totalTarget": 100,
+     "targetGap": -30,
+     "targetAttainmentPct": 130,
+     "topSellerUnits": 80,
+     "periodCount": 2,
+     "lastPeriodUnits": 70
+    }
+   },
+   "diagnostics": {
+    "state": "first_pass",
+    "fallbackReason": null,
+    "attempts": [
+     "OK"
+    ]
+   }
+  },
+  {
+   "id": "SAL-11",
+   "locale": "en",
+   "run": 1,
+   "ms": 5863,
+   "modelVersion": "Qwen/Qwen3.8-27B@prompt-v2",
+   "output": {
+    "locale": "en",
+    "ranking": [
+     "S2",
+     "S10",
+     "S5",
+     "S7",
+     "S1",
+     "S12",
+     "S6",
+     "S3",
+     "S8",
+     "S4",
+     "S11",
+     "S9"
+    ],
+    "trends": [
+     "P2 recorded 530 units, up 30 from P1.",
+     "S2 led the team with 105 units and an attainmentPct of 105."
+    ],
+    "anomalies": [
+     "S9 achieved only 30 units, resulting in a gapToTarget of 70.",
+     "S11 sold 40 units, leaving a gapToTarget of 60."
+    ],
+    "recommendedActions": [
+     "Review S9's field activity to address the gapToTarget of 70.",
+     "Provide coaching to S11 to close the gapToTarget of 60."
+    ],
+    "kpis": {
+     "sellerCount": 12,
+     "totalUnits": 1030,
+     "totalTarget": 1200,
+     "targetGap": 170,
+     "targetAttainmentPct": 85.833,
+     "topSellerUnits": 105,
+     "periodCount": 2,
+     "lastPeriodUnits": 530
+    }
+   },
+   "diagnostics": {
+    "state": "first_pass",
+    "fallbackReason": null,
+    "attempts": [
+     "OK"
+    ]
+   }
+  },
+  {
+   "id": "SAL-11",
+   "locale": "ar",
+   "run": 1,
+   "ms": 6010,
+   "modelVersion": "Qwen/Qwen3.8-27B@prompt-v2",
+   "output": {
+    "locale": "ar",
+    "ranking": [
+     "S2",
+     "S10",
+     "S5",
+     "S7",
+     "S1",
+     "S12",
+     "S6",
+     "S3",
+     "S8",
+     "S4",
+     "S11",
+     "S9"
+    ],
+    "trends": [
+     "سجلت الفترة P2 زيادة قدرها 30 وحدة مقارنة بالفترة السابقة.",
+     "بلغ إجمالي الوحدات 1030 من أصل هدف 1200، مما يعكس تحقيقاً بنسبة 85.833%."
+    ],
+    "anomalies": [
+     "حقق البائع S9 أدنى أداء بنسبة 30% مع فجوة قدرها 70 وحدة عن الهدف.",
+     "سجل البائع S11 أداءً منخفضاً بنسبة 40% مع فجوة قدرها 60 وحدة عن الهدف."
+    ],
+    "recommendedActions": [
+     "تقديم دعم فوري للبائعين S9 و S11 لمعالجة الفجوات الكبيرة في الأداء.",
+     "تحليل أسباب انخفاض أداء S4 الذي بلغ 55% من الهدف مع فجوة 45 وحدة."
+    ],
+    "kpis": {
+     "sellerCount": 12,
+     "totalUnits": 1030,
+     "totalTarget": 1200,
+     "targetGap": 170,
+     "targetAttainmentPct": 85.833,
+     "topSellerUnits": 105,
+     "periodCount": 2,
+     "lastPeriodUnits": 530
+    }
+   },
+   "diagnostics": {
+    "state": "first_pass",
+    "fallbackReason": null,
+    "attempts": [
+     "OK"
+    ]
+   }
+  },
+  {
+   "id": "SAL-12",
+   "locale": "ar",
+   "run": 1,
+   "ms": 4848,
+   "modelVersion": "Qwen/Qwen3.8-27B@prompt-v2",
+   "output": {
+    "locale": "ar",
+    "ranking": [
+     "S2",
+     "S1"
+    ],
+    "trends": [
+     "سجلت الفترة P2 زيادة قدرها 10 وحدات مقارنة بالفترة السابقة.",
+     "حقق البائع S2 نسبة إنجاز بلغت 80% من هدفه."
+    ],
+    "anomalies": [
+     "يظهر البائع S1 فجوة سلبية قدرها 30 وحدة في إجمالي الأهداف رغم تحقيقه 50 وحدة."
+    ],
+    "recommendedActions": [
+     "مراجعة خطة المبيعات للبائع S1 لتحديد أسباب عدم تحقيق الأهداف.",
+     "تعزيز جهود البائع S2 لسد الفجوة المتبقية البالغة 20 وحدة."
+    ],
+    "kpis": {
+     "sellerCount": 2,
+     "totalUnits": 130,
+     "totalTarget": 100,
+     "targetGap": -30,
+     "targetAttainmentPct": 130,
+     "topSellerUnits": 80,
+     "periodCount": 2,
+     "lastPeriodUnits": 70
+    }
+   },
+   "diagnostics": {
+    "state": "first_pass",
+    "fallbackReason": null,
+    "attempts": [
+     "OK"
+    ]
+   }
+  },
+  {
+   "id": "SAL-13",
+   "locale": "ar",
+   "run": 1,
+   "ms": 4424,
+   "modelVersion": "Qwen/Qwen3.8-27B@prompt-v2",
+   "output": {
+    "locale": "ar",
+    "ranking": [
+     "S1",
+     "S2"
+    ],
+    "trends": [
+     "سجلت الفترة P2 زيادة قدرها 10 وحدات مقارنة بالفترة السابقة.",
+     "حقق البائع S1 أداءً تجاوز هدفه بنسبة 120%."
+    ],
+    "anomalies": [
+     "سجل البائع S2 قيمة سلبية قدرها -10 وحدة، مما أدى إلى فجوة هدف تبلغ 110 وحدة.",
+     "يوجد فرق إجمالي في الأهداف يبلغ 90 وحدة رغم تجاوز S1 لهدفه."
+    ],
+    "recommendedActions": [
+     "مراجعة بيانات المبيعات الخاصة بالبائع S2 لتحديد سبب القيمة السلبية.",
+     "تعزيز دعم البائع S2 لسد الفجوة الكبيرة في تحقيق الأهداف."
+    ],
+    "kpis": {
+     "sellerCount": 2,
+     "totalUnits": 110,
+     "totalTarget": 200,
+     "targetGap": 90,
+     "targetAttainmentPct": 55,
+     "topSellerUnits": 120,
+     "periodCount": 2,
+     "lastPeriodUnits": 60
+    }
+   },
+   "diagnostics": {
+    "state": "first_pass",
+    "fallbackReason": null,
+    "attempts": [
+     "OK"
+    ]
+   }
+  },
+  {
+   "id": "SAL-13",
+   "locale": "en",
+   "run": 1,
+   "ms": 6274,
+   "modelVersion": "Qwen/Qwen3.8-27B@prompt-v2",
+   "output": {
+    "locale": "en",
+    "ranking": [
+     "S1",
+     "S2"
+    ],
+    "trends": [
+     "S1 achieved 120 units against a target of 100, resulting in a gapToTarget of -20 and an attainmentPct of 120.",
+     "S2 recorded -10 units against a target of 100, resulting in a gapToTarget of 110 and an attainmentPct of -10.",
+     "P2 showed a changeUnits of 10 and a changePct of 20 compared to the previous period."
+    ],
+    "anomalies": [
+     "S2 has a negative unit count of -10, which is an unusual data point requiring verification.",
+     "The overall targetAttainmentPct is 55, with a targetGap of 90 units remaining to reach the totalTarget of 200."
+    ],
+    "recommendedActions": [
+     "Investigate the negative unit count for S2 to correct data entry errors or resolve inventory discrepancies.",
+     "Focus on closing the 90 unit targetGap by leveraging S1's strong performance to drive overall attainment."
+    ],
+    "kpis": {
+     "sellerCount": 2,
+     "totalUnits": 110,
+     "totalTarget": 200,
+     "targetGap": 90,
+     "targetAttainmentPct": 55,
+     "topSellerUnits": 120,
+     "periodCount": 2,
+     "lastPeriodUnits": 60
+    }
+   },
+   "diagnostics": {
+    "state": "first_pass",
+    "fallbackReason": null,
+    "attempts": [
+     "OK"
+    ]
+   }
+  },
+  {
+   "id": "CAM-01",
+   "locale": "en",
+   "run": 1,
+   "ms": 5140,
+   "modelVersion": "Qwen/Qwen3.8-27B@prompt-v2",
+   "output": {
+    "locale": "en",
+    "narrative": "The campaign achieved full sales target attainment with 150 units sold against a target of 150. Attendance was strong at 48 present out of 50 expected, while gift distribution reached 95 out of 100 planned.",
+    "risks": [
+     {
+      "severity": "low",
+      "text": "Gift distribution has a gap of 5 units against the planned 100. This may affect final consumer engagement metrics.",
+      "evidence": [
+       "gifts"
+      ]
+     }
+    ],
+    "opportunities": [
+     "Leverage the 100% target attainment to reinforce the Animateur team's performance in future Point de Vente visits."
+    ],
+    "decisions": [
+     "Maintain current staffing levels as attendance rate is high at 0.96."
+    ],
+    "kpis": {
+     "attendanceRate": 0.96,
+     "attendanceGap": 2,
+     "units": 150,
+     "target": 150,
+     "targetGap": 0,
+     "targetAttainmentPct": 100,
+     "giftDistributionRate": 0.95,
+     "giftGap": 5,
+     "giftRemainingPct": 5,
+     "targetShortfallPct": 0
+    }
+   },
+   "diagnostics": {
+    "state": "first_pass",
+    "fallbackReason": null,
+    "attempts": [
+     "OK"
+    ]
+   }
+  },
+  {
+   "id": "CAM-01",
+   "locale": "ar",
+   "run": 1,
+   "ms": 4328,
+   "modelVersion": "Qwen/Qwen3.8-27B@prompt-v2",
+   "output": {
+    "locale": "ar",
+    "narrative": "حققت الحملة هدف المبيعات بالكامل مع معدل حضور مرتفع. تبقى فجوة بسيطة في توزيع الهدايا.",
+    "risks": [
+     {
+      "severity": "low",
+      "text": "توجد فجوة في توزيع الهدايا مقارنة بالخطة. يؤثر هذا على اكتمال الحملة.",
+      "evidence": [
+       "giftGap",
+       "gifts"
+      ]
+     }
+    ],
+    "opportunities": [
+     "استغلال تحقيق هدف المبيعات لتعزيز أداء نقاط البيع."
+    ],
+    "decisions": [
+     "مراجعة توزيع الهدايا المتبقية لضمان استكمال الخطة."
+    ],
+    "kpis": {
+     "attendanceRate": 0.96,
+     "attendanceGap": 2,
+     "units": 150,
+     "target": 150,
+     "targetGap": 0,
+     "targetAttainmentPct": 100,
+     "giftDistributionRate": 0.95,
+     "giftGap": 5,
+     "giftRemainingPct": 5,
+     "targetShortfallPct": 0
+    }
+   },
+   "diagnostics": {
+    "state": "first_pass",
+    "fallbackReason": null,
+    "attempts": [
+     "OK"
+    ]
+   }
+  },
+  {
+   "id": "CAM-02",
+   "locale": "en",
+   "run": 1,
+   "ms": 5526,
+   "modelVersion": "Qwen/Qwen3.8-27B@prompt-v2",
+   "output": {
+    "locale": "en",
+    "narrative": "Attendance is at 90% with a gap of 5. Sales reached 90 units against a target of 150, resulting in a targetShortfallPct of 40.",
+    "risks": [
+     {
+      "severity": "high",
+      "text": "Sales performance is significantly below target.",
+      "evidence": [
+       "sales",
+       "targetShortfallPct"
+      ]
+     },
+     {
+      "severity": "medium",
+      "text": "Gift distribution has not met the planned volume.",
+      "evidence": [
+       "gifts",
+       "giftGap"
+      ]
+     }
+    ],
+    "opportunities": [
+     "Improve Animateur engagement to close the attendanceGap.",
+     "Focus on converting remaining gift stock to boost sales."
+    ],
+    "decisions": [
+     "Review Animateur deployment to address the attendanceGap.",
+     "Prioritize gift distribution to reduce the giftGap."
+    ],
+    "kpis": {
+     "attendanceRate": 0.9,
+     "attendanceGap": 5,
+     "units": 90,
+     "target": 150,
+     "targetGap": 60,
+     "targetAttainmentPct": 60,
+     "giftDistributionRate": 0.9,
+     "giftGap": 10,
+     "giftRemainingPct": 10,
+     "targetShortfallPct": 40
+    }
+   },
+   "diagnostics": {
+    "state": "first_pass",
+    "fallbackReason": null,
+    "attempts": [
+     "OK"
+    ]
+   }
+  },
+  {
+   "id": "CAM-03",
+   "locale": "en",
+   "run": 1,
+   "ms": 6009,
+   "modelVersion": "Qwen/Qwen3.8-27B@prompt-v2",
+   "output": {
+    "locale": "en",
+    "narrative": "Sales performance exceeded the target with 195 units sold against a target of 150. Attendance was strong at 45 present out of 50 expected, but gift distribution lagged significantly with only 40 distributed out of 100 planned.",
+    "risks": [
+     {
+      "severity": "high",
+      "text": "Gift distribution is significantly behind plan, leaving 60 gifts undistributed. This may impact consumer engagement and perceived value of the campaign.",
+      "evidence": [
+       "gifts",
+       "giftGap"
+      ]
+     }
+    ],
+    "opportunities": [
+     "Leverage the strong sales momentum (195 units) to accelerate gift distribution and maximize consumer satisfaction.",
+     "Maintain high attendance levels (45 present) to ensure consistent field presence and sales support."
+    ],
+    "decisions": [
+     "Prioritize the distribution of the remaining 60 gifts to close the gap before the campaign ends.",
+     "Continue current sales strategies as they are effectively exceeding targets."
+    ],
+    "kpis": {
+     "attendanceRate": 0.9,
+     "attendanceGap": 5,
+     "units": 195,
+     "target": 150,
+     "targetGap": -45,
+     "targetAttainmentPct": 130,
+     "giftDistributionRate": 0.4,
+     "giftGap": 60,
+     "giftRemainingPct": 60,
+     "targetShortfallPct": -30
+    }
+   },
+   "diagnostics": {
+    "state": "first_pass",
+    "fallbackReason": null,
+    "attempts": [
+     "OK"
+    ]
+   }
+  },
+  {
+   "id": "CAM-02",
+   "locale": "ar",
+   "run": 1,
+   "ms": 6245,
+   "modelVersion": "Qwen/Qwen3.8-27B@prompt-v2",
+   "output": {
+    "locale": "ar",
+    "narrative": "بلغ معدل الحضور 0.9 مع فجوة قدرها 5. تم بيع 90 وحدة من أصل هدف 150، مما يعكس فجوة هدف قدرها 60.",
+    "risks": [
+     {
+      "severity": "high",
+      "text": "انخفاض تحقيق الهدف بنسبة 40% يشير إلى فجوة كبيرة في المبيعات.",
+      "evidence": [
+       "targetShortfallPct",
+       "sales"
+      ]
+     },
+     {
+      "severity": "medium",
+      "text": "فجوة في الحضور بقيمة 5 قد تؤثر على القدرة التشغيلية.",
+      "evidence": [
+       "attendanceGap",
+       "attendance"
+      ]
+     }
+    ],
+    "opportunities": [
+     "تحسين توزيع الهدايا حيث تبقى نسبة 10% غير موزعة.",
+     "زيادة المبيعات لسد فجوة الهدف البالغة 60 وحدة."
+    ],
+    "decisions": [
+     "مراجعة خطة المبيعات لسد فجوة الهدف.",
+     "تحسين إدارة الحضور لتقليل الفجوة."
+    ],
+    "kpis": {
+     "attendanceRate": 0.9,
+     "attendanceGap": 5,
+     "units": 90,
+     "target": 150,
+     "targetGap": 60,
+     "targetAttainmentPct": 60,
+     "giftDistributionRate": 0.9,
+     "giftGap": 10,
+     "giftRemainingPct": 10,
+     "targetShortfallPct": 40
+    }
+   },
+   "diagnostics": {
+    "state": "first_pass",
+    "fallbackReason": null,
+    "attempts": [
+     "OK"
+    ]
+   }
+  },
+  {
+   "id": "CAM-03",
+   "locale": "ar",
+   "run": 1,
+   "ms": 6691,
+   "modelVersion": "Qwen/Qwen3.8-27B@prompt-v2",
+   "output": {
+    "locale": "ar",
+    "narrative": "حققت الحملة أداءً مبيعاتيًا قويًا بتجاوز الهدف بنسبة 130%، مع معدل حضور جيد بلغ 90%. ومع ذلك، تبقى فجوة كبيرة في توزيع الهدايا حيث تم توزيع 40 فقط من أصل 100 مخطط لها.",
+    "risks": [
+     {
+      "severity": "high",
+      "text": "معدل توزيع الهدايا منخفض جدًا عند 40%، مما قد يؤثر على رضا العملاء أو تحقيق أهداف الحملة التسويقية.",
+      "evidence": [
+       "gifts",
+       "giftDistributionRate"
+      ]
+     },
+     {
+      "severity": "low",
+      "text": "يوجد فجوة حضور قدرها 5 أشخاص، مما يعني عدم اكتمال فريق العمل في الموقع.",
+      "evidence": [
+       "attendance",
+       "attendanceGap"
+      ]
+     }
+    ],
+    "opportunities": [
+     "تحويل الزخم الإيجابي من تجاوز المبيعات إلى زيادة توزيع الهدايا المتبقية لتعزيز تجربة العميل.",
+     "استغلال الأداء القوي في المبيعات لتحفيز فريق Animateur على استكمال خطة توزيع الهدايا."
+    ],
+    "decisions": [
+     "مراجعة أسباب تأخر توزيع الهدايا مع Superviseur لضمان استكمال الخطة.",
+     "تأكيد حضور جميع أفراد الفريق في الزيارات القادمة لسد فجوة الحضور."
+    ],
+    "kpis": {
+     "attendanceRate": 0.9,
+     "attendanceGap": 5,
+     "units": 195,
+     "target": 150,
+     "targetGap": -45,
+     "targetAttainmentPct": 130,
+     "giftDistributionRate": 0.4,
+     "giftGap": 60,
+     "giftRemainingPct": 60,
+     "targetShortfallPct": -30
+    }
+   },
+   "diagnostics": {
+    "state": "first_pass",
+    "fallbackReason": null,
+    "attempts": [
+     "OK"
+    ]
+   }
+  },
+  {
+   "id": "CAM-04",
+   "locale": "en",
+   "run": 1,
+   "ms": 5530,
+   "modelVersion": "Qwen/Qwen3.8-27B@prompt-v2",
+   "output": {
+    "locale": "en",
+    "narrative": "Attendance is at 0.8 with a gap of 10. Sales reached 75 units against a target of 150, resulting in a targetShortfallPct of 50.",
+    "risks": [
+     {
+      "severity": "high",
+      "text": "Sales performance is significantly below target.",
+      "evidence": [
+       "targetShortfallPct",
+       "sales"
+      ]
+     },
+     {
+      "severity": "medium",
+      "text": "Attendance gap indicates missing field presence.",
+      "evidence": [
+       "attendanceGap",
+       "attendance"
+      ]
+     }
+    ],
+    "opportunities": [
+     "Gift distribution is complete, which may support customer engagement despite sales shortfall."
+    ],
+    "decisions": [
+     "Review Animateur deployment to address the attendance gap.",
+     "Investigate sales conversion issues at the Point de Vente."
+    ],
+    "kpis": {
+     "attendanceRate": 0.8,
+     "attendanceGap": 10,
+     "units": 75,
+     "target": 150,
+     "targetGap": 75,
+     "targetAttainmentPct": 50,
+     "giftDistributionRate": 1,
+     "giftGap": 0,
+     "giftRemainingPct": 0,
+     "targetShortfallPct": 50
+    }
+   },
+   "diagnostics": {
+    "state": "first_pass",
+    "fallbackReason": null,
+    "attempts": [
+     "OK"
+    ]
+   }
+  },
+  {
+   "id": "CAM-04",
+   "locale": "ar",
+   "run": 1,
+   "ms": 6655,
+   "modelVersion": "Qwen/Qwen3.8-27B@prompt-v2",
+   "output": {
+    "locale": "ar",
+    "narrative": "بلغت نسبة الحضور 0.8 مع فجوة قدرها 10. تم توزيع 100 هدية من أصل 100 مخطط لها، مما يعني أن giftGap يساوي 0.",
+    "risks": [
+     {
+      "severity": "high",
+      "text": "تسجيل مبيعات 75 وحدة مقابل هدف 150، مما يعكس فجوة هدف قدرها 75 ونقصاً بنسبة 50.",
+      "evidence": [
+       "sales",
+       "targetShortfallPct"
+      ]
+     },
+     {
+      "severity": "medium",
+      "text": "غياب 10 من أصل 50 متوقعين، مما أدى إلى فجوة حضور قدرها 10.",
+      "evidence": [
+       "attendance",
+       "attendanceGap"
+      ]
+     }
+    ],
+    "opportunities": [
+     "تحقيق معدل توزيع هدايا كامل بنسبة 1.0، مما يفتح المجال لزيادة التفاعل مع العملاء."
+    ],
+    "decisions": [
+     "مراجعة أداء Point de Vente لرفع المبيعات من 75 إلى 150.",
+     "تعزيز حضور Animateur وSuperviseur لسد فجوة الحضور البالغة 10."
+    ],
+    "kpis": {
+     "attendanceRate": 0.8,
+     "attendanceGap": 10,
+     "units": 75,
+     "target": 150,
+     "targetGap": 75,
+     "targetAttainmentPct": 50,
+     "giftDistributionRate": 1,
+     "giftGap": 0,
+     "giftRemainingPct": 0,
+     "targetShortfallPct": 50
+    }
+   },
+   "diagnostics": {
+    "state": "first_pass",
+    "fallbackReason": null,
+    "attempts": [
+     "OK"
+    ]
+   }
+  },
+  {
+   "id": "CAM-05",
+   "locale": "en",
+   "run": 1,
+   "ms": 5580,
+   "modelVersion": "Qwen/Qwen3.8-27B@prompt-v2",
+   "output": {
+    "locale": "en",
+    "narrative": "Sales performance met the target exactly with 150 units sold against a target of 150. Attendance was below expectations with 25 present out of 50 expected, and gifts distributed were 90 out of 100 planned.",
+    "risks": [
+     {
+      "severity": "medium",
+      "text": "Attendance is significantly lower than expected, which may impact future sales consistency.",
+      "evidence": [
+       "attendance"
+      ]
+     },
+     {
+      "severity": "low",
+      "text": "Gift distribution is slightly below the planned amount, potentially affecting customer engagement.",
+      "evidence": [
+       "gifts"
+      ]
+     }
+    ],
+    "opportunities": [
+     "Investigate reasons for low attendance to improve future turnout.",
+     "Ensure remaining gifts are distributed to maximize customer satisfaction."
+    ],
+    "decisions": [
+     "Review attendance strategies to align with expected numbers.",
+     "Complete the distribution of remaining gifts to meet the planned total."
+    ],
+    "kpis": {
+     "attendanceRate": 0.5,
+     "attendanceGap": 25,
+     "units": 150,
+     "target": 150,
+     "targetGap": 0,
+     "targetAttainmentPct": 100,
+     "giftDistributionRate": 0.9,
+     "giftGap": 10,
+     "giftRemainingPct": 10,
+     "targetShortfallPct": 0
+    }
+   },
+   "diagnostics": {
+    "state": "first_pass",
+    "fallbackReason": null,
+    "attempts": [
+     "OK"
+    ]
+   }
+  },
+  {
+   "id": "CAM-05",
+   "locale": "ar",
+   "run": 1,
+   "ms": 7353,
+   "modelVersion": "Qwen/Qwen3.8-27B@prompt-v2",
+   "output": {
+    "locale": "ar",
+    "narrative": "حقق فريق Point de Vente الهدف المبيعات بالكامل ببيع 150 وحدة من أصل 150 مستهدفة. وصلت نسبة الحضور إلى 0.5 مع فجوة قدرها 25، بينما تم توزيع 90 هدية من أصل 100 مخططة.",
+    "risks": [
+     {
+      "severity": "high",
+      "text": "توجد فجوة حضور كبيرة تؤثر على فعالية الحملة في Point de Vente.",
+      "evidence": [
+       "attendanceGap"
+      ]
+     },
+     {
+      "severity": "medium",
+      "text": "لم يتم توزيع كامل الهدايا المخططة في Point de Vente.",
+      "evidence": [
+       "giftGap"
+      ]
+     }
+    ],
+    "opportunities": [
+     "تحسين نسبة الحضور في Point de Vente لتعزيز التفاعل مع العملاء.",
+     "إكمال توزيع الهدايا المتبقية في Point de Vente لزيادة رضا العملاء."
+    ],
+    "decisions": [
+     "مراجعة أسباب انخفاض الحضور في Point de Vente.",
+     "تسريع وتيرة توزيع الهدايا المتبقية في Point de Vente."
+    ],
+    "kpis": {
+     "attendanceRate": 0.5,
+     "attendanceGap": 25,
+     "units": 150,
+     "target": 150,
+     "targetGap": 0,
+     "targetAttainmentPct": 100,
+     "giftDistributionRate": 0.9,
+     "giftGap": 10,
+     "giftRemainingPct": 10,
+     "targetShortfallPct": 0
+    }
+   },
+   "diagnostics": {
+    "state": "first_pass",
+    "fallbackReason": null,
+    "attempts": [
+     "OK"
+    ]
+   }
+  },
+  {
+   "id": "CAM-06",
+   "locale": "en",
+   "run": 1,
+   "ms": 6362,
+   "modelVersion": "Qwen/Qwen3.8-27B@prompt-v2",
+   "output": {
+    "locale": "en",
+    "narrative": "Attendance reached 42 out of 50 expected, resulting in an attendanceGap of 8. Sales recorded 120 units, while gift distribution covered 80 of 100 planned, leaving a giftGap of 20.",
+    "risks": [
+     {
+      "severity": "medium",
+      "text": "Gift distribution is incomplete with a giftGap of 20.",
+      "evidence": [
+       "gifts"
+      ]
+     },
+     {
+      "severity": "low",
+      "text": "Attendance is below expectation with an attendanceGap of 8.",
+      "evidence": [
+       "attendance"
+      ]
+     }
+    ],
+    "opportunities": [
+     "Complete the remaining gift distribution to close the giftGap of 20.",
+     "Improve Animateur presence to reduce the attendanceGap of 8."
+    ],
+    "decisions": [
+     "Prioritize closing the giftGap of 20 to reach full distribution.",
+     "Review Superviseur scheduling to address the attendanceGap of 8."
+    ],
+    "kpis": {
+     "attendanceRate": 0.84,
+     "attendanceGap": 8,
+     "units": 120,
+     "target": 0,
+     "targetGap": -120,
+     "targetAttainmentPct": 0,
+     "giftDistributionRate": 0.8,
+     "giftGap": 20,
+     "giftRemainingPct": 20,
+     "targetShortfallPct": 0
+    }
+   },
+   "diagnostics": {
+    "state": "first_pass",
+    "fallbackReason": null,
+    "attempts": [
+     "OK"
+    ]
+   }
+  },
+  {
+   "id": "CAM-06",
+   "locale": "ar",
+   "run": 1,
+   "ms": 6983,
+   "modelVersion": "Qwen/Qwen3.8-27B@prompt-v2",
+   "output": {
+    "locale": "ar",
+    "narrative": "بلغت نسبة الحضور 0.84 مع فجوة قدرها 8. تم توزيع 80 هدية من أصل 100 مخططة، مما يترك فجوة هدايا قدرها 20.",
+    "risks": [
+     {
+      "severity": "medium",
+      "text": "توجد فجوة في توزيع الهدايا قد تؤثر على تفاعل العملاء.",
+      "evidence": [
+       "giftGap"
+      ]
+     },
+     {
+      "severity": "low",
+      "text": "انخفاض طفيف في نسبة الحضور مقارنة بالمتوقع.",
+      "evidence": [
+       "attendanceGap"
+      ]
+     }
+    ],
+    "opportunities": [
+     "زيادة توزيع الهدايا المتبقية لتعزيز المبيعات.",
+     "تحسين استراتيجيات الحضور لرفع نسبة التواجد."
+    ],
+    "decisions": [
+     "مراجعة خطة توزيع الهدايا لسد الفجوة الحالية.",
+     "تحليل أسباب انخفاض الحضور واتخاذ إجراءات تصحيحية."
+    ],
+    "kpis": {
+     "attendanceRate": 0.84,
+     "attendanceGap": 8,
+     "units": 120,
+     "target": 0,
+     "targetGap": -120,
+     "targetAttainmentPct": 0,
+     "giftDistributionRate": 0.8,
+     "giftGap": 20,
+     "giftRemainingPct": 20,
+     "targetShortfallPct": 0
+    }
+   },
+   "diagnostics": {
+    "state": "first_pass",
+    "fallbackReason": null,
+    "attempts": [
+     "OK"
+    ]
+   }
+  },
+  {
+   "id": "CAM-07",
+   "locale": "ar",
+   "run": 1,
+   "ms": 4619,
+   "modelVersion": "Qwen/Qwen3.8-27B@prompt-v2",
+   "output": {
+    "locale": "ar",
+    "narrative": "بلغت نسبة الحضور 0.84 مع فجوة قدرها 8. تم توزيع 120 هدية مقابل خطة 100، مما أدى إلى تجاوز الخطة بـ 20 هدية.",
+    "risks": [
+     {
+      "severity": "medium",
+      "text": "تسجيل فجوة في المبيعات بقيمة 30 وحدة مقارنة بالهدف.",
+      "evidence": [
+       "sales"
+      ]
+     }
+    ],
+    "opportunities": [
+     "استغلال فائض توزيع الهدايا لدعم المبيعات."
+    ],
+    "decisions": [
+     "مراجعة أداء الحضور لسد الفجوة."
+    ],
+    "kpis": {
+     "attendanceRate": 0.84,
+     "attendanceGap": 8,
+     "units": 120,
+     "target": 150,
+     "targetGap": 30,
+     "targetAttainmentPct": 80,
+     "giftDistributionRate": 1.2,
+     "giftGap": -20,
+     "giftRemainingPct": -20,
+     "targetShortfallPct": 20
+    }
+   },
+   "diagnostics": {
+    "state": "first_pass",
+    "fallbackReason": null,
+    "attempts": [
+     "OK"
+    ]
+   }
+  },
+  {
+   "id": "CAM-07",
+   "locale": "en",
+   "run": 1,
+   "ms": 6661,
+   "modelVersion": "Qwen/Qwen3.8-27B@prompt-v2",
+   "output": {
+    "locale": "en",
+    "narrative": "The campaign achieved an attendanceRate of 0.84 with an attendanceGap of 8. Sales reached 120 units against a target of 150, resulting in a targetShortfallPct of 20.",
+    "risks": [
+     {
+      "severity": "medium",
+      "text": "Sales performance is below the set goal, with a targetGap of 30 units. This shortfall impacts overall campaign objectives.",
+      "evidence": [
+       "sales",
+       "targetGap"
+      ]
+     }
+    ],
+    "opportunities": [
+     "Gift distribution exceeded the plan, with a giftGap of -20 and a giftDistributionRate of 1.2. This surplus can be leveraged to enhance customer engagement."
+    ],
+    "decisions": [
+     "Review sales strategies to address the targetShortfallPct of 20. Utilize the excess gift inventory to drive additional sales."
+    ],
+    "kpis": {
+     "attendanceRate": 0.84,
+     "attendanceGap": 8,
+     "units": 120,
+     "target": 150,
+     "targetGap": 30,
+     "targetAttainmentPct": 80,
+     "giftDistributionRate": 1.2,
+     "giftGap": -20,
+     "giftRemainingPct": -20,
+     "targetShortfallPct": 20
+    }
+   },
+   "diagnostics": {
+    "state": "first_pass",
+    "fallbackReason": null,
+    "attempts": [
+     "OK"
+    ]
+   }
+  },
+  {
+   "id": "CAM-08",
+   "locale": "en",
+   "run": 1,
+   "ms": 5596,
+   "modelVersion": "Qwen/Qwen3.8-27B@prompt-v2",
+   "output": {
+    "locale": "en",
+    "narrative": "Sales reached 100 units against a target of 150, resulting in a targetShortfallPct of 33.333. Gift distribution stands at 50 out of 100 planned, with a giftRemainingPct of 50.",
+    "risks": [
+     {
+      "severity": "high",
+      "text": "The campaign is underperforming against the sales target.",
+      "evidence": [
+       "targetShortfallPct"
+      ]
+     },
+     {
+      "severity": "medium",
+      "text": "Half of the planned gifts remain undistributed.",
+      "evidence": [
+       "giftRemainingPct"
+      ]
+     }
+    ],
+    "opportunities": [
+     "Focus on closing the gap between current sales and the target to improve attainment."
+    ],
+    "decisions": [
+     "Prioritize sales activities to address the target shortfall."
+    ],
+    "kpis": {
+     "attendanceRate": 0,
+     "attendanceGap": 0,
+     "units": 100,
+     "target": 150,
+     "targetGap": 50,
+     "targetAttainmentPct": 66.667,
+     "giftDistributionRate": 0.5,
+     "giftGap": 50,
+     "giftRemainingPct": 50,
+     "targetShortfallPct": 33.333
+    }
+   },
+   "diagnostics": {
+    "state": "first_pass",
+    "fallbackReason": null,
+    "attempts": [
+     "OK"
+    ]
+   }
+  },
+  {
+   "id": "CAM-08",
+   "locale": "ar",
+   "run": 1,
+   "ms": 7163,
+   "modelVersion": "Qwen/Qwen3.8-27B@prompt-v2",
+   "output": {
+    "locale": "ar",
+    "narrative": "حققت المبيعات 100 وحدة من أصل هدف 150 وحدة، مما يعكس فجوة قدرها 50 وحدة. تم توزيع 50 هدية من أصل 100 هدية مخططة، مع بقاء 50 هدية غير موزعة.",
+    "risks": [
+     {
+      "severity": "high",
+      "text": "انخفاض تحقيق الهدف بنسبة 33.333% يشير إلى فجوة مبيعات كبيرة.",
+      "evidence": [
+       "targetShortfallPct",
+       "targetGap"
+      ]
+     },
+     {
+      "severity": "medium",
+      "text": "توزيع 50% فقط من الهدايا المخططة قد يؤثر على فعالية الحملة.",
+      "evidence": [
+       "giftRemainingPct",
+       "giftGap"
+      ]
+     }
+    ],
+    "opportunities": [
+     "زيادة توزيع الهدايا المتبقية لتحفيز المبيعات.",
+     "تحسين استراتيجيات البيع لسد فجوة المبيعات."
+    ],
+    "decisions": [
+     "مراجعة خطة توزيع الهدايا المتبقية.",
+     "تعزيز جهود المبيعات لسد الفجوة."
+    ],
+    "kpis": {
+     "attendanceRate": 0,
+     "attendanceGap": 0,
+     "units": 100,
+     "target": 150,
+     "targetGap": 50,
+     "targetAttainmentPct": 66.667,
+     "giftDistributionRate": 0.5,
+     "giftGap": 50,
+     "giftRemainingPct": 50,
+     "targetShortfallPct": 33.333
+    }
+   },
+   "diagnostics": {
+    "state": "first_pass",
+    "fallbackReason": null,
+    "attempts": [
+     "OK"
+    ]
+   }
+  },
+  {
+   "id": "CAM-09",
+   "locale": "en",
+   "run": 1,
+   "ms": 5881,
+   "modelVersion": "Qwen/Qwen3.8-27B@prompt-v2",
+   "output": {
+    "locale": "en",
+    "narrative": "The campaign is underperforming against its sales target, with units at 60 against a target of 150. Attendance is strong at 45 present out of 50 expected, but gift distribution is lagging significantly.",
+    "risks": [
+     {
+      "severity": "high",
+      "text": "Sales are significantly below target, creating a large gap in revenue achievement.",
+      "evidence": [
+       "sales",
+       "targetGap"
+      ]
+     },
+     {
+      "severity": "medium",
+      "text": "Gift distribution is far behind plan, which may impact customer engagement and conversion.",
+      "evidence": [
+       "gifts",
+       "giftGap"
+      ]
+     }
+    ],
+    "opportunities": [
+     "Leverage the high attendance rate to drive immediate sales conversions.",
+     "Accelerate gift distribution to align with the high foot traffic."
+    ],
+    "decisions": [
+     "Focus Animateur efforts on closing sales gaps during peak attendance hours.",
+     "Prioritize gift distribution to match the high attendance levels."
+    ],
+    "kpis": {
+     "attendanceRate": 0.9,
+     "attendanceGap": 5,
+     "units": 60,
+     "target": 150,
+     "targetGap": 90,
+     "targetAttainmentPct": 40,
+     "giftDistributionRate": 0.3,
+     "giftGap": 70,
+     "giftRemainingPct": 70,
+     "targetShortfallPct": 60
+    }
+   },
+   "diagnostics": {
+    "state": "first_pass",
+    "fallbackReason": null,
+    "attempts": [
+     "OK"
+    ]
+   }
+  },
+  {
+   "id": "CAM-09",
+   "locale": "ar",
+   "run": 1,
+   "ms": 5477,
+   "modelVersion": "Qwen/Qwen3.8-27B@prompt-v2",
+   "output": {
+    "locale": "ar",
+    "narrative": "بلغ معدل الحضور 0.9 مع فجوة قدرها 5. تم بيع 60 وحدة مقابل هدف 150، مما يعكس فجوة هدف قدرها 90.",
+    "risks": [
+     {
+      "severity": "high",
+      "text": "انخفاض كبير في تحقيق الهدف المبيعاتي.",
+      "evidence": [
+       "targetShortfallPct",
+       "sales"
+      ]
+     },
+     {
+      "severity": "medium",
+      "text": "فجوة ملحوظة في توزيع الهدايا مقارنة بالخطة.",
+      "evidence": [
+       "giftGap",
+       "gifts"
+      ]
+     }
+    ],
+    "opportunities": [
+     "تحسين أداء نقاط البيع لرفع معدل تحقيق الهدف.",
+     "زيادة وتيرة توزيع الهدايا لتقليل الفجوة الحالية."
+    ],
+    "decisions": [
+     "مراجعة استراتيجيات المبيعات مع Animateur وSuperviseur.",
+     "تسريع وتيرة توزيع الهدايا المتبقية."
+    ],
+    "kpis": {
+     "attendanceRate": 0.9,
+     "attendanceGap": 5,
+     "units": 60,
+     "target": 150,
+     "targetGap": 90,
+     "targetAttainmentPct": 40,
+     "giftDistributionRate": 0.3,
+     "giftGap": 70,
+     "giftRemainingPct": 70,
+     "targetShortfallPct": 60
+    }
+   },
+   "diagnostics": {
+    "state": "first_pass",
+    "fallbackReason": null,
+    "attempts": [
+     "OK"
+    ]
+   }
+  },
+  {
+   "id": "CAM-10",
+   "locale": "ar",
+   "run": 1,
+   "ms": 8561,
+   "modelVersion": "Qwen/Qwen3.8-27B@prompt-v2",
+   "output": {
+    "locale": "ar",
+    "narrative": "بلغت نسبة الحضور 0.4 مع فجوة حضور قدرها 30. تم بيع 60 وحدة مقابل هدف 150، مما أدى إلى فجوة هدف قدرها 90.",
+    "risks": [
+     {
+      "severity": "high",
+      "text": "توجد فجوة كبيرة في تحقيق الهدف البيعي.",
+      "evidence": [
+       "targetGap",
+       "targetShortfallPct"
+      ]
+     },
+     {
+      "severity": "high",
+      "text": "معدل توزيع الهدايا منخفض جداً مقارنة بالخطة.",
+      "evidence": [
+       "giftGap",
+       "giftRemainingPct"
+      ]
+     },
+     {
+      "severity": "medium",
+      "text": "نسبة الحضور أقل من المتوقع بشكل ملحوظ.",
+      "evidence": [
+       "attendanceGap",
+       "attendanceRate"
+      ]
+     }
+    ],
+    "opportunities": [
+     "تحسين أداء الحضور لرفع المبيعات.",
+     "زيادة وتيرة توزيع الهدايا لتحفيز العملاء."
+    ],
+    "decisions": [
+     "مراجعة خطة الحضور مع الـ Superviseur.",
+     "تسريع وتيرة توزيع الهدايا المتبقية."
+    ],
+    "kpis": {
+     "attendanceRate": 0.4,
+     "attendanceGap": 30,
+     "units": 60,
+     "target": 150,
+     "targetGap": 90,
+     "targetAttainmentPct": 40,
+     "giftDistributionRate": 0.1,
+     "giftGap": 90,
+     "giftRemainingPct": 90,
+     "targetShortfallPct": 60
+    }
+   },
+   "diagnostics": {
+    "state": "first_pass",
+    "fallbackReason": null,
+    "attempts": [
+     "OK"
+    ]
+   }
+  },
+  {
+   "id": "CAM-10",
+   "locale": "en",
+   "run": 1,
+   "ms": 9416,
+   "modelVersion": "Qwen/Qwen3.8-27B@prompt-v2",
+   "output": {
+    "locale": "en",
+    "narrative": "Attendance is at 0.4 with a gap of 30, while sales stand at 60 units against a target of 150. Gift distribution is at 0.1 with a gap of 90, leaving 90% of gifts undistributed.",
+    "risks": [
+     {
+      "severity": "high",
+      "text": "Sales are significantly below target with a gap of 90 units. Attendance is also low with a gap of 30, impacting overall performance.",
+      "evidence": [
+       "sales",
+       "attendance"
+      ]
+     },
+     {
+      "severity": "high",
+      "text": "Gift distribution is critically low with a gap of 90, leaving 90% of planned gifts undistributed. This may affect customer engagement and retention.",
+      "evidence": [
+       "gifts"
+      ]
+     }
+    ],
+    "opportunities": [
+     "Improve attendance to close the gap of 30 and boost sales performance.",
+     "Accelerate gift distribution to reduce the gap of 90 and enhance customer experience."
+    ],
+    "decisions": [
+     "Focus on increasing attendance to support sales targets.",
+     "Prioritize gift distribution to meet planned objectives."
+    ],
+    "kpis": {
+     "attendanceRate": 0.4,
+     "attendanceGap": 30,
+     "units": 60,
+     "target": 150,
+     "targetGap": 90,
+     "targetAttainmentPct": 40,
+     "giftDistributionRate": 0.1,
+     "giftGap": 90,
+     "giftRemainingPct": 90,
+     "targetShortfallPct": 60
+    }
+   },
+   "diagnostics": {
+    "state": "first_pass",
+    "fallbackReason": null,
+    "attempts": [
+     "OK"
+    ]
+   }
+  },
+  {
+   "id": "ANI-01",
+   "locale": "en",
+   "run": 1,
+   "ms": 9437,
+   "modelVersion": "Qwen/Qwen3.8-27B@prompt-v2",
+   "output": {
+    "locale": "en",
+    "coaching": [
+     {
+      "label": "A1",
+      "strengths": [
+       "A1 achieved an attainmentPct of 110 with 110 units sold against a target of 100."
+      ],
+      "gaps": [
+       "A1 recorded 5 visits, which is higher than the campaign average of 4.667."
+      ],
+      "actions": [
+       "Maintain the current visit frequency to sustain the 110 attainmentPct."
+      ],
+      "evidenceRefs": [
+       "A1"
+      ]
+     },
+     {
+      "label": "A2",
+      "strengths": [
+       "A2 met the target exactly with 100 units sold and an attainmentPct of 100."
+      ],
+      "gaps": [
+       "A2 has the lowest attendanceRate at 90 among the team."
+      ],
+      "actions": [
+       "Improve attendance to support the 100 attainmentPct and maintain 100 units sold."
+      ],
+      "evidenceRefs": [
+       "A2"
+      ]
+     },
+     {
+      "label": "A3",
+      "strengths": [
+       "A3 achieved an attainmentPct of 105 with 105 units sold against a target of 100."
+      ],
+      "gaps": [
+       "A3 recorded 5 visits, which is higher than the campaign average of 4.667."
+      ],
+      "actions": [
+       "Leverage the 5 visits to push for higher unit sales beyond the 105 attainmentPct."
+      ],
+      "evidenceRefs": [
+       "A3"
+      ]
+     }
+    ],
+    "campaignActions": [
+     "Focus on improving A2's attendanceRate to support the overall avgAttendanceRate of 92.3.",
+     "Encourage A1 and A3 to maintain their 5 visits to sustain the totalUnits of 315."
+    ],
+    "kpis": {
+     "animateurCount": 3,
+     "avgAttendanceRate": 0.923,
+     "totalUnits": 315,
+     "totalTarget": 300,
+     "targetGap": -15,
+     "attainmentPct": 105,
+     "avgVisits": 4.667
+    }
+   },
+   "diagnostics": {
+    "state": "first_pass",
+    "fallbackReason": null,
+    "attempts": [
+     "OK"
+    ]
+   }
+  },
+  {
+   "id": "ANI-02",
+   "locale": "en",
+   "run": 1,
+   "ms": 6363,
+   "modelVersion": "Qwen/Qwen3.8-27B@prompt-v2",
+   "output": {
+    "locale": "en",
+    "coaching": [
+     {
+      "label": "A1",
+      "strengths": [
+       "A1 achieved an attainmentPct of 130 with 130 units sold."
+      ],
+      "gaps": [
+       "A1 has an attendanceRate of 50, which is below the campaign average."
+      ],
+      "actions": [
+       "Schedule a review with A1 to improve attendance consistency."
+      ],
+      "evidenceRefs": [
+       "A1",
+       "attendanceRate",
+       "attainmentPct"
+      ]
+     },
+     {
+      "label": "A2",
+      "strengths": [
+       "A2 maintains a high attendanceRate of 95."
+      ],
+      "gaps": [
+       "A2 has a gapToTarget of 5, falling short of the 100 unit target."
+      ],
+      "actions": [
+       "Coach A2 on conversion techniques to close the 5 unit gap."
+      ],
+      "evidenceRefs": [
+       "A2",
+       "attendanceRate",
+       "gapToTarget"
+      ]
+     }
+    ],
+    "campaignActions": [
+     "Monitor A1's attendance to ensure it aligns with the high sales performance.",
+     "Support A2 in converting high attendance into target attainment."
+    ],
+    "kpis": {
+     "animateurCount": 2,
+     "avgAttendanceRate": 0.725,
+     "totalUnits": 225,
+     "totalTarget": 200,
+     "targetGap": -25,
+     "attainmentPct": 112.5,
+     "avgVisits": 4
+    }
+   },
+   "diagnostics": {
+    "state": "first_pass",
+    "fallbackReason": null,
+    "attempts": [
+     "OK"
+    ]
+   }
+  },
+  {
+   "id": "ANI-02",
+   "locale": "ar",
+   "run": 1,
+   "ms": 6308,
+   "modelVersion": "Qwen/Qwen3.8-27B@prompt-v2",
+   "output": {
+    "locale": "ar",
+    "coaching": [
+     {
+      "label": "A1",
+      "strengths": [
+       "تحقيق نسبة إنجاز 130 من الهدف مع مبيعات 130 وحدة."
+      ],
+      "gaps": [
+       "معدل الحضور 50 فقط، وهو أدنى من المتوسط العام."
+      ],
+      "actions": [
+       "تعزيز الالتزام بالحضور اليومي في نقاط البيع."
+      ],
+      "evidenceRefs": [
+       "A1",
+       "attendanceRate",
+       "attainmentPct"
+      ]
+     },
+     {
+      "label": "A2",
+      "strengths": [
+       "معدل حضور مرتفع يبلغ 95."
+      ],
+      "gaps": [
+       "فجوة 5 وحدات عن الهدف مع نسبة إنجاز 95."
+      ],
+      "actions": [
+       "تحسين تقنيات الإقناع لسد الفجوة المتبقية."
+      ],
+      "evidenceRefs": [
+       "A2",
+       "attendanceRate",
+       "gapToTarget"
+      ]
+     }
+    ],
+    "campaignActions": [
+     "مراجعة خطة التغطية لضمان توازن الحضور بين Animateur A1 و A2.",
+     "تطبيق خطة متابعة يومية لسد فجوة A2 وتحقيق الهدف الكلي."
+    ],
+    "kpis": {
+     "animateurCount": 2,
+     "avgAttendanceRate": 0.725,
+     "totalUnits": 225,
+     "totalTarget": 200,
+     "targetGap": -25,
+     "attainmentPct": 112.5,
+     "avgVisits": 4
+    }
+   },
+   "diagnostics": {
+    "state": "first_pass",
+    "fallbackReason": null,
+    "attempts": [
+     "OK"
+    ]
+   }
+  },
+  {
+   "id": "ANI-01",
+   "locale": "ar",
+   "run": 1,
+   "ms": 8721,
+   "modelVersion": "Qwen/Qwen3.8-27B@prompt-v2",
+   "output": {
+    "locale": "ar",
+    "coaching": [
+     {
+      "label": "A1",
+      "strengths": [
+       "حقق A1 معدل حضور 95% ووصل إلى 110% من الهدف."
+      ],
+      "gaps": [
+       "لا توجد فجوات واضحة في الأداء الحالي."
+      ],
+      "actions": [
+       "توثيق أفضل الممارسات الخاصة بـ A1 لمشاركتها مع الفريق."
+      ],
+      "evidenceRefs": [
+       "A1"
+      ]
+     },
+     {
+      "label": "A2",
+      "strengths": [
+       "حقق A2 هدفه بنسبة 100% مع معدل حضور 90%."
+      ],
+      "gaps": [
+       "معدل الحضور 90% أقل من متوسط الفريق."
+      ],
+      "actions": [
+       "مراجعة جدول الزيارات لرفع معدل الحضور إلى مستوى أعلى."
+      ],
+      "evidenceRefs": [
+       "A2"
+      ]
+     },
+     {
+      "label": "A3",
+      "strengths": [
+       "حقق A1 معدل حضور 92% ووصل إلى 105% من الهدف."
+      ],
+      "gaps": [
+       "الفجوة السلبية 5 وحدات تشير إلى هامش تحسين بسيط."
+      ],
+      "actions": [
+       "تركيز الجهود على زيادة الوحدات المباعة لتجاوز الهدف بشكل أكبر."
+      ],
+      "evidenceRefs": [
+       "A3"
+      ]
+     }
+    ],
+    "campaignActions": [
+     "تعزيز أداء A1 كنموذج إيجابي للفريق.",
+     "مراقبة معدل حضور A2 لضمان استمرارية الأداء.",
+     "دعم A3 لتوسيع الفجوة الإيجابية الحالية."
+    ],
+    "kpis": {
+     "animateurCount": 3,
+     "avgAttendanceRate": 0.923,
+     "totalUnits": 315,
+     "totalTarget": 300,
+     "targetGap": -15,
+     "attainmentPct": 105,
+     "avgVisits": 4.667
+    }
+   },
+   "diagnostics": {
+    "state": "first_pass",
+    "fallbackReason": null,
+    "attempts": [
+     "OK"
+    ]
+   }
+  },
+  {
+   "id": "ANI-03",
+   "locale": "ar",
+   "run": 1,
+   "ms": 6028,
+   "modelVersion": "Qwen/Qwen3.8-27B@prompt-v2",
+   "output": {
+    "locale": "ar",
+    "coaching": [
+     {
+      "label": "A1",
+      "strengths": [
+       "حضور منتظم بنسبة 90."
+      ],
+      "gaps": [
+       "فجوة قدرها 50 وحدة عن الهدف.",
+       "نسبة تحقيق 50 فقط."
+      ],
+      "actions": [
+       "زيادة عدد الزيارات لتحسين المبيعات."
+      ],
+      "evidenceRefs": [
+       "A1",
+       "gapToTarget",
+       "attainmentPct"
+      ]
+     },
+     {
+      "label": "A2",
+      "strengths": [
+       "تحقيق كامل للهدف بنسبة 100."
+      ],
+      "gaps": [
+       "عدد زيارات منخفض مقارنة بالزميل."
+      ],
+      "actions": [
+       "توثيق أفضل الممارسات لمشاركتها مع الفريق."
+      ],
+      "evidenceRefs": [
+       "A2",
+       "attainmentPct",
+       "visits"
+      ]
+     }
+    ],
+    "campaignActions": [
+     "مراجعة خطة الزيارات لـ A1 لسد فجوة 50 وحدة.",
+     "تبادل الخبرات بين A1 و A2 لتحسين الأداء العام."
+    ],
+    "kpis": {
+     "animateurCount": 2,
+     "avgAttendanceRate": 0.9,
+     "totalUnits": 150,
+     "totalTarget": 200,
+     "targetGap": 50,
+     "attainmentPct": 75,
+     "avgVisits": 6.5
+    }
+   },
+   "diagnostics": {
+    "state": "first_pass",
+    "fallbackReason": null,
+    "attempts": [
+     "OK"
+    ]
+   }
+  },
+  {
+   "id": "ANI-03",
+   "locale": "en",
+   "run": 1,
+   "ms": 7450,
+   "modelVersion": "Qwen/Qwen3.8-27B@prompt-v2",
+   "output": {
+    "locale": "en",
+    "coaching": [
+     {
+      "label": "A1",
+      "strengths": [
+       "Maintained a 90 attendance rate.",
+       "Completed 10 visits."
+      ],
+      "gaps": [
+       "Achieved only 50 attainmentPct against the target.",
+       "Has a gapToTarget of 50 units."
+      ],
+      "actions": [
+       "Review visit quality to convert the 10 visits into more units.",
+       "Focus on closing the 50 unit gapToTarget."
+      ],
+      "evidenceRefs": [
+       "A1",
+       "attendanceRate",
+       "visits",
+       "attainmentPct",
+       "gapToTarget"
+      ]
+     },
+     {
+      "label": "A2",
+      "strengths": [
+       "Achieved 100 attainmentPct.",
+       "Maintained a 90 attendance rate."
+      ],
+      "gaps": [
+       "Completed only 3 visits."
+      ],
+      "actions": [
+       "Analyze how 100 units were sold with only 3 visits.",
+       "Share best practices with A1."
+      ],
+      "evidenceRefs": [
+       "A2",
+       "attainmentPct",
+       "attendanceRate",
+       "visits"
+      ]
+     }
+    ],
+    "campaignActions": [
+     "Investigate why A1 has a 50 gapToTarget despite 10 visits.",
+     "Leverage A2's 100 attainmentPct to mentor A1."
+    ],
+    "kpis": {
+     "animateurCount": 2,
+     "avgAttendanceRate": 0.9,
+     "totalUnits": 150,
+     "totalTarget": 200,
+     "targetGap": 50,
+     "attainmentPct": 75,
+     "avgVisits": 6.5
+    }
+   },
+   "diagnostics": {
+    "state": "first_pass",
+    "fallbackReason": null,
+    "attempts": [
+     "OK"
+    ]
+   }
+  },
+  {
+   "id": "ANI-04",
+   "locale": "en",
+   "run": 1,
+   "ms": 7945,
+   "modelVersion": "Qwen/Qwen3.8-27B@prompt-v2",
+   "output": {
+    "locale": "en",
+    "coaching": [
+     {
+      "label": "A1",
+      "strengths": [
+       "A1 achieved an attendanceRate of 80."
+      ],
+      "gaps": [
+       "A1 has a gapToTarget of 30 with an attainmentPct of 70."
+      ],
+      "actions": [
+       "Focus on closing the gapToTarget of 30 for A1."
+      ],
+      "evidenceRefs": [
+       "A1"
+      ]
+     },
+     {
+      "label": "A2",
+      "strengths": [
+       "A2 recorded the highest attendanceRate at 85."
+      ],
+      "gaps": [
+       "A2 has the largest gapToTarget of 40 and the lowest attainmentPct of 60."
+      ],
+      "actions": [
+       "Prioritize sales conversion for A2 to reduce the gapToTarget of 40."
+      ],
+      "evidenceRefs": [
+       "A2"
+      ]
+     },
+     {
+      "label": "A3",
+      "strengths": [
+       "A3 has the smallest gapToTarget of 20 and the highest attainmentPct of 80."
+      ],
+      "gaps": [
+       "A3 has the lowest attendanceRate at 75."
+      ],
+      "actions": [
+       "Improve attendance for A3 to support the strong attainmentPct of 80."
+      ],
+      "evidenceRefs": [
+       "A3"
+      ]
+     }
+    ],
+    "campaignActions": [
+     "Address the overall targetGap of 90 to improve the attainmentPct of 70.",
+     "Review visit efficiency given the avgVisits of 2.667 and totalUnits of 210."
+    ],
+    "kpis": {
+     "animateurCount": 3,
+     "avgAttendanceRate": 0.8,
+     "totalUnits": 210,
+     "totalTarget": 300,
+     "targetGap": 90,
+     "attainmentPct": 70,
+     "avgVisits": 2.667
+    }
+   },
+   "diagnostics": {
+    "state": "first_pass",
+    "fallbackReason": null,
+    "attempts": [
+     "OK"
+    ]
+   }
+  },
+  {
+   "id": "ANI-05",
+   "locale": "en",
+   "run": 1,
+   "ms": 6170,
+   "modelVersion": "Qwen/Qwen3.8-27B@prompt-v2",
+   "output": {
+    "locale": "en",
+    "coaching": [
+     {
+      "label": "A1",
+      "strengths": [
+       "A1 achieved 100 attainmentPct with 0 gapToTarget.",
+       "A1 maintained a 90 attendanceRate."
+      ],
+      "gaps": [],
+      "actions": [
+       "Maintain current visit frequency of 4."
+      ],
+      "evidenceRefs": [
+       "A1"
+      ]
+     },
+     {
+      "label": "A2",
+      "strengths": [
+       "A2 achieved 90 attainmentPct."
+      ],
+      "gaps": [
+       "A2 has a 10 gapToTarget.",
+       "A2 has an 80 attendanceRate."
+      ],
+      "actions": [
+       "Increase attendance to close the 10 unit gap.",
+       "Increase visits from 3 to match A1's frequency."
+      ],
+      "evidenceRefs": [
+       "A2"
+      ]
+     }
+    ],
+    "campaignActions": [
+     "Focus on closing the 10 targetGap for the campaign.",
+     "Improve the 45.4 avgAttendanceRate across the team."
+    ],
+    "kpis": {
+     "animateurCount": 2,
+     "avgAttendanceRate": 45.4,
+     "totalUnits": 190,
+     "totalTarget": 200,
+     "targetGap": 10,
+     "attainmentPct": 95,
+     "avgVisits": 3.5
+    }
+   },
+   "diagnostics": {
+    "state": "first_pass",
+    "fallbackReason": null,
+    "attempts": [
+     "OK"
+    ]
+   }
+  },
+  {
+   "id": "ANI-05",
+   "locale": "ar",
+   "run": 1,
+   "ms": 6267,
+   "modelVersion": "Qwen/Qwen3.8-27B@prompt-v2",
+   "output": {
+    "locale": "ar",
+    "coaching": [
+     {
+      "label": "A1",
+      "strengths": [
+       "حقق A1 نسبة حضور 90%.",
+       "بلغت نسبة تحقيق الهدف 100%."
+      ],
+      "gaps": [
+       "لا توجد فجوات في الأداء الحالي."
+      ],
+      "actions": [
+       "توثيق أفضل الممارسات الخاصة بـ A1 لمشاركتها مع الفريق."
+      ],
+      "evidenceRefs": [
+       "A1",
+       "attendanceRate",
+       "attainmentPct"
+      ]
+     },
+     {
+      "label": "A2",
+      "strengths": [
+       "حقق A2 نسبة حضور 80%."
+      ],
+      "gaps": [
+       "توجد فجوة قدرها 10 وحدات عن الهدف.",
+       "بلغت نسبة تحقيق الهدف 90%."
+      ],
+      "actions": [
+       "زيادة عدد الزيارات من 3 إلى 4 لمطابقة أداء A1.",
+       "مراجعة خطة البيع لسد فجوة الـ 10 وحدات."
+      ],
+      "evidenceRefs": [
+       "A2",
+       "gapToTarget",
+       "attainmentPct",
+       "visits"
+      ]
+     }
+    ],
+    "campaignActions": [
+     "رفع متوسط الحضور من 45.4% إلى مستوى أعلى عبر متابعة A2.",
+     "سد فجوة الـ 10 وحدات للوصول إلى الهدف الكلي 200."
+    ],
+    "kpis": {
+     "animateurCount": 2,
+     "avgAttendanceRate": 45.4,
+     "totalUnits": 190,
+     "totalTarget": 200,
+     "targetGap": 10,
+     "attainmentPct": 95,
+     "avgVisits": 3.5
+    }
+   },
+   "diagnostics": {
+    "state": "first_pass",
+    "fallbackReason": null,
+    "attempts": [
+     "OK"
+    ]
+   }
+  },
+  {
+   "id": "ANI-04",
+   "locale": "ar",
+   "run": 1,
+   "ms": 9890,
+   "modelVersion": "Qwen/Qwen3.8-27B@prompt-v2",
+   "output": {
+    "locale": "ar",
+    "coaching": [
+     {
+      "label": "A1",
+      "strengths": [
+       "حقق A1 نسبة حضور 80 وزيارة 3 نقاط بيع."
+      ],
+      "gaps": [
+       "بقي A1 بعيداً عن هدفه بفارق 30 وحدة مع نسبة تحقيق 70."
+      ],
+      "actions": [
+       "يجب على A1 زيادة عدد الوحدات المباعة لتقليص الفارق عن الهدف."
+      ],
+      "evidenceRefs": [
+       "A1",
+       "attendanceRate",
+       "visits",
+       "gapToTarget",
+       "attainmentPct"
+      ]
+     },
+     {
+      "label": "A2",
+      "strengths": [
+       "سجل A2 أعلى نسبة حضور بواقع 85 مع زيارة 3 نقاط بيع."
+      ],
+      "gaps": [
+       "يواجه A2 أكبر فجوة عن الهدف بواقع 40 وحدة ونسبة تحقيق 60."
+      ],
+      "actions": [
+       "ينبغي على A2 التركيز على تحويل الزيارات إلى مبيعات لسد الفارق الأكبر."
+      ],
+      "evidenceRefs": [
+       "A2",
+       "attendanceRate",
+       "visits",
+       "gapToTarget",
+       "attainmentPct"
+      ]
+     },
+     {
+      "label": "A3",
+      "strengths": [
+       "حقق A3 أعلى نسبة تحقيق بواقع 80 مع بيع 80 وحدة."
+      ],
+      "gaps": [
+       "تدنى حضور A3 إلى 75 مع زيارة نقطتي بيع فقط."
+      ],
+      "actions": [
+       "يجب على A3 تحسين معدل الحضور لزيادة فرص الوصول إلى نقاط البيع."
+      ],
+      "evidenceRefs": [
+       "A3",
+       "attendanceRate",
+       "visits",
+       "attainmentPct",
+       "units"
+      ]
+     }
+    ],
+    "campaignActions": [
+     "يجب على الفريق معالجة الفجوة الإجمالية البالغة 90 وحدة للوصول إلى الهدف الكلي 300.",
+     "ينبغي تحسين متوسط الزيارات البالغ 2.667 لرفع نسبة التحصيل الإجمالية الحالية عند 70."
+    ],
+    "kpis": {
+     "animateurCount": 3,
+     "avgAttendanceRate": 0.8,
+     "totalUnits": 210,
+     "totalTarget": 300,
+     "targetGap": 90,
+     "attainmentPct": 70,
+     "avgVisits": 2.667
+    }
+   },
+   "diagnostics": {
+    "state": "first_pass",
+    "fallbackReason": null,
+    "attempts": [
+     "OK"
+    ]
+   }
+  },
+  {
+   "id": "ANI-06",
+   "locale": "en",
+   "run": 1,
+   "ms": 5847,
+   "modelVersion": "Qwen/Qwen3.8-27B@prompt-v2",
+   "output": {
+    "locale": "en",
+    "coaching": [
+     {
+      "label": "A1",
+      "strengths": [
+       "Achieved 100 attainmentPct with 100 units against a target of 100.",
+       "Maintained a 90 attendanceRate with 4 visits."
+      ],
+      "gaps": [],
+      "actions": [
+       "Share best practices with A2 to help close the gap."
+      ],
+      "evidenceRefs": [
+       "A1"
+      ]
+     },
+     {
+      "label": "A2",
+      "strengths": [
+       "Sold 90 units."
+      ],
+      "gaps": [
+       "Has a gapToTarget of 10 with an attainmentPct of 90.",
+       "AttendanceRate is 80."
+      ],
+      "actions": [
+       "Increase visit frequency to improve attendance and close the 10 unit gap."
+      ],
+      "evidenceRefs": [
+       "A2"
+      ]
+     }
+    ],
+    "campaignActions": [
+     "Focus on A2 to close the 10 unit gapToTarget.",
+     "Monitor overall attainmentPct of 95 against the totalTarget of 200."
+    ],
+    "kpis": {
+     "animateurCount": 2,
+     "avgAttendanceRate": 0.85,
+     "totalUnits": 190,
+     "totalTarget": 200,
+     "targetGap": 10,
+     "attainmentPct": 95,
+     "avgVisits": 2
+    }
+   },
+   "diagnostics": {
+    "state": "first_pass",
+    "fallbackReason": null,
+    "attempts": [
+     "OK"
+    ]
+   }
+  },
+  {
+   "id": "ANI-06",
+   "locale": "ar",
+   "run": 1,
+   "ms": 6744,
+   "modelVersion": "Qwen/Qwen3.8-27B@prompt-v2",
+   "output": {
+    "locale": "ar",
+    "coaching": [
+     {
+      "label": "A1",
+      "strengths": [
+       "حقق Animateur A1 نسبة إنجاز 100% من المستهدف.",
+       "حافظ Animateur A1 على معدل حضور 90%."
+      ],
+      "gaps": [
+       "لا توجد فجوات رقمية مسجلة لـ Animateur A1."
+      ],
+      "actions": [
+       "توثيق أفضل الممارسات الخاصة بـ Animateur A1 لمشاركتها مع الفريق."
+      ],
+      "evidenceRefs": [
+       "A1",
+       "attainmentPct",
+       "attendanceRate"
+      ]
+     },
+     {
+      "label": "A2",
+      "strengths": [
+       "حقق Animateur A2 نسبة إنجاز 90% من المستهدف."
+      ],
+      "gaps": [
+       "سجل Animateur A2 فجوة قدرها 10 وحدات عن المستهدف.",
+       "بلغ معدل حضور Animateur A2 80%."
+      ],
+      "actions": [
+       "مراجعة خطة الزيارات لـ Animateur A2 لسد الفجوة في المبيعات.",
+       "تحديد أسباب انخفاض معدل الحضور لـ Animateur A2."
+      ],
+      "evidenceRefs": [
+       "A2",
+       "gapToTarget",
+       "attendanceRate"
+      ]
+     }
+    ],
+    "campaignActions": [
+     "توجيه الدعم الإضافي نحو Animateur A2 لسد الفجوة البالغة 10 وحدات.",
+     "مراقبة أداء Animateur A1 لضمان استدامة تحقيق المستهدف."
+    ],
+    "kpis": {
+     "animateurCount": 2,
+     "avgAttendanceRate": 0.85,
+     "totalUnits": 190,
+     "totalTarget": 200,
+     "targetGap": 10,
+     "attainmentPct": 95,
+     "avgVisits": 2
+    }
+   },
+   "diagnostics": {
+    "state": "first_pass",
+    "fallbackReason": null,
+    "attempts": [
+     "OK"
+    ]
+   }
+  },
+  {
+   "id": "ANI-07",
+   "locale": "en",
+   "run": 1,
+   "ms": 6722,
+   "modelVersion": "Qwen/Qwen3.8-27B@prompt-v2",
+   "output": {
+    "locale": "en",
+    "coaching": [
+     {
+      "label": "A1",
+      "strengths": [
+       "Achieved 100% attainment with 100 units against a target of 100."
+      ],
+      "gaps": [
+       "Attendance rate dropped to 60% in one period, resulting in a gap of 50 units."
+      ],
+      "actions": [
+       "Review scheduling to stabilize attendance above 80%."
+      ],
+      "evidenceRefs": [
+       "A1",
+       "attendanceRate",
+       "attainmentPct"
+      ]
+     },
+     {
+      "label": "A2",
+      "strengths": [
+       "Maintained an 80% attendance rate and achieved 90% attainment."
+      ],
+      "gaps": [
+       "A gap of 10 units remains against the target of 100."
+      ],
+      "actions": [
+       "Focus on closing the 10-unit gap during the next 3 visits."
+      ],
+      "evidenceRefs": [
+       "A2",
+       "gapToTarget",
+       "visits"
+      ]
+     }
+    ],
+    "campaignActions": [
+     "Address the overall target gap of 60 units by prioritizing high-attendance Animateurs.",
+     "Monitor the average attendance rate of 76.7% to ensure it aligns with the 80% attainment."
+    ],
+    "kpis": {
+     "animateurCount": 3,
+     "avgAttendanceRate": 0.767,
+     "totalUnits": 240,
+     "totalTarget": 300,
+     "targetGap": 60,
+     "attainmentPct": 80,
+     "avgVisits": 3
+    }
+   },
+   "diagnostics": {
+    "state": "first_pass",
+    "fallbackReason": null,
+    "attempts": [
+     "OK"
+    ]
+   }
+  },
+  {
+   "id": "ANI-07",
+   "locale": "ar",
+   "run": 1,
+   "ms": 6352,
+   "modelVersion": "Qwen/Qwen3.8-27B@prompt-v2",
+   "output": {
+    "locale": "ar",
+    "coaching": [
+     {
+      "label": "A1",
+      "strengths": [
+       "حقق A1 نسبة إنجاز 100% في إحدى الفترات مع معدل حضور 90%."
+      ],
+      "gaps": [
+       "انخفض معدل حضور A1 إلى 60% في فترة أخرى، مما أدى إلى فجوة 50 وحدة."
+      ],
+      "actions": [
+       "يجب على A1 تحسين انتظام الحضور للحفاظ على الأداء المستقر."
+      ],
+      "evidenceRefs": [
+       "A1",
+       "attendanceRate",
+       "gapToTarget"
+      ]
+     },
+     {
+      "label": "A2",
+      "strengths": [
+       "حقق A2 نسبة إنجاز 90% مع معدل حضور 80%."
+      ],
+      "gaps": [
+       "تبقى فجوة 10 وحدات للوصول إلى الهدف الكامل."
+      ],
+      "actions": [
+       "يمكن لـ A2 زيادة عدد الزيارات قليلاً لسد الفجوة المتبقية."
+      ],
+      "evidenceRefs": [
+       "A2",
+       "gapToTarget",
+       "visits"
+      ]
+     }
+    ],
+    "campaignActions": [
+     "مراجعة أداء A1 لضمان استقرار معدل الحضور عند مستوى 90%.",
+     "دعم A2 في تحقيق الهدف الكامل عبر تحسين تغطية الزيارات."
+    ],
+    "kpis": {
+     "animateurCount": 3,
+     "avgAttendanceRate": 0.767,
+     "totalUnits": 240,
+     "totalTarget": 300,
+     "targetGap": 60,
+     "attainmentPct": 80,
+     "avgVisits": 3
+    }
+   },
+   "diagnostics": {
+    "state": "first_pass",
+    "fallbackReason": null,
+    "attempts": [
+     "OK"
+    ]
+   }
+  },
+  {
+   "id": "ANI-08",
+   "locale": "en",
+   "run": 1,
+   "ms": 8226,
+   "modelVersion": "Qwen/Qwen3.8-27B@prompt-v2",
+   "output": {
+    "locale": "en",
+    "coaching": [
+     {
+      "label": "A3",
+      "strengths": [
+       "Attendance rate is 50."
+      ],
+      "gaps": [
+       "Attainment is 40 with a gap to target of 60.",
+       "Visits are 1."
+      ],
+      "actions": [
+       "Increase visit frequency to close the gap to target.",
+       "Review route planning to improve attendance."
+      ],
+      "evidenceRefs": [
+       "A3"
+      ]
+     },
+     {
+      "label": "A7",
+      "strengths": [
+       "Attendance rate is 60."
+      ],
+      "gaps": [
+       "Attainment is 55 with a gap to target of 45.",
+       "Visits are 2."
+      ],
+      "actions": [
+       "Increase visit frequency to close the gap to target.",
+       "Focus on conversion during visits to improve units."
+      ],
+      "evidenceRefs": [
+       "A7"
+      ]
+     },
+     {
+      "label": "A4",
+      "strengths": [
+       "Attainment is 110 with a gap to target of -10.",
+       "Attendance rate is 95."
+      ],
+      "gaps": [
+       "None."
+      ],
+      "actions": [
+       "Share best practices with lower-performing Animateurs."
+      ],
+      "evidenceRefs": [
+       "A4"
+      ]
+     }
+    ],
+    "campaignActions": [
+     "Address the overall target gap of 90 by focusing on Animateurs with high gaps to target.",
+     "Improve average attendance rate of 83.9 by supporting Animateurs with lower attendance."
+    ],
+    "kpis": {
+     "animateurCount": 10,
+     "avgAttendanceRate": 0.839,
+     "totalUnits": 910,
+     "totalTarget": 1000,
+     "targetGap": 90,
+     "attainmentPct": 91,
+     "avgVisits": 3.6
+    }
+   },
+   "diagnostics": {
+    "state": "first_pass",
+    "fallbackReason": null,
+    "attempts": [
+     "OK"
+    ]
+   }
+  },
+  {
+   "id": "ANI-08",
+   "locale": "ar",
+   "run": 1,
+   "ms": 24155,
+   "modelVersion": "Qwen/Qwen3.8-27B@prompt-v2",
+   "output": {
+    "locale": "ar",
+    "coaching": [
+     {
+      "label": "A3",
+      "strengths": [
+       "حضور 50"
+      ],
+      "gaps": [
+       "فجوة 60 وحدة",
+       "نسبة تحقق 40"
+      ],
+      "actions": [
+       "زيادة عدد الزيارات إلى 4",
+       "مراجعة خطة البيع في Point de Vente"
+      ],
+      "evidenceRefs": [
+       "A3"
+      ]
+     },
+     {
+      "label": "A7",
+      "strengths": [
+       "حضور 60"
+      ],
+      "gaps": [
+       "فجوة 45 وحدة",
+       "نسبة تحقق 55"
+      ],
+      "actions": [
+       "رفع عدد الزيارات إلى 4",
+       "تدريب على تقنيات الإقناع"
+      ],
+      "evidenceRefs": [
+       "A7"
+      ]
+     },
+     {
+      "label": "A4",
+      "strengths": [
+       "نسبة تحقق 110",
+       "حضور 95"
+      ],
+      "gaps": [
+       "لا يوجد"
+      ],
+      "actions": [
+       "توثيق أفضل الممارسات",
+       "تدريب زملاء الفريق"
+      ],
+      "evidenceRefs": [
+       "A4"
+      ]
+     }
+    ],
+    "campaignActions": [
+     "مراجعة أداء A3 و A7 مع Superviseur",
+     "توزيع نقاط البيع على Animateur ذوي الأداء العالي",
+     "متابعة عدد الزيارات اليومي"
+    ],
+    "kpis": {
+     "animateurCount": 10,
+     "avgAttendanceRate": 0.839,
+     "totalUnits": 910,
+     "totalTarget": 1000,
+     "targetGap": 90,
+     "attainmentPct": 91,
+     "avgVisits": 3.6
+    }
+   },
+   "diagnostics": {
+    "state": "first_pass",
+    "fallbackReason": null,
+    "attempts": [
+     "OK"
+    ]
+   }
+  },
+  {
+   "id": "ANI-09",
+   "locale": "en",
+   "run": 1,
+   "ms": 23116,
+   "modelVersion": "Qwen/Qwen3.8-27B@prompt-v2",
+   "output": {
+    "locale": "en",
+    "coaching": [
+     {
+      "label": "A1",
+      "strengths": [
+       "A1 achieved 100 units with an attendanceRate of 90."
+      ],
+      "gaps": [
+       "A1 has a target of 0, making attainment undefined."
+      ],
+      "actions": [
+       "Set a realistic target for A1 to enable performance tracking."
+      ],
+      "evidenceRefs": [
+       "A1",
+       "attendanceRate",
+       "units",
+       "target"
+      ]
+     },
+     {
+      "label": "A2",
+      "strengths": [
+       "A2 made 3 visits and sold 90 units."
+      ],
+      "gaps": [
+       "A2 has a gapToTarget of 10 with an attainmentPct of 90."
+      ],
+      "actions": [
+       "Focus on closing the 10 unit gap for A2."
+      ],
+      "evidenceRefs": [
+       "A2",
+       "gapToTarget",
+       "attainmentPct",
+       "visits"
+      ]
+     }
+    ],
+    "campaignActions": [
+     "Review A1's target setting to ensure it is non-zero.",
+     "Support A2 in achieving the remaining 10 units to meet target."
+    ],
+    "kpis": {
+     "animateurCount": 2,
+     "avgAttendanceRate": 0.85,
+     "totalUnits": 190,
+     "totalTarget": 100,
+     "targetGap": -90,
+     "attainmentPct": 190,
+     "avgVisits": 3.5
+    }
+   },
+   "diagnostics": {
+    "state": "first_pass",
+    "fallbackReason": null,
+    "attempts": [
+     "OK"
+    ]
+   }
+  },
+  {
+   "id": "ANI-09",
+   "locale": "ar",
+   "run": 1,
+   "ms": 22934,
+   "modelVersion": "Qwen/Qwen3.8-27B@prompt-v2",
+   "output": {
+    "locale": "ar",
+    "coaching": [
+     {
+      "label": "A1",
+      "strengths": [
+       "حقق A1 معدل حضور 90 وزيارات 4."
+      ],
+      "gaps": [
+       "لا تتوفر بيانات فجوة أو نسبة تحقق محددة لـ A1 في المدخلات."
+      ],
+      "actions": [
+       "مراجعة أهداف A1 لتحديد فجوة الأداء بدقة."
+      ],
+      "evidenceRefs": [
+       "A1",
+       "attendanceRate",
+       "visits"
+      ]
+     },
+     {
+      "label": "A2",
+      "strengths": [
+       "حقق A2 نسبة تحقق 90."
+      ],
+      "gaps": [
+       "يوجد فجوة 10 وحدات لـ A2، ومعدل حضور 80 وزيارات 3."
+      ],
+      "actions": [
+       "زيادة عدد الزيارات لـ A2 لسد فجوة الوحدات."
+      ],
+      "evidenceRefs": [
+       "A2",
+       "gapToTarget",
+       "attainmentPct",
+       "attendanceRate",
+       "visits"
+      ]
+     }
+    ],
+    "campaignActions": [
+     "معالجة فجوة A2 البالغة 10 وحدات عبر زيادة الزيارات.",
+     "تحديد أهداف واضحة لـ A1 لتقييم الأداء بدقة."
+    ],
+    "kpis": {
+     "animateurCount": 2,
+     "avgAttendanceRate": 0.85,
+     "totalUnits": 190,
+     "totalTarget": 100,
+     "targetGap": -90,
+     "attainmentPct": 190,
+     "avgVisits": 3.5
+    }
+   },
+   "diagnostics": {
+    "state": "first_pass",
+    "fallbackReason": null,
+    "attempts": [
+     "OK"
+    ]
+   }
+  },
+  {
+   "id": "ANI-10",
+   "locale": "en",
+   "run": 1,
+   "ms": 8279,
+   "modelVersion": "Qwen/Qwen3.8-27B@prompt-v2",
+   "output": {
+    "locale": "en",
+    "coaching": [
+     {
+      "label": "A1",
+      "strengths": [
+       "Maintained 80 attendance rate."
+      ],
+      "gaps": [
+       "Recorded a gapToTarget of 10 with 90 attainmentPct."
+      ],
+      "actions": [
+       "Review visit quality to close the 10 unit gap."
+      ],
+      "evidenceRefs": [
+       "A1",
+       "gapToTarget",
+       "attainmentPct"
+      ]
+     },
+     {
+      "label": "A2",
+      "strengths": [
+       "Maintained 80 attendance rate."
+      ],
+      "gaps": [
+       "Recorded a gapToTarget of 10 with 90 attainmentPct."
+      ],
+      "actions": [
+       "Focus on conversion during the 3 visits to improve results."
+      ],
+      "evidenceRefs": [
+       "A2",
+       "gapToTarget",
+       "attainmentPct"
+      ]
+     },
+     {
+      "label": "A3",
+      "strengths": [
+       "Achieved 110 attainmentPct with 110 units."
+      ],
+      "gaps": [
+       "None, as target was exceeded."
+      ],
+      "actions": [
+       "Share best practices with A1 and A2."
+      ],
+      "evidenceRefs": [
+       "A3",
+       "attainmentPct",
+       "units"
+      ]
+     }
+    ],
+    "campaignActions": [
+     "Conduct a joint review with A1 and A2 to address the 10 unit gapToTarget each.",
+     "Leverage A3's 110 attainmentPct as a benchmark for the team."
+    ],
+    "kpis": {
+     "animateurCount": 3,
+     "avgAttendanceRate": 0.833,
+     "totalUnits": 290,
+     "totalTarget": 300,
+     "targetGap": 10,
+     "attainmentPct": 96.667,
+     "avgVisits": 3.667
+    }
+   },
+   "diagnostics": {
+    "state": "first_pass",
+    "fallbackReason": null,
+    "attempts": [
+     "OK"
+    ]
+   }
+  },
+  {
+   "id": "ANI-10",
+   "locale": "ar",
+   "run": 1,
+   "ms": 8999,
+   "modelVersion": "Qwen/Qwen3.8-27B@prompt-v2",
+   "output": {
+    "locale": "ar",
+    "coaching": [
+     {
+      "label": "A1",
+      "strengths": [
+       "حافظ Animateur A1 على معدل حضور 80%."
+      ],
+      "gaps": [
+       "سجّل Animateur A1 فجوة 10 وحدات عن الهدف مع نسبة تحقق 90%."
+      ],
+      "actions": [
+       "زيادة عدد الزيارات لتحسين الأداء."
+      ],
+      "evidenceRefs": [
+       "A1",
+       "attendanceRate",
+       "gapToTarget",
+       "attainmentPct"
+      ]
+     },
+     {
+      "label": "A2",
+      "strengths": [
+       "حافظ Animateur A2 على معدل حضور 80%."
+      ],
+      "gaps": [
+       "سجّل Animateur A2 فجوة 10 وحدات عن الهدف مع نسبة تحقق 90%."
+      ],
+      "actions": [
+       "زيادة عدد الزيارات لتحسين الأداء."
+      ],
+      "evidenceRefs": [
+       "A2",
+       "attendanceRate",
+       "gapToTarget",
+       "attainmentPct"
+      ]
+     },
+     {
+      "label": "A3",
+      "strengths": [
+       "حقق Animateur A3 نسبة تحقق 110% مع معدل حضور 90%."
+      ],
+      "gaps": [
+       "لا توجد فجوات سلبية؛ تجاوز الهدف بـ 10 وحدات."
+      ],
+      "actions": [
+       "توثيق أفضل الممارسات لمشاركتها مع الفريق."
+      ],
+      "evidenceRefs": [
+       "A3",
+       "attendanceRate",
+       "gapToTarget",
+       "attainmentPct"
+      ]
+     }
+    ],
+    "campaignActions": [
+     "مراجعة خطط الزيارات لـ Animateur A1 و Animateur A2 لسد الفجوة.",
+     "تعزيز حضور Animateur A1 و Animateur A2 لرفع معدل الحضور."
+    ],
+    "kpis": {
+     "animateurCount": 3,
+     "avgAttendanceRate": 0.833,
+     "totalUnits": 290,
+     "totalTarget": 300,
+     "targetGap": 10,
+     "attainmentPct": 96.667,
+     "avgVisits": 3.667
+    }
+   },
+   "diagnostics": {
+    "state": "first_pass",
+    "fallbackReason": null,
+    "attempts": [
+     "OK"
+    ]
+   }
+  },
+  {
+   "id": "ANI-11",
+   "locale": "en",
+   "run": 1,
+   "ms": 8177,
+   "modelVersion": "Qwen/Qwen3.8-27B@prompt-v2",
+   "output": {
+    "locale": "en",
+    "coaching": [
+     {
+      "label": "A1",
+      "strengths": [
+       "A1 achieved 100 attainmentPct with 100 units against a target of 100.",
+       "A1 maintained an attendanceRate of 120 and completed 4 visits."
+      ],
+      "gaps": [
+       "No gaps identified for A1 as gapToTarget is 0."
+      ],
+      "actions": [
+       "Maintain current visit frequency to sustain 100 attainmentPct."
+      ],
+      "evidenceRefs": [
+       "A1",
+       "attainmentPct",
+       "units",
+       "target",
+       "attendanceRate",
+       "visits"
+      ]
+     },
+     {
+      "label": "A2",
+      "strengths": [
+       "A2 sold 90 units, contributing significantly to the totalUnits of 190."
+      ],
+      "gaps": [
+       "A2 has a gapToTarget of 10 with an attainmentPct of 90.",
+       "A2 attendanceRate is 80, below the average, with only 3 visits."
+      ],
+      "actions": [
+       "Increase A2 visits from 3 to match A1's frequency to close the gapToTarget of 10.",
+       "Focus on improving A2 attendanceRate to reduce the 10 unit shortfall."
+      ],
+      "evidenceRefs": [
+       "A2",
+       "gapToTarget",
+       "attainmentPct",
+       "units",
+       "attendanceRate",
+       "visits"
+      ]
+     }
+    ],
+    "campaignActions": [
+     "Support A2 in increasing visits to close the gapToTarget of 10.",
+     "Monitor A2 attendanceRate to improve overall campaign attainmentPct."
+    ],
+    "kpis": {
+     "animateurCount": 2,
+     "avgAttendanceRate": 1,
+     "totalUnits": 190,
+     "totalTarget": 200,
+     "targetGap": 10,
+     "attainmentPct": 95,
+     "avgVisits": 3.5
+    }
+   },
+   "diagnostics": {
+    "state": "first_pass",
+    "fallbackReason": null,
+    "attempts": [
+     "OK"
+    ]
+   }
+  },
+  {
+   "id": "ANI-11",
+   "locale": "ar",
+   "run": 1,
+   "ms": 6256,
+   "modelVersion": "Qwen/Qwen3.8-27B@prompt-v2",
+   "output": {
+    "locale": "ar",
+    "coaching": [
+     {
+      "label": "A1",
+      "strengths": [
+       "تحقيق نسبة إنجاز 100% من المستهدف.",
+       "معدل حضور 120% مع 4 زيارات."
+      ],
+      "gaps": [
+       "لا توجد فجوات واضحة في الأداء الحالي."
+      ],
+      "actions": [
+       "توثيق أفضل الممارسات لتعميمها على الفريق."
+      ],
+      "evidenceRefs": [
+       "A1",
+       "attainmentPct",
+       "attendanceRate"
+      ]
+     },
+     {
+      "label": "A2",
+      "strengths": [
+       "تحقيق 90 وحدة من أصل 100."
+      ],
+      "gaps": [
+       "فجوة 10 وحدات عن المستهدف.",
+       "معدل حضور 80% مع 3 زيارات فقط."
+      ],
+      "actions": [
+       "زيادة عدد الزيارات لتحسين معدل الحضور.",
+       "مراجعة خطة البيع لسد الفجوة المتبقية."
+      ],
+      "evidenceRefs": [
+       "A2",
+       "gapToTarget",
+       "attendanceRate"
+      ]
+     }
+    ],
+    "campaignActions": [
+     "توجيه الدعم الإضافي نحو A2 لسد فجوة 10 وحدات.",
+     "مراقبة معدل الحضور لضمان تحقيق المستهدف الكلي."
+    ],
+    "kpis": {
+     "animateurCount": 2,
+     "avgAttendanceRate": 1,
+     "totalUnits": 190,
+     "totalTarget": 200,
+     "targetGap": 10,
+     "attainmentPct": 95,
+     "avgVisits": 3.5
+    }
+   },
+   "diagnostics": {
+    "state": "first_pass",
+    "fallbackReason": null,
+    "attempts": [
+     "OK"
+    ]
+   }
+  }
+ ]
+}

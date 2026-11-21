@@ -6,6 +6,29 @@ Animateurs and three stores.
 
 ## Run locally
 
+### Docker quick start
+
+After cloning, start Docker and run `docker compose up --build` from the repository root.
+Open [FieldFlow](http://localhost:8080) and sign in as `director@demo.acticrew.test` with the local
+demo password `FieldFlow-Demo-2026`. The first start applies migrations and seeds the small demo.
+Use `docker compose down` to stop the services and keep the demo data.
+
+To enable live AI, add these values to the root `.env` before running the same command:
+
+```dotenv
+COMPOSE_PROFILES=ai
+COMMITTEE_AI_URL=http://ai:4100
+LLM_API_KEY=
+LLM_MODEL=google/gemma-4-31B
+```
+
+Fill in your provider key and choose a model allowed by it. The bundled AI service receives reports
+on the private Docker network and returns them to the API there. The browser uses port 8080 only.
+This configuration is for a local evaluation. Keep `.env` out of Git and use separate settings for
+any public deployment.
+
+### Manual setup
+
 Install Git, Node.js 24 with npm, and Docker with Compose v2. Start Docker and run the following from
 the repository root. Use a fresh local database for the demo.
 

@@ -1,0 +1,205 @@
+// 45 offline benchmark scenarios. Everything here is HAND-WRITTEN:
+//   data     the request payload (labels only, so it passes the PII firewall)
+//   dq       data-quality codes an analyst would flag (checked against reference.mjs)
+//   focus    what a good report must address: entity labels or topics
+//            (attendance | gifts | sales | target | visits | trend)
+//   priority the single most important focus item, when one clearly dominates
+//   hand     a few KPI values worked out by hand (verified against reference.mjs)
+// Expected KPIs for every other metric come from eval/reference.mjs, never from
+// the service and never from a model.
+
+const SUP = 'supervisor_daily_summary';
+const SALES = 'sales_performance';
+const CAMP = 'campaign_insights';
+const ANIM = 'animateur_coaching';
+
+const sup = (present, expected, units, previousUnits, distributed, planned) => ({
+  attendance: { present, expected },
+  sales: { units, previousUnits },
+  gifts: { distributed, planned },
+});
+const camp = (present, expected, units, target, distributed, planned) => ({
+  attendance: { present, expected },
+  sales: { units, target },
+  gifts: { distributed, planned },
+});
+const sellers = (...rows) => rows.map(([label, units, target]) => ({ label, units, ...(target === undefined ? {} : { target }) }));
+const periods = (...units) => units.map((u, i) => ({ label: `P${i + 1}`, units: u }));
+const anim = (...rows) => rows.map(([label, attendanceRate, units, target, visits]) => ({
+  label,
+  ...(attendanceRate === undefined ? {} : { attendanceRate }),
+  units,
+  target,
+  ...(visits === undefined ? {} : { visits }),
+}));
+
+export const SCENARIOS = [
+  // ---- supervisor_daily_summary (11) ----
+  { id: 'SUP-01', cap: SUP, title: 'normal day', tags: ['normal'],
+    data: sup(45, 50, 130, 120, 95, 100), dq: [], focus: ['sales'],
+    hand: { attendanceRate: 0.9, missingCount: 5, unitsDeltaPct: 8.333, giftGap: 5, giftDistributionRate: 0.95 } },
+  { id: 'SUP-02', cap: SUP, title: 'attendance collapse', tags: ['supervisor-decision'],
+    data: sup(30, 50, 100, 105, 90, 100), dq: [], focus: ['attendance'], priority: 'attendance',
+    hand: { attendanceRate: 0.6, missingCount: 20 } },
+  { id: 'SUP-03', cap: SUP, title: 'sales decline', tags: ['supervisor-decision'],
+    data: sup(48, 50, 85, 120, 95, 100), dq: [], focus: ['sales'], priority: 'sales',
+    hand: { unitsDeltaPct: -29.167 } },
+  { id: 'SUP-04', cap: SUP, title: 'gifts fully distributed but sales low (cause is unknown)', tags: ['trap-cause'],
+    data: sup(49, 50, 60, 100, 100, 100), dq: [], focus: ['sales'], priority: 'sales',
+    hand: { unitsDeltaPct: -40, giftGap: 0, giftDistributionRate: 1 } },
+  { id: 'SUP-05', cap: SUP, title: 'previousUnits is 0 (change is undefined)', tags: ['suspicious'],
+    data: sup(40, 50, 50, 0, 50, 60), dq: ['PREVIOUS_ZERO'], focus: ['sales'],
+    hand: { unitsDeltaPct: null, giftGap: 10 } },
+  { id: 'SUP-06', cap: SUP, title: 'gifts block missing', tags: ['missing'],
+    data: { attendance: { present: 40, expected: 50 }, sales: { units: 100, previousUnits: 90 } }, dq: ['FIELD_MISSING'], focus: ['sales'],
+    hand: { distributedGifts: null, plannedGifts: null, giftGap: null, giftDistributionRate: null } },
+  { id: 'SUP-07', cap: SUP, title: 'present exceeds expected', tags: ['conflict'],
+    data: sup(60, 50, 120, 100, 80, 100), dq: ['PRESENT_GT_EXPECTED'], focus: ['attendance'],
+    hand: { attendanceRate: 1.2, missingCount: -10 } },
+  { id: 'SUP-08', cap: SUP, title: 'negative units', tags: ['conflict', 'suspicious'],
+    data: sup(40, 50, -5, 100, 50, 100), dq: ['NEGATIVE_VALUE'], focus: ['sales'] },
+  { id: 'SUP-09', cap: SUP, title: 'expected attendance is 0', tags: ['missing'],
+    data: sup(0, 0, 100, 90, 50, 100), dq: ['DENOMINATOR_ZERO'], focus: ['attendance'],
+    hand: { attendanceRate: null, missingCount: 0 } },
+  { id: 'SUP-10', cap: SUP, title: 'large values (thousands)', tags: ['normal', 'format'],
+    data: sup(1180, 1250, 12500, 11800, 9000, 10000), dq: [], focus: ['sales'],
+    hand: { missingCount: 70, unitsDeltaPct: 5.932, giftGap: 1000 } },
+  { id: 'SUP-11', cap: SUP, title: 'everything is bad (needs prioritising)', tags: ['supervisor-decision'],
+    data: sup(20, 50, 40, 100, 10, 100), dq: [], focus: ['attendance', 'sales', 'gifts'],
+    hand: { attendanceRate: 0.4, unitsDeltaPct: -60, giftDistributionRate: 0.1 } },
+
+  // ---- sales_performance (13) ----
+  { id: 'SAL-01', cap: SALES, title: 'balanced four sellers', tags: ['normal'],
+    data: { sellers: sellers(['S1', 100, 100], ['S2', 98, 100], ['S3', 102, 100], ['S4', 100, 100]), periods: periods(120, 130, 150) },
+    dq: [], focus: [] },
+  { id: 'SAL-02', cap: SALES, title: 'one clear underperformer', tags: ['underperformer'],
+    data: { sellers: sellers(['S1', 110, 100], ['S2', 45, 100], ['S3', 100, 100], ['S4', 105, 100]), periods: periods(100, 120, 140) },
+    dq: [], focus: ['S2'], priority: 'S2',
+    hand: { totalUnits: 360, totalTarget: 400, targetGap: 40, targetAttainmentPct: 90, topSellerUnits: 110, lastPeriodUnits: 140, periodCount: 3 } },
+  { id: 'SAL-03', cap: SALES, title: 'near-identical pair (swap trap)', tags: ['underperformer', 'trap-swap'],
+    data: { sellers: sellers(['S1', 101, 100], ['S2', 99, 100]), periods: periods(95, 105) },
+    dq: [], focus: ['S2'], priority: 'S2',
+    hand: { totalUnits: 200, totalTarget: 200, targetGap: 0, targetAttainmentPct: 100 } },
+  { id: 'SAL-04', cap: SALES, title: 'tied units', tags: ['underperformer', 'trap-ranking'],
+    data: { sellers: sellers(['S1', 80, 100], ['S2', 80, 100], ['S3', 120, 100]), periods: periods(130, 150) },
+    dq: [], focus: ['S1', 'S2'] },
+  { id: 'SAL-05', cap: SALES, title: 'top by units but lowest attainment', tags: ['underperformer', 'trap-ranking'],
+    data: { sellers: sellers(['S1', 150, 300], ['S2', 100, 100], ['S3', 90, 100]), periods: periods(150, 190) },
+    dq: [], focus: ['S1'], priority: 'S1',
+    hand: { totalUnits: 340, totalTarget: 500, targetGap: 160, targetAttainmentPct: 68 } },
+  { id: 'SAL-06', cap: SALES, title: 'three declining periods', tags: ['trend'],
+    data: { sellers: sellers(['S1', 100, 100], ['S2', 90, 100]), periods: periods(80, 60, 50) },
+    dq: [], focus: ['trend'] },
+  { id: 'SAL-07', cap: SALES, title: 'period total differs from seller total', tags: ['conflict-soft'],
+    data: { sellers: sellers(['S1', 100, 100], ['S2', 100, 100]), periods: periods(150, 120) },
+    dq: ['PERIODS_SELLERS_MISMATCH'], focus: [] },
+  { id: 'SAL-08', cap: SALES, title: 'one seller has no target', tags: ['missing'],
+    data: { sellers: sellers(['S1', 100, 100], ['S2', 80], ['S3', 90, 100]), periods: periods(120, 150) },
+    dq: ['TARGET_MISSING'], focus: [],
+    hand: { totalUnits: 270, totalTarget: null, targetGap: null, targetAttainmentPct: null } },
+  { id: 'SAL-09', cap: SALES, title: 'duplicate seller label', tags: ['conflict'],
+    data: { sellers: sellers(['S1', 100, 100], ['S1', 60, 100], ['S2', 80, 100]), periods: periods(100, 140) },
+    dq: ['DUPLICATE_LABEL'], focus: [] },
+  { id: 'SAL-10', cap: SALES, title: 'single seller', tags: ['normal'],
+    data: { sellers: sellers(['S1', 70, 100]), periods: periods(30, 40) },
+    dq: [], focus: ['S1'],
+    hand: { sellerCount: 1, totalUnits: 70, targetAttainmentPct: 70, topSellerUnits: 70 } },
+  { id: 'SAL-11', cap: SALES, title: 'twelve sellers (prioritise the weakest)', tags: ['underperformer', 'scale'],
+    data: {
+      sellers: sellers(['S1', 100, 100], ['S2', 105, 100], ['S3', 98, 100], ['S4', 55, 100], ['S5', 102, 100], ['S6', 99, 100],
+        ['S7', 101, 100], ['S8', 97, 100], ['S9', 30, 100], ['S10', 103, 100], ['S11', 40, 100], ['S12', 100, 100]),
+      periods: periods(500, 530),
+    },
+    dq: [], focus: ['S9', 'S11', 'S4'], priority: 'S9' },
+  { id: 'SAL-12', cap: SALES, title: 'a seller target is 0', tags: ['conflict', 'suspicious'],
+    data: { sellers: sellers(['S1', 50, 0], ['S2', 80, 100]), periods: periods(60, 70) },
+    dq: ['TARGET_ZERO'], focus: [] },
+  { id: 'SAL-13', cap: SALES, title: 'negative seller units', tags: ['conflict', 'suspicious'],
+    data: { sellers: sellers(['S1', 120, 100], ['S2', -10, 100]), periods: periods(50, 60) },
+    dq: ['NEGATIVE_VALUE'], focus: [] },
+
+  // ---- campaign_insights (10) ----
+  { id: 'CAM-01', cap: CAMP, title: 'on target', tags: ['normal'],
+    data: camp(48, 50, 150, 150, 95, 100), dq: [], focus: [],
+    hand: { targetGap: 0, targetAttainmentPct: 100, targetShortfallPct: 0, giftGap: 5 } },
+  { id: 'CAM-02', cap: CAMP, title: 'sales at 60% of target', tags: ['campaign-inefficiency'],
+    data: camp(45, 50, 90, 150, 90, 100), dq: [], focus: ['sales'], priority: 'sales',
+    hand: { targetGap: 60, targetAttainmentPct: 60, targetShortfallPct: 40 } },
+  { id: 'CAM-03', cap: CAMP, title: 'sales 130% of target, gifts only 40% distributed', tags: ['campaign-inefficiency'],
+    data: camp(45, 50, 195, 150, 40, 100), dq: [], focus: ['gifts'], priority: 'gifts',
+    hand: { attendanceRate: 0.9, attendanceGap: 5, targetGap: -45, targetAttainmentPct: 130, targetShortfallPct: -30, giftGap: 60, giftRemainingPct: 60, giftDistributionRate: 0.4 } },
+  { id: 'CAM-04', cap: CAMP, title: 'gifts exhausted, sales at 50%', tags: ['campaign-inefficiency', 'trap-cause'],
+    data: camp(40, 50, 75, 150, 100, 100), dq: [], focus: ['sales'], priority: 'sales',
+    hand: { targetAttainmentPct: 50, giftGap: 0, giftRemainingPct: 0 } },
+  { id: 'CAM-05', cap: CAMP, title: 'low attendance, sales on target', tags: ['campaign-inefficiency'],
+    data: camp(25, 50, 150, 150, 90, 100), dq: [], focus: ['attendance'], priority: 'attendance',
+    hand: { attendanceRate: 0.5, attendanceGap: 25 } },
+  { id: 'CAM-06', cap: CAMP, title: 'sales target missing', tags: ['missing'],
+    data: { attendance: { present: 42, expected: 50 }, sales: { units: 120 }, gifts: { distributed: 80, planned: 100 } },
+    dq: ['TARGET_MISSING'], focus: [],
+    hand: { target: null, targetGap: null, targetAttainmentPct: null, targetShortfallPct: null, giftGap: 20 } },
+  { id: 'CAM-07', cap: CAMP, title: 'gifts distributed exceed plan', tags: ['conflict'],
+    data: camp(42, 50, 120, 150, 120, 100), dq: ['DISTRIBUTED_GT_PLANNED'], focus: ['gifts'],
+    hand: { giftGap: -20, giftDistributionRate: 1.2 } },
+  { id: 'CAM-08', cap: CAMP, title: 'expected attendance is 0', tags: ['missing'],
+    data: camp(0, 0, 100, 150, 50, 100), dq: ['DENOMINATOR_ZERO'], focus: [],
+    hand: { attendanceRate: null, attendanceGap: 0 } },
+  { id: 'CAM-09', cap: CAMP, title: 'mid-campaign snapshot (no final verdict possible)', tags: ['trap-verdict'],
+    ctx: { workDate: '2026-11-10', from: '2026-11-01', to: '2026-11-30' },
+    data: camp(45, 50, 60, 150, 30, 100), dq: [], focus: ['sales'],
+    hand: { targetAttainmentPct: 40 } },
+  { id: 'CAM-10', cap: CAMP, title: 'several simultaneous problems', tags: ['campaign-inefficiency'],
+    data: camp(20, 50, 60, 150, 10, 100), dq: [], focus: ['attendance', 'sales', 'gifts'],
+    hand: { attendanceRate: 0.4, targetAttainmentPct: 40, giftDistributionRate: 0.1 } },
+
+  // ---- animateur_coaching (11) ----
+  { id: 'ANI-01', cap: ANIM, title: 'normal trio', tags: ['normal'],
+    data: { animateurs: anim(['A1', 0.95, 110, 100, 5], ['A2', 0.9, 100, 100, 4], ['A3', 0.92, 105, 100, 5]) },
+    dq: [], focus: [] },
+  { id: 'ANI-02', cap: ANIM, title: 'low attendance but high sales', tags: ['coaching'],
+    data: { animateurs: anim(['A1', 0.5, 130, 100, 4], ['A2', 0.95, 95, 100, 4]) },
+    dq: [], focus: ['A1', 'A2'] },
+  { id: 'ANI-03', cap: ANIM, title: 'many visits, low units (cause unknown)', tags: ['coaching', 'trap-cause'],
+    data: { animateurs: anim(['A1', 0.9, 50, 100, 10], ['A2', 0.9, 100, 100, 3]) },
+    dq: [], focus: ['A1'], priority: 'A1' },
+  { id: 'ANI-04', cap: ANIM, title: 'all below target', tags: ['coaching'],
+    data: { animateurs: anim(['A1', 0.8, 70, 100, 3], ['A2', 0.85, 60, 100, 3], ['A3', 0.75, 80, 100, 2]) },
+    dq: [], focus: ['A1', 'A2', 'A3'],
+    hand: { animateurCount: 3, totalUnits: 210, totalTarget: 300, targetGap: 90, attainmentPct: 70, avgAttendanceRate: 0.8, avgVisits: 2.667 } },
+  { id: 'ANI-05', cap: ANIM, title: 'attendance rate sent as 90 instead of 0.9', tags: ['conflict', 'suspicious'],
+    data: { animateurs: anim(['A1', 90, 100, 100, 4], ['A2', 0.8, 90, 100, 3]) },
+    dq: ['RATE_OUT_OF_RANGE'], focus: [] },
+  { id: 'ANI-06', cap: ANIM, title: 'visits missing for one animateur', tags: ['missing'],
+    data: { animateurs: anim(['A1', 0.9, 100, 100, 4], ['A2', 0.8, 90, 100]) },
+    dq: ['FIELD_MISSING'], focus: [],
+    hand: { avgVisits: null, totalUnits: 190, attainmentPct: 95 } },
+  { id: 'ANI-07', cap: ANIM, title: 'duplicate animateur label', tags: ['conflict'],
+    data: { animateurs: anim(['A1', 0.9, 100, 100, 4], ['A1', 0.6, 50, 100, 2], ['A2', 0.8, 90, 100, 3]) },
+    dq: ['DUPLICATE_LABEL'], focus: [] },
+  { id: 'ANI-08', cap: ANIM, title: 'ten animateurs (full coverage, weakest first)', tags: ['coaching', 'scale'],
+    data: { animateurs: anim(['A1', 0.9, 100, 100, 4], ['A2', 0.92, 105, 100, 4], ['A3', 0.5, 40, 100, 1], ['A4', 0.95, 110, 100, 5],
+      ['A5', 0.9, 98, 100, 4], ['A6', 0.88, 102, 100, 4], ['A7', 0.6, 55, 100, 2], ['A8', 0.93, 101, 100, 4], ['A9', 0.9, 99, 100, 4], ['A10', 0.91, 100, 100, 4]) },
+    dq: [], focus: ['A3', 'A7'], priority: 'A3' },
+  { id: 'ANI-09', cap: ANIM, title: 'an animateur target is 0', tags: ['conflict', 'suspicious'],
+    data: { animateurs: anim(['A1', 0.9, 100, 0, 4], ['A2', 0.8, 90, 100, 3]) },
+    dq: ['TARGET_ZERO'], focus: [] },
+  { id: 'ANI-10', cap: ANIM, title: 'two identical profiles', tags: ['coaching', 'consistency'],
+    data: { animateurs: anim(['A1', 0.8, 90, 100, 3], ['A2', 0.8, 90, 100, 3], ['A3', 0.9, 110, 100, 5]) },
+    dq: [], focus: ['A1', 'A2'] },
+  { id: 'ANI-11', cap: ANIM, title: 'attendance rate above 1', tags: ['conflict', 'suspicious'],
+    data: { animateurs: anim(['A1', 1.2, 100, 100, 4], ['A2', 0.8, 90, 100, 3]) },
+    dq: ['RATE_OUT_OF_RANGE'], focus: [] },
+];
+
+export function buildRequest(scenario, locale, requestId) {
+  return {
+    requestId,
+    agencyId: '11111111-1111-4111-8111-111111111111',
+    subject: { type: scenario.cap === SUP ? 'supervisor' : 'campaign', id: scenario.cap === SUP ? 'sup-001' : 'cam-001' },
+    input: {
+      text: null,
+      fileUrl: null,
+      context: { ...(scenario.ctx ?? {}), locale, data: structuredClone(scenario.data) },
+    },
+  };
+}

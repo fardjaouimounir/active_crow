@@ -1,0 +1,5 @@
+<think>
+The user wants a JSON report. Attendance is 42 of 50 so 84 percent. Sales 120 vs 100 means +20 percent. I should avoid inventing numbers 2026...
+</think>
+
+{"locale": "en", "coaching": [{"label": "A1", "strengths": ["A1 made 120 units against 100 with 90 percent attendance."], "gaps": ["Only 4 visits were logged."], "actions": ["Share A1's routine with the team."], "evidenceRefs": ["A1"]}, {"label": "A2", "strengths": [], "gaps": ["A2 reached 80 units of 100 and 70 percent attendance, with 2 visits."], "actions": ["Coach A2 on attendance and add visits."], "evidenceRefs": ["A2"]}], "campaignActions": ["Rebalance visits between A1 and A2."]}

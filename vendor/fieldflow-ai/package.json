@@ -1,0 +1,36 @@
+{
+  "name": "fieldflow-ai",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Standalone AI Grid-backed AI service for FieldFlow (Qwen only, deterministic fallback). Suggestions only; never writes business data.",
+  "engines": {
+    "node": ">=22"
+  },
+  "scripts": {
+    "start": "node src/server.js",
+    "dev": "node --watch src/server.js",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "demo": "node scripts/demo.js",
+    "smoke": "node scripts/smoke.js",
+    "smoke:local": "node --env-file=.env scripts/smoke.js",
+    "e2e": "node --env-file=.env scripts/e2e.mjs",
+    "mock:callback": "node --env-file=.env scripts/mock-callback.mjs",
+    "qwen:check": "node --env-file=.env scripts/qwen-check.mjs",
+    "eval:recorded": "node eval/run.mjs --mode recorded",
+    "eval:live": "node --env-file=.env eval/run.mjs --mode live",
+    "contract:check": "node --env-file=.env scripts/contract-check.mjs"
+  },
+  "dependencies": {
+    "express": "^4.21.2",
+    "openai": "^7.62.0",
+    "pino": "^9.5.0",
+    "zod": "^4.6.7"
+  },
+  "devDependencies": {
+    "supertest": "^7.0.0",
+    "vite": "^7.3.8",
+    "vitest": "^5.1.1"
+  }
+}
