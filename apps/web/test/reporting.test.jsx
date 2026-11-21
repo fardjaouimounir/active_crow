@@ -51,14 +51,38 @@ it('syncs filters with the URL, changes metrics and offers the chart data table'
   const view = renderApp('/app/dashboard');
   expect(await screen.findByRole('heading', { name: 'Performance dashboard' })).toBeInTheDocument();
   const user = userEvent.setup();
-  const willaya = screen.getByLabelText('Wilaya');
-  await screen.findByRole('option', { name: 'Algiers' });
-  await user.selectOptions(willaya, '16');
+  await user.click(screen.getByRole('button', { name: 'Wilaya' }));
+  const search = await screen.findByRole('searchbox', { name: 'Search Wilaya' });
+  await user.type(search, 'alg');
+  await user.click(await screen.findByRole('checkbox', { name: 'Algiers' }));
   expect(view.location()).toBe('/app/dashboard?wilayaIds=16');
+  await user.keyboard('{Escape}');
+  expect(screen.getByRole('button', { name: 'Wilaya' })).toHaveFocus();
   const section = (await screen.findByRole('heading', { name: 'Daily sales' })).closest('section');
   await user.click(within(section).getByText('View data'));
   expect(await within(section).findByRole('cell', { name: '9' })).toBeInTheDocument();
+  await user.click(screen.getByRole('button', { name: 'Remove Algiers from Wilaya' }));
+  expect(view.location()).toBe('/app/dashboard');
+  await user.click(screen.getByRole('button', { name: 'More filters' }));
+  expect(screen.getByRole('button', { name: 'Region' })).toBeVisible();
+  await user.click(screen.getByRole('button', { name: /^Date range/ }));
+  await user.click(screen.getByRole('button', { name: 'Today' }));
+  expect(view.location()).toMatch(/\?from=\d{4}-\d{2}-\d{2}&to=\d{4}-\d{2}-\d{2}$/);
+  await user.click(screen.getByRole('button', { name: 'Reset' }));
+  expect(view.location()).toBe('/app/dashboard');
 }, 20_000);
+
+it('shows a store once, in a single ranked table', async () => {
+  setup('director');
+  renderApp('/app/dashboard');
+  const ranked = (
+    await screen.findByRole('heading', { name: 'Points de Vente by sales volume' })
+  ).closest('section');
+  expect(within(ranked).getByRole('columnheader', { name: 'Rank' })).toBeInTheDocument();
+  expect(within(ranked).getByRole('cell', { name: '1' })).toBeInTheDocument();
+  expect(within(ranked).getAllByRole('cell', { name: 'Test store' })).toHaveLength(1);
+  expect(screen.queryByRole('heading', { name: 'Top 10 Points de Vente' })).toBeNull();
+});
 
 it.each([
   ['supervisor', 'By Animateur'],

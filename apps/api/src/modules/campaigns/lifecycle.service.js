@@ -5,7 +5,7 @@ import { events } from '../../core/events/index.js';
 import { actionsFrom, ERROR_CODES, reasonRequired, TRANSITIONS } from '@fieldflow/shared';
 import { auditService } from '../../core/audit/index.js';
 import { AppError, NotFoundError } from '../../core/errors/index.js';
-import { businessDate } from '../../core/time/clock.js';
+import { businessDate, clock } from '../../core/time/clock.js';
 import { prisma } from '../../db/client.js';
 import { withTransaction } from '../../db/transaction.js';
 import * as repository from './campaigns.repository.js';
@@ -82,6 +82,7 @@ function transition(scope, actor, campaignId, action, { reason } = {}) {
       toStatus: to,
       reason: reason ?? null,
       changedById: actor.id,
+      createdAt: clock.now(),
     });
     await auditService.record(tx, {
       actor,

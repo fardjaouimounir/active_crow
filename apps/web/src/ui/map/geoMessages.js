@@ -35,6 +35,9 @@ export const messages = {
     'The basemap could not be loaded. Showing wilaya boundaries only.',
     'تعذّر تحميل الخريطة الأساسية. تُعرض حدود الولايات فقط.',
   ],
+  mapError: ['Unable to load the interactive map.', 'تعذّر تحميل الخريطة التفاعلية.'],
+  wholeCountry: ['Whole country', 'كامل البلاد'],
+  fitData: ['Fit to data', 'عرض الولايات التي تحتوي على بيانات'],
   noWebgl: [
     'Interactive map is unavailable in this browser. Showing a simplified map.',
     'الخريطة التفاعلية غير متاحة في هذا المتصفح. تُعرض خريطة مبسّطة.',

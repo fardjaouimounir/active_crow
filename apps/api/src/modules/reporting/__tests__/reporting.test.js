@@ -1,5 +1,8 @@
-import { beforeAll, expect, it } from 'vitest';
+import { beforeAll, expect, it, vi } from 'vitest';
 import ExcelJS from 'exceljs';
+import sharp from 'sharp';
+import { activateShowcase } from '../../../../prisma/seed/showcaseActivation.js';
+import { clock } from '../../../core/time/clock.js';
 import { prisma } from '../../../db/client.js';
 import {
   createCustomer,
@@ -14,10 +17,88 @@ import {
 import { attendanceRule, offsetDate } from '../../campaigns/__tests__/fixtures.js';
 import { createApp } from '../../../app.js';
 import { createStockWorld } from '../../inventory/__tests__/helpers.js';
+import { expectedCheckpoints } from '../../attendance/expected.js';
 
 let world;
 beforeAll(async () => {
   world = await createStockWorld(createApp());
+});
+
+it('counts attendance seeded through the showcase activation and attendance services', async () => {
+  const from = offsetDate(-3);
+  const to = offsetDate(-2);
+  const built = await world.campaign({ startDate: day(from) });
+  const { assignment, campaign, pointOfSale } = built;
+  const scope = { level: 'agency', agencyId: world.agency.id };
+  const rule = await prisma.ruleSet.findFirstOrThrow({ where: { campaignId: campaign.id } });
+  await prisma.ruleSet.update({
+    where: { id: rule.id },
+    data: { effectiveFrom: new Date(`${from}T00:00:00+01:00`) },
+  });
+  await prisma.campaignRule.create({
+    data: {
+      agencyId: scope.agencyId,
+      ruleSetId: rule.id,
+      ruleType: 'attendance',
+      config: attendanceRule,
+    },
+  });
+  await prisma.assignment.update({
+    where: { id: assignment.id },
+    data: { workDays: [1, 2, 3, 4, 5, 6, 7] },
+  });
+  await prisma.campaignStatusHistory.create({
+    data: { agencyId: scope.agencyId, campaignId: campaign.id, toStatus: 'draft' },
+  });
+
+  await activateShowcase(campaign, world.people.director, from);
+  await activateShowcase(campaign, world.people.director, from);
+  expect(
+    await prisma.campaignStatusHistory.count({
+      where: { campaignId: campaign.id, toStatus: 'active' },
+    }),
+  ).toBe(1);
+  for (const date of [from, to]) {
+    const slots = await expectedCheckpoints(prisma, scope, campaign, date);
+    expect(slots).toMatchObject([
+      { assignmentId: assignment.id, checkpoints: [{ code: 'morning' }] },
+    ]);
+  }
+
+  const photo = await sharp({ create: { width: 2, height: 2, channels: 3, background: 'green' } })
+    .jpeg()
+    .toBuffer();
+  const now = vi.spyOn(clock, 'now').mockReturnValue(new Date(`${from}T08:45:00+01:00`));
+  try {
+    const record = await world.ok(
+      world
+        .call(built.animateurAuth, 'post', `/assignments/${assignment.id}/attendance`)
+        .field('checkpoint', 'morning')
+        .attach('photo', photo, 'proof.jpg'),
+      201,
+    );
+    const review = await world.ok(
+      world.call('supervisor', 'post', `/campaigns/${campaign.id}/attendance/verify-bulk`, {
+        ids: [record.id],
+      }),
+    );
+    expect(review).toEqual({ verified: [record.id], skipped: [] });
+  } finally {
+    now.mockRestore();
+  }
+
+  const query = `campaignIds=${campaign.id}&from=${from}&to=${to}`;
+  const kpis = await world.ok(world.call('director', 'get', `/reports/kpis?${query}`));
+  const stores = await world.ok(
+    world.call('director', 'get', `/reports/breakdown?${query}&dimension=point_of_sale`),
+  );
+  expect(kpis.attendance.rate).toBeGreaterThan(0);
+  // One assignment works both days, one morning slot each day, one check-in verified.
+  expect(stores.find(({ id }) => id === pointOfSale.id).attendance).toMatchObject({
+    expectedSlots: 2,
+    verified: 1,
+    rate: 1 / 2,
+  });
 });
 
 it('aggregates campaign KPIs and labels every reporting dimension', async () => {

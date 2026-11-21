@@ -73,6 +73,27 @@ export function legendSteps(breaks) {
   }));
 }
 
+export function choroplethClasses(values) {
+  const distinct = [...new Set(values.filter(Number.isFinite))].sort((a, b) => a - b);
+  if (distinct.length <= CLASSES) {
+    const klass = (index) =>
+      distinct.length === 1 ? CLASSES : 1 + Math.round((index * 4) / (distinct.length - 1));
+    return {
+      classify: (value) => klass(distinct.indexOf(value)),
+      steps: distinct.map((value, index) => ({ klass: klass(index), value })),
+    };
+  }
+  const span = distinct.at(-1) - distinct[0];
+  const unit = 10 ** Math.floor(Math.log10(span / 10));
+  const breaks = [
+    ...new Set(quantileBreaks(values).map((value) => Math.round(value / unit) * unit)),
+  ].filter((value) => value > distinct[0] && value <= distinct.at(-1));
+  return {
+    classify: (value) => 1 + breaks.filter((limit) => value >= limit).length,
+    steps: legendSteps(breaks),
+  };
+}
+
 /** A geodesic-ish circle (radius in metres) as a GeoJSON polygon ring around a point. */
 export function circleRing(latitude, longitude, radius, steps = 72) {
   const latitudeRadians = (latitude * Math.PI) / 180;
@@ -145,11 +166,20 @@ export function geometryPath(geometry, project) {
 }
 
 /** True when this browser can create a WebGL context (MapLibre needs it). */
+export function logMapIssue(message, error) {
+  // eslint-disable-next-line no-console -- Map diagnostics are requested in development only.
+  if (import.meta.env.DEV) console.warn(message, error ?? '');
+}
+
 export function webglSupported() {
   try {
     const canvas = document.createElement('canvas');
-    return Boolean(canvas.getContext?.('webgl2') ?? canvas.getContext?.('webgl'));
-  } catch {
+    const context = canvas.getContext?.('webgl2', { failIfMajorPerformanceCaveat: false });
+    if (!context) logMapIssue('MapLibre requires WebGL 2');
+    context?.getExtension?.('WEBGL_lose_context')?.loseContext();
+    return Boolean(context);
+  } catch (error) {
+    logMapIssue('MapLibre WebGL 2 probe failed', error);
     return false;
   }
 }

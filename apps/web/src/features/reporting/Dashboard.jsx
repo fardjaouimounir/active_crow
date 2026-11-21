@@ -3,7 +3,7 @@ import { lazy, Suspense } from 'react';
 import { useSearchParams } from 'react-router';
 import { TriangleAlert } from 'lucide-react';
 import { useAuth, useCan } from '../../shared/auth/hooks.js';
-import { buttonClass, controlClass } from '../../ui/primitives.jsx';
+import { DashboardFilters, monday } from './DashboardFilters.jsx';
 import {
   AiActionButton,
   AiCommentaryCard,
@@ -27,106 +27,6 @@ import {
 } from './ReportingUi.jsx';
 
 const fields = Object.keys(reportingFilterFields);
-const choices = fields.filter((name) => name !== 'from' && name !== 'to');
-const shift = (day, days) =>
-  new Date(Date.parse(day) + days * 86_400_000).toISOString().slice(0, 10);
-const monday = (day) => shift(day, -((new Date(day).getUTCDay() + 6) % 7));
-const dateInput = controlClass;
-const multiInput = controlClass + ' h-auto py-1';
-const presetButton = buttonClass({ variant: 'secondary', size: 'sm' });
-
-function Filters({ raw, update, options }) {
-  const { t, rtl } = useReportingText();
-  const now = today();
-  const selected = (options?.campaignIds ?? []).filter(({ id }) =>
-    (raw.campaignIds ?? '').split(',').includes(id),
-  );
-  const preset = (from, to) => update({ from, to });
-  return (
-    <section className="space-y-3 rounded-lg border border-line bg-surface p-3">
-      <div className="flex flex-wrap gap-2">
-        <button type="button" className={presetButton} onClick={() => preset(now, now)}>
-          {t('today')}
-        </button>
-        <button type="button" className={presetButton} onClick={() => preset(monday(now), now)}>
-          {t('week')}
-        </button>
-        <button
-          type="button"
-          className={presetButton}
-          disabled={!selected.length}
-          onClick={() =>
-            preset(
-              selected
-                .map(({ startDate }) => startDate)
-                .sort()[0]
-                .slice(0, 10),
-              selected
-                .map(({ endDate }) => endDate)
-                .sort()
-                .at(-1)
-                .slice(0, 10),
-            )
-          }
-        >
-          {t('period')}
-        </button>
-      </div>
-      <div className="grid grid-cols-2 gap-3 md:grid-cols-3 xl:grid-cols-5">
-        {choices.map((name) => {
-          const multi = name !== 'clientId';
-          const selectedIds = raw[name]?.split(',') ?? [];
-          const missing = selectedIds.filter(
-            (id) => !options?.[name]?.some((option) => String(option.id) === id),
-          );
-          return (
-            <label key={name} className="min-w-0 space-y-1 text-xs text-fg-3">
-              <span>{t(name)}</span>
-              <select
-                multiple={multi}
-                size={multi ? 3 : undefined}
-                value={multi ? selectedIds : (raw[name] ?? '')}
-                onChange={(event) =>
-                  update({
-                    [name]: [...event.target.selectedOptions]
-                      .map(({ value }) => value)
-                      .filter(Boolean)
-                      .join(','),
-                  })
-                }
-                className={multi ? multiInput : dateInput}
-              >
-                {!multi && <option value="">{t('all')}</option>}
-                {missing.map((id) => (
-                  <option key={id} value={id}>
-                    {id}
-                  </option>
-                ))}
-                {(options?.[name] ?? []).map(({ id, name: label, fullName, nameEn, nameAr }) => (
-                  <option key={id} value={id}>
-                    {(rtl && nameAr) || label || fullName || nameEn}
-                  </option>
-                ))}
-              </select>
-            </label>
-          );
-        })}
-        {['from', 'to'].map((name) => (
-          <label key={name} className="min-w-0 space-y-1 text-xs text-fg-3">
-            <span>{t(name)}</span>
-            <input
-              type="date"
-              value={raw[name] ?? ''}
-              onChange={(event) => update({ [name]: event.target.value })}
-              className={dateInput}
-            />
-          </label>
-        ))}
-      </div>
-    </section>
-  );
-}
-
 export function Dashboard() {
   const { user } = useAuth();
   const canExport = useCan('reports.export');
@@ -143,7 +43,10 @@ export function Dashboard() {
   const mainFilters =
     !filters.from && !filters.to && supervisor ? { ...filters, from: now, to: now } : filters;
   const dimension = supervisor ? 'animateur' : regional ? 'supervisor' : 'campaign';
-  const current = useReport('/kpis', mainFilters, parsed.success);
+  const current = useReport('/kpis', mainFilters, parsed.success, {
+    placeholderData: (previous) =>
+      previous && { options: previous.options, period: previous.period },
+  });
   const series = useReport(
     '/breakdown',
     { ...mainFilters, dimension: 'day' },
@@ -171,7 +74,7 @@ export function Dashboard() {
   const sortedStores = [...(stores.data ?? [])].sort(
     (a, b) => b.sales.units - a.sales.units || a.id.localeCompare(b.id),
   );
-  const values = current.data;
+  const values = current.isPlaceholderData ? undefined : current.data;
   const campaignId = filters.campaignIds?.length === 1 ? filters.campaignIds[0] : null;
   const supervisorId = supervisor
     ? user.id
@@ -185,7 +88,12 @@ export function Dashboard() {
         <h1 className="text-2xl font-semibold tracking-tight">{t('heading')}</h1>
         {canExport && parsed.success && <ExportButton filters={mainFilters} />}
       </div>
-      <Filters raw={raw} update={update} options={values?.options} />
+      <DashboardFilters
+        raw={raw}
+        update={update}
+        options={current.data?.options}
+        period={current.data?.period}
+      />
       {parsed.success && (
         <div className="space-y-3">
           <div className="flex flex-wrap gap-3">
@@ -215,7 +123,7 @@ export function Dashboard() {
         </div>
       )}
       {!parsed.success && <p role="alert">{t('invalid')}</p>}
-      {parsed.success && current.isPending && (
+      {parsed.success && (current.isPending || current.isPlaceholderData) && (
         <div role="status" className="animate-pulse rounded-xl bg-sunken p-6">
           {t('loading')}
         </div>
@@ -271,12 +179,19 @@ export function Dashboard() {
           title={supervisor ? 'byAnimateur' : regional ? 'bySupervisor' : 'byCampaign'}
         />
       )}
-      {stores.data && (
-        <div className="grid gap-4 xl:grid-cols-2">
-          <BreakdownTable rows={sortedStores.slice(0, 10)} title="topStores" />
-          <BreakdownTable rows={sortedStores.slice(-10).reverse()} title="bottomStores" />
-        </div>
-      )}
+      {stores.data &&
+        (sortedStores.length <= 20 ? (
+          <BreakdownTable
+            rows={sortedStores.map((store, index) => ({ ...store, rank: index + 1 }))}
+            title="rankedStores"
+            ranked
+          />
+        ) : (
+          <div className="grid gap-4 xl:grid-cols-2">
+            <BreakdownTable rows={sortedStores.slice(0, 10)} title="topStores" />
+            <BreakdownTable rows={sortedStores.slice(-10).reverse()} title="bottomStores" />
+          </div>
+        ))}
     </section>
   );
 }

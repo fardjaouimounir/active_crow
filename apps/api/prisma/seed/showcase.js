@@ -14,6 +14,7 @@ const { createApp } = await import('../../src/app.js');
 const { hashPassword } = await import('../../src/core/auth/passwords.js');
 const { businessDate, clock } = await import('../../src/core/time/clock.js');
 const { disconnectDatabase, prisma } = await import('../../src/db/client.js');
+const { activateShowcase } = await import('./showcaseActivation.js');
 const realNow = clock.now;
 
 const AGENCY_CODE = process.env.SHOWCASE_AGENCY ?? 'DEMO-MOUNIR';
@@ -53,12 +54,15 @@ async function login(email) {
   const res = await request(app).post('/api/v1/auth/login').send({ email, password });
   if (res.status !== 200)
     throw new Error(`login ${email}: ${res.status} ${JSON.stringify(res.body)}`);
-  tokens.set(email, res.body.data.accessToken);
-  return res.body.data.accessToken;
+  const { accessToken, expiresIn } = res.body.data;
+  tokens.set(email, { accessToken, expiresAt: +clock.now() + expiresIn * 1000 });
+  return accessToken;
 }
 async function call(email, method, path, { body, fields, files, json = true } = {}) {
   await pace();
-  const token = tokens.get(email) ?? (await login(email));
+  const session = tokens.get(email);
+  const token =
+    session && session.expiresAt > +clock.now() + 1000 ? session.accessToken : await login(email);
   const req = request(app)
     [method]('/api/v1' + path)
     .set('Authorization', `Bearer ${token}`);
@@ -113,7 +117,7 @@ const user = (email) =>
 const DIRECTOR = 'admin@demo.test';
 const REGIONAL = 'regional1@demo.test';
 const SUPERVISORS = ['supervisor1@demo.test', 'supervisor2@demo.test'];
-const ANIMATEURS = [1, 2, 3, 4, 5, 6].map((n) => `animateur${n}@demo.test`);
+const ANIMATEURS = Array.from({ length: 12 }, (_, index) => `animateur${index + 1}@demo.test`);
 const CLIENT = 'client1@demo.test';
 
 // 1. One shared password for every demo account.
@@ -128,23 +132,88 @@ const campaign = await prisma.campaign.findFirstOrThrow({
   where: { agencyId: agency.id, name: CAMPAIGN },
 });
 if (await prisma.sale.count({ where: { campaignId: campaign.id } })) {
-  log('The showcase data already exists (sales found). Nothing else to do.');
+  await activateShowcase(campaign, user(DIRECTOR), campaign.startDate.toISOString().slice(0, 10));
+  log('The showcase data already exists (sales found). Activation history checked.');
   await disconnectDatabase();
   process.exit(0);
 }
 const today = businessDate();
-const start = addDays(today, -DAYS_BACK);
-// Sign everybody in now, while the clock is real: the tokens last longer than this script.
+const start =
+  campaign.status === 'active' && campaign.startDate <= new Date(today)
+    ? campaign.startDate.toISOString().slice(0, 10)
+    : addDays(today, -DAYS_BACK);
+const extraStores = [
+  [31, 'Oran', 35.69, -0.63],
+  [25, 'Constantine', 36.36, 6.61],
+  [17, 'Djelfa', 34.67, 3.25],
+  [5, 'Batna', 35.56, 6.17],
+  [47, 'Ghardaïa', 32.49, 3.67],
+  [11, 'Tamanrasset', 22.79, 5.52],
+];
+const extraPlan = [];
+for (const [index, [wilayaId, city, latitude, longitude]] of extraStores.entries()) {
+  const email = ANIMATEURS[index + 6];
+  const supervisorEmail = SUPERVISORS[index % SUPERVISORS.length];
+  const pointName = `Showcase – ${city}`;
+  const code = `SHOWCASE-${wilayaId}`;
+  const point = await prisma.pointOfSale.upsert({
+    where: { agencyId_code: { agencyId: agency.id, code } },
+    update: {},
+    create: {
+      agencyId: agency.id,
+      code,
+      name: pointName,
+      type: 'shop',
+      wilayaId,
+      latitude,
+      longitude,
+      isDemo: true,
+    },
+  });
+  await prisma.campaignPointOfSale.createMany({
+    data: [{ agencyId: agency.id, campaignId: campaign.id, pointOfSaleId: point.id }],
+    skipDuplicates: true,
+  });
+  await prisma.campaignWilaya.createMany({
+    data: [{ agencyId: agency.id, campaignId: campaign.id, wilayaId, requiredAnimateurs: 1 }],
+    skipDuplicates: true,
+  });
+  await prisma.campaignStaff.createMany({
+    data: [
+      { role: 'regional_manager', userId: user(REGIONAL).id },
+      { role: 'supervisor', userId: user(supervisorEmail).id },
+    ].map((member) => ({ ...member, agencyId: agency.id, campaignId: campaign.id, wilayaId })),
+    skipDuplicates: true,
+  });
+  if (!users.some((row) => row.email === email)) {
+    users.push(
+      await prisma.user.create({
+        data: {
+          agencyId: agency.id,
+          email,
+          fullName: `Showcase Animateur – ${city}`,
+          role: 'animateur',
+          wilayaId,
+          passwordHash,
+          mustChangePassword: false,
+          isDemo: true,
+          reportingLines: {
+            create: {
+              agencyId: agency.id,
+              managerId: user(supervisorEmail).id,
+              validFrom: new Date(start),
+            },
+          },
+        },
+      }),
+    );
+  }
+  extraPlan.push([email, supervisorEmail, pointName]);
+}
+// Sign everybody in now, then renew access if a simulated time crosses the token expiry.
 for (const email of [DIRECTOR, REGIONAL, ...SUPERVISORS, ...ANIMATEURS, CLIENT]) await login(email);
 
 // 2. Move the campaign back so it has been running for ten days.
-const moved = campaign.startDate.toISOString().slice(0, 10) === start;
-if (!moved)
-  await prisma.$executeRaw`UPDATE campaign_status_history SET created_at = created_at - make_interval(days => ${DAYS_BACK + 1}) WHERE campaign_id = ${campaign.id}::uuid`;
-await prisma.campaign.update({
-  where: { id: campaign.id },
-  data: { startDate: new Date(start), status: 'active' },
-});
 const ruleSet = await prisma.ruleSet.findFirstOrThrow({
   where: { campaignId: campaign.id, status: 'approved' },
 });
@@ -191,7 +260,7 @@ for (const [name, productName, giftName, max] of [
   });
 }
 
-// 4. Staff on the field: three Animateurs per supervisor, all approved and running since the start.
+// 4. Staff on the field, approved and running since the start.
 const staffRow = (email) => user(email);
 const points = await prisma.campaignPointOfSale.findMany({
   where: { campaignId: campaign.id },
@@ -205,6 +274,7 @@ const plan = [
   ['animateur4@demo.test', 'supervisor2@demo.test', 'Demo Point de Vente 14'],
   ['animateur5@demo.test', 'supervisor2@demo.test', 'Demo Point de Vente 2'],
   ['animateur6@demo.test', 'supervisor2@demo.test', 'Demo Point de Vente 20'],
+  ...extraPlan,
 ];
 for (const [animateurEmail, supervisorEmail, pointName] of plan) {
   const animateur = staffRow(animateurEmail);
@@ -214,6 +284,7 @@ for (const [animateurEmail, supervisorEmail, pointName] of plan) {
   const data = {
     startDate: new Date(start),
     endDate: new Date(addDays(today, 20)),
+    workDays: [1, 2, 3, 4, 5, 6, 7],
     status: 'approved',
     decidedById: staffRow(REGIONAL).id,
     decidedAt: at(start, '08:00'),
@@ -236,6 +307,7 @@ const assignments = await prisma.assignment.findMany({
   where: { campaignId: campaign.id, status: 'approved' },
 });
 const assignmentOf = (email) => assignments.find((row) => row.animateurId === staffRow(email).id);
+await activateShowcase(campaign, user(DIRECTOR), start);
 
 // 5. The Tombola, open while the sales come in (entries are issued at each sale with consent).
 const tombola =
@@ -285,7 +357,7 @@ async function seedStock() {
   for (const supervisor of SUPERVISORS)
     await move(REGIONAL, supervisor, { 'Branded mug': 450, 'Tote bag': 300, 'Key ring': 150 });
   for (const [animateurEmail, supervisorEmail] of plan)
-    await move(supervisorEmail, animateurEmail, { 'Branded mug': 130, 'Tote bag': 90 });
+    await move(supervisorEmail, animateurEmail, { 'Branded mug': 70, 'Tote bag': 45 });
   void pairs;
 }
 if (!stockDone) {
@@ -445,15 +517,17 @@ for (let offset = -DAYS_BACK; offset <= 0; offset++) {
   const pending = await prisma.attendanceRecord.findMany({
     where: { campaignId: campaign.id, workDate: new Date(date), status: 'pending' },
   });
-  if (age >= 2 && pending.length) {
-    await tryCall(REGIONAL, 'post', `/campaigns/${campaign.id}/attendance/verify-bulk`, {
-      body: { ids: pending.map(({ id }) => id) },
-    });
-  }
-  if (age === 3 && pending[0])
-    await tryCall(REGIONAL, 'post', `/attendance/${pending[0].id}/reject`, {
+  const [rejected, ...remaining] = age === 3 ? pending : [];
+  if (rejected)
+    await tryCall(REGIONAL, 'post', `/attendance/${rejected.id}/reject`, {
       body: { reason: 'The photo is blurry, please retake it tomorrow.' },
     });
+  const toVerify = rejected ? remaining : pending;
+  if (age >= 2 && toVerify.length) {
+    await tryCall(REGIONAL, 'post', `/campaigns/${campaign.id}/attendance/verify-bulk`, {
+      body: { ids: toVerify.map(({ id }) => id) },
+    });
+  }
 }
 
 // 8. Today: a few check-ins stay pending for the supervisor review demo (already the case), an

@@ -1,13 +1,14 @@
 import { POLYGON_WILAYAS, RATIO_GEO_METRICS } from '@fieldflow/shared/wilayaPolygons';
-import { useLayoutEffect, useMemo, useRef } from 'react';
+import { useLayoutEffect, useMemo, useRef, useState } from 'react';
+import { buttonClass } from '../primitives.jsx';
 import {
+  ALGERIA_BOUNDS,
   BOUNDARIES,
   CLASSES,
-  classOf,
+  boundsOf,
+  choroplethClasses,
   divergingClass,
   divergingToken,
-  legendSteps,
-  quantileBreaks,
   scaleToken,
   tokenColor,
 } from './geo.js';
@@ -31,7 +32,7 @@ export function useChoroplethModel({ rows, previousRows, metric, compare, wilaya
       rows.map((row) => [row.polygonCode, (row.value ?? 0) - (before.get(row.polygonCode) ?? 0)]),
     );
     const largest = Math.max(0, ...[...change.values()].map(Math.abs));
-    const breaks = quantileBreaks(rows.map((row) => row.value));
+    const { classify, steps } = choroplethClasses(rows.map((row) => row.value));
     const tokens = {};
     for (const feature of BOUNDARIES.features) {
       const code = feature.properties.code;
@@ -41,7 +42,7 @@ export function useChoroplethModel({ rows, previousRows, metric, compare, wilaya
           ? '--scale-none'
           : compare
             ? divergingToken(divergingClass(change.get(code), largest))
-            : scaleToken(classOf(row.value, breaks));
+            : scaleToken(classify(row.value));
     }
     const signed = (value) =>
       (value > 0 ? '+' : value < 0 ? '−' : '') + formatValue(Math.abs(value));
@@ -66,7 +67,7 @@ export function useChoroplethModel({ rows, previousRows, metric, compare, wilaya
         );
       return lines;
     };
-    return { byCode, tokens, breaks, formatValue, signed, tooltipFor, compare, largest };
+    return { byCode, tokens, steps, formatValue, signed, tooltipFor, compare, largest };
   }, [rows, previousRows, metric, compare, wilayaName, format, t, number, percent]);
 }
 
@@ -98,12 +99,14 @@ export function ChoroplethLegend({ model, metric, period }) {
                 {token.includes('neg') ? '−' : token.includes('pos') ? '+' : '0'}
               </li>
             ))
-          : legendSteps(model.breaks).map(({ klass, from, to }) => (
+          : model.steps.map(({ klass, from, to, value }) => (
               <li key={klass} className="tnum inline-flex items-center gap-1.5">
                 {swatch(`--scale-${klass}`)}
-                {to == null
-                  ? `≥ ${model.formatValue(from)}`
-                  : `${model.formatValue(from)} – ${model.formatValue(to)}`}
+                {value != null
+                  ? model.formatValue(value)
+                  : to == null
+                    ? `≥ ${model.formatValue(from)}`
+                    : `${model.formatValue(from)} – <${model.formatValue(to)}`}
               </li>
             ))}
         <li className="inline-flex items-center gap-1.5">
@@ -121,6 +124,20 @@ export function ChoroplethLegend({ model, metric, period }) {
  */
 export function ChoroplethMap({ model, selectedCodes, onSelect, height = '28rem' }) {
   const { t } = useGeoText();
+  const [wholeCountry, setWholeCountry] = useState(false);
+  const dataCodes = [...model.byCode]
+    .filter(([, row]) => row.value != null)
+    .map(([code]) => code)
+    .sort()
+    .join(',');
+  const focusedBounds = useMemo(() => {
+    const codes = new Set(dataCodes.split(','));
+    const shapes = BOUNDARIES.features
+      .filter(({ properties }) => codes.has(properties.code))
+      .map(({ geometry }) => geometry.coordinates);
+    return shapes.length ? boundsOf(shapes) : ALGERIA_BOUNDS;
+  }, [dataCodes]);
+  const bounds = wholeCountry ? ALGERIA_BOUNDS : focusedBounds;
   const live = useRef({});
   useLayoutEffect(() => {
     live.current = { model, selectedCodes, onSelect };
@@ -196,21 +213,35 @@ export function ChoroplethMap({ model, selectedCodes, onSelect, height = '28rem'
   }
 
   return (
-    <MapView
-      label={t('mapLabel')}
-      setup={setup}
-      boundaries
-      dataKey={model.tokens}
-      height={height}
-      fallback={
-        <SvgMap
-          fills={fills}
-          selected={selectedCodes}
-          onSelect={onSelect}
-          tooltip={model.tooltipFor}
-        />
-      }
-    />
+    <div className="space-y-2">
+      <MapView
+        label={t('mapLabel')}
+        setup={setup}
+        boundaries
+        dataKey={model.tokens}
+        height={height}
+        bounds={bounds}
+        refit
+        fallback={
+          <SvgMap
+            fills={fills}
+            selected={selectedCodes}
+            onSelect={onSelect}
+            tooltip={model.tooltipFor}
+            focus={bounds}
+          />
+        }
+      />
+      {focusedBounds !== ALGERIA_BOUNDS && (
+        <button
+          type="button"
+          className={buttonClass({ variant: 'secondary', size: 'sm' })}
+          onClick={() => setWholeCountry(!wholeCountry)}
+        >
+          {t(wholeCountry ? 'fitData' : 'wholeCountry')}
+        </button>
+      )}
+    </div>
   );
 }
 

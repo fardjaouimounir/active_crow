@@ -41,7 +41,9 @@ export function useReportingText() {
               }
             : undefined,
         ).format(value);
-  return { rtl, language, num, t: (key) => messages[key]?.[rtl ? 1 : 0] ?? key };
+  const t = (key, values = {}) =>
+    (messages[key]?.[rtl ? 1 : 0] ?? key).replace(/\{(\w+)\}/g, (_, name) => values[name] ?? '');
+  return { rtl, language, num, t };
 }
 
 /** Attendance status → series color: good = spring family, problems stay distinguishable. */
@@ -152,13 +154,14 @@ export function ReportTable({ rows, title, columns }) {
   );
 }
 
-export function BreakdownTable({ rows, title, view = 'staff' }) {
+export function BreakdownTable({ rows, title, view = 'staff', ranked = false }) {
   const { t, num, rtl } = useReportingText();
   return (
     <ReportTable
       rows={rows}
       title={t(title)}
       columns={[
+        ...(ranked ? [['rank', (row) => num(row.rank), true]] : []),
         ['label', (row) => (rtl && row.labelAr) || row.label || row.id || '—'],
         ['sales', (row) => num(row.sales.units), true],
         ...(view === 'client'
@@ -174,7 +177,9 @@ export function BreakdownTable({ rows, title, view = 'staff' }) {
 export function DailyChart({ rows, attendance = false }) {
   const { t, num, rtl } = useReportingText();
   const keys = attendance ? statuses : ['sales'];
-  const data = rows.map((row) => ({ id: row.id, sales: row.sales.units, ...row.attendance }));
+  const data = [...rows]
+    .sort((a, b) => a.id.localeCompare(b.id))
+    .map((row) => ({ id: row.id, sales: row.sales.units, ...row.attendance }));
   const Chart = attendance ? BarChart : LineChart;
   const title = t(attendance ? 'dailyAttendance' : 'dailySales');
   return (
@@ -193,7 +198,8 @@ export function DailyChart({ rows, attendance = false }) {
                 <XAxis
                   {...chartAxis}
                   dataKey="id"
-                  reversed={rtl}
+                  interval="preserveStartEnd"
+                  padding={{ left: 24, right: 24 }}
                   tickFormatter={(value) => value.slice(5)}
                 />
                 <YAxis

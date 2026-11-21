@@ -14,6 +14,7 @@ import {
   divergingClass,
   makeProjector,
   quantileBreaks,
+  choroplethClasses,
 } from '../src/ui/map/geo.js';
 import { makeUser, mockApi, sessionFor } from './helpers/mockApi.js';
 import { renderApp } from './helpers/renderApp.jsx';
@@ -77,6 +78,12 @@ describe('scales and geometry', () => {
 });
 
 const period = { from: '2026-11-14', to: '2026-11-20' };
+
+it('uses exact classes for sparse choropleth data including zero', () => {
+  const scale = choroplethClasses([0, 0.78, null, 0.79, 0.79]);
+  expect(scale.steps.map(({ value }) => value)).toEqual([0, 0.78, 0.79]);
+  expect(new Set([0, 0.78, 0.79].map(scale.classify)).size).toBe(3);
+});
 const wilayaNames = [
   { id: 1, nameEn: 'Adrar', nameAr: 'أدرار' },
   { id: 16, nameEn: 'Algiers', nameAr: 'الجزائر' },
@@ -323,7 +330,7 @@ describe('live field map', () => {
 describe('heatmap grid', () => {
   const matrix = heat(4).matrix;
 
-  it('starts the hour axis at the right edge in Arabic and at the left edge in English', async () => {
+  it('starts the hour axis at the left edge in Arabic and English', async () => {
     const x = (container, day, hour) =>
       Number(
         container.querySelector(`rect[aria-label][x]`) &&
@@ -336,7 +343,7 @@ describe('heatmap grid', () => {
     unmount();
     await i18n.changeLanguage('ar');
     const rtl = render(<HeatmapGrid matrix={matrix} kind="sales" title="المبيعات" />);
-    expect(x(rtl.container, 0, 0)).toBeGreaterThan(x(rtl.container, 0, 23));
+    expect(x(rtl.container, 0, 0)).toBeLessThan(x(rtl.container, 0, 23));
     expect({
       cells: rtl.container.querySelectorAll('rect').length,
       focusable: rtl.container.querySelectorAll('rect[tabindex]').length,
@@ -347,7 +354,9 @@ describe('heatmap grid', () => {
       '4',
     );
     // Weekday labels sit outside the grid on the reading-start side: the right in Arabic.
-    const xs = [...rtl.container.querySelectorAll('rect')].map((rect) => Number(rect.getAttribute('x')));
+    const xs = [...rtl.container.querySelectorAll('rect')].map((rect) =>
+      Number(rect.getAttribute('x')),
+    );
     const labelX = Number(rtl.container.querySelector('svg text:last-of-type').getAttribute('x'));
     expect(labelX).toBeGreaterThan(Math.max(...xs) + 20);
   });
@@ -541,12 +550,11 @@ describe('basemap failure', () => {
       }
     }
     vi.doMock('maplibre-gl', () => ({
-      default: {
-        Map: FakeMap,
-        NavigationControl: class {},
-        AttributionControl: class {},
-        Popup: class {},
-      },
+      Map: FakeMap,
+      NavigationControl: class {},
+      AttributionControl: class {},
+      Popup: class {},
+      setWorkerUrl: vi.fn(),
     }));
     vi.doMock('maplibre-gl/dist/maplibre-gl.css', () => ({}));
     HTMLCanvasElement.prototype.getContext = () => ({});

@@ -1,9 +1,11 @@
 import { useEffect, useLayoutEffect, useRef, useState } from 'react';
+import workerUrl from 'maplibre-gl/dist/maplibre-gl-worker.mjs?worker&url';
 import { useTheme } from '../theme.js';
 import {
   ALGERIA_BOUNDS,
   BOUNDARY_ATTRIBUTION,
   STYLE_URLS,
+  logMapIssue,
   reducedMotion,
   tokenColor,
   webglSupported,
@@ -48,6 +50,7 @@ export function MapView({
   setup,
   dataKey,
   bounds = ALGERIA_BOUNDS,
+  refit = false,
   height = '26rem',
   boundaries = false,
   fallback,
@@ -56,12 +59,13 @@ export function MapView({
   const { t, rtl } = useGeoText();
   const { theme } = useTheme();
   const container = useRef(null);
-  const state = useRef({ map: null, lib: null, setup, ready: false, plain: false });
+  const state = useRef({ map: null, lib: null, setup, bounds, ready: false, plain: false });
   const [status, setStatus] = useState(() => (webglSupported() ? 'loading' : 'unsupported'));
   const [basemapFailed, setBasemapFailed] = useState(false);
   // Layout effects run before every passive effect of the commit, so setup is never stale.
   useLayoutEffect(() => {
     state.current.setup = setup;
+    state.current.bounds = bounds;
   });
 
   // Create the map once.
@@ -72,16 +76,17 @@ export function MapView({
     let timer;
     (async () => {
       try {
-        const [{ default: lib }] = await Promise.all([
+        const [lib] = await Promise.all([
           import('maplibre-gl'),
           import('maplibre-gl/dist/maplibre-gl.css'),
         ]);
         if (disposed) return;
+        lib.setWorkerUrl(workerUrl);
         const map = new lib.Map({
           container: container.current,
           style: STYLE_URLS[document.documentElement.dataset.theme === 'light' ? 'light' : 'dark'],
-          bounds,
-          fitBoundsOptions: { padding: 12, animate: false },
+          bounds: state.current.bounds,
+          fitBoundsOptions: { padding: 24, animate: false },
           attributionControl: false,
           fadeDuration: reducedMotion() ? 0 : 150,
           cooperativeGestures: false,
@@ -118,6 +123,7 @@ export function MapView({
         });
         let tileErrors = 0;
         map.on('error', (event) => {
+          logMapIssue('MapLibre map error', event.error ?? event);
           // A failing style or tile server must never take the choropleth down with it. One stray
           // tile is tolerated; a style that never loads, or repeated tile failures, are not.
           if (!current.ready) fallToPlain();
@@ -125,8 +131,10 @@ export function MapView({
         });
         observer = new ResizeObserver(() => map.resize());
         observer.observe(container.current);
-      } catch {
-        if (!disposed) setStatus('unsupported');
+      } catch (error) {
+        if (disposed) return;
+        logMapIssue('MapLibre initialization failed', error);
+        setStatus(error?.name === 'GPUInitializationError' ? 'unsupported' : 'failed');
       }
     })();
     return () => {
@@ -155,6 +163,10 @@ export function MapView({
     if (map && ready && map.isStyleLoaded()) state.current.setup?.(map, lib);
   }, [dataKey]);
 
+  useEffect(() => {
+    if (refit) state.current.map?.fitBounds(bounds, { padding: 24, animate: false });
+  }, [bounds, refit]);
+
   if (status === 'unsupported')
     return (
       <div className={className}>
@@ -178,6 +190,11 @@ export function MapView({
           className="absolute inset-0 grid place-items-center rounded-lg bg-surface/80 text-sm text-fg-2"
         >
           {t('loading')}
+        </p>
+      )}
+      {status === 'failed' && (
+        <p role="alert" className="absolute inset-0 grid place-items-center text-sm text-fg-2">
+          {t('mapError')}
         </p>
       )}
       {basemapFailed && (

@@ -11,7 +11,7 @@ const HOURS = Array.from({ length: 24 }, (_, hour) => hour);
 /**
  * Weekday x hour heatmap as an SVG grid (no chart library). Colour classes are the same quantile
  * scale as the maps; every cell has a text alternative and the whole grid has a table twin. The
- * hour axis starts at the reading start: left in LTR, right in RTL. Hours are Algiers time.
+ * hour axis reads chronologically left to right. Hours are Algiers time.
  */
 export function HeatmapGrid({ matrix, kind, title }) {
   const { t, rtl, locale, number } = useGeoText();
@@ -29,7 +29,7 @@ export function HeatmapGrid({ matrix, kind, title }) {
   const width = LEFT + 24 * (CELL + GAP);
   const gridStart = rtl ? 0 : LEFT; // labels take the reading-start side: right in RTL
   const height = TOP + 7 * (CELL + GAP);
-  const x = (hour) => gridStart + (rtl ? 23 - hour : hour) * (CELL + GAP);
+  const x = (hour) => gridStart + hour * (CELL + GAP);
   const y = (day) => TOP + day * (CELL + GAP);
   const hourLabel = (hour) => String(hour).padStart(2, '0');
   if (!total)

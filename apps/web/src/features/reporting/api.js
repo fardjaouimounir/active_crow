@@ -17,6 +17,7 @@ export function useReport(path, filters = {}, enabled = true, options = {}) {
     queryFn: async ({ signal }) =>
       (await apiClient.get('/reports' + path, { signal, params: reportParams(filters) })).data.data,
     enabled,
+    placeholderData: options.placeholderData,
     staleTime: 30_000,
     refetchInterval: options.refetchInterval,
     refetchIntervalInBackground: false,

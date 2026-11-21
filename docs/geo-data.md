@@ -61,8 +61,9 @@ recomputed, not averaged).
 
 ## Colour scales (from tokens, never hard-coded)
 
-* Sequential: **5 quantile classes** of the positive values shown (breaks at the 20/40/60/80th percentile,
-  equal breaks collapse, so a few distinct values give fewer classes); zero or missing = "no data" fill.
+* Sequential choropleth: up to five distinct values get a color and a legend entry per value, including zero.
+  With more values, quantile breaks at the 20th, 40th, 60th and 80th percentiles are rounded and duplicate
+  breaks collapse. Missing values use the "no data" fill.
   Tokens `--scale-1…5` (dark: near-black green to spring; light: pale green to a darker green).
 * Change vs previous period: diverging 5 steps from the largest absolute change (|change| < 10 % of it = neutral,
   < 50 % = step 1, otherwise step 2). Tokens `--div-neg-2…--div-pos-2`.
@@ -70,7 +71,10 @@ recomputed, not averaged).
 
 ## Basemap and attribution
 
-* Engine: MapLibre GL JS, lazy-loaded (`import('maplibre-gl')` inside `MapView`), never part of `/field`.
+* Engine: MapLibre GL JS, lazy-loaded (`import('maplibre-gl')` inside `MapView`), with a same-origin worker
+  bundled by Vite. The map engine is outside the `/field` route.
+* The choropleth opens at the bounds of the wilayas with data. The Whole country control switches to the
+  full national extent.
 * Basemap: OpenFreeMap, keyless. Dark theme `https://tiles.openfreemap.org/styles/dark`, light
   `https://tiles.openfreemap.org/styles/positron`.
 * If the style does not load in 8 s, or four tiles fail, the map switches to a plain background with the same
@@ -84,12 +88,11 @@ recomputed, not averaged).
 ```
 connect-src  'self' https://tiles.openfreemap.org;
 img-src      'self' data: blob: https://tiles.openfreemap.org;
-worker-src   'self' blob:;
-child-src    'self' blob:;
+worker-src   'self';
 ```
 
 (`connect-src` covers the style JSON, TileJSON, vector tiles, glyphs and sprite JSON; `img-src` the sprite PNG and
-the raster shaded-relief tiles; MapLibre runs its tile workers from a `blob:` URL.)
+the raster shaded-relief tiles. `worker-src` permits the emitted MapLibre worker asset.)
 
 ## Privacy
 
